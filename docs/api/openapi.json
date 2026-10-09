@@ -1,0 +1,1186 @@
+{
+ "components": {
+  "schemas": {
+   "CampaignOut": {
+    "properties": {
+     "allowed_channels": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Allowed Channels",
+      "type": "array"
+     },
+     "box_art_url": {
+      "title": "Box Art Url",
+      "type": "string"
+     },
+     "drops": {
+      "items": {
+       "$ref": "#/components/schemas/DropOut"
+      },
+      "title": "Drops",
+      "type": "array"
+     },
+     "ends_at": {
+      "format": "date-time",
+      "title": "Ends At",
+      "type": "string"
+     },
+     "game": {
+      "title": "Game",
+      "type": "string"
+     },
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "link_url": {
+      "title": "Link Url",
+      "type": "string"
+     },
+     "linked": {
+      "title": "Linked",
+      "type": "boolean"
+     },
+     "minutes_needed": {
+      "title": "Minutes Needed",
+      "type": "integer"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "verdict": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Verdict"
+     }
+    },
+    "required": [
+     "id",
+     "name",
+     "game",
+     "box_art_url",
+     "ends_at",
+     "linked",
+     "link_url",
+     "allowed_channels",
+     "minutes_needed",
+     "verdict",
+     "drops"
+    ],
+    "title": "CampaignOut",
+    "type": "object"
+   },
+   "ChannelIn": {
+    "properties": {
+     "login": {
+      "maxLength": 50,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9_]+$",
+      "title": "Login",
+      "type": "string"
+     }
+    },
+    "required": [
+     "login"
+    ],
+    "title": "ChannelIn",
+    "type": "object"
+   },
+   "ChannelOut": {
+    "properties": {
+     "favourite": {
+      "title": "Favourite",
+      "type": "boolean"
+     },
+     "login": {
+      "title": "Login",
+      "type": "string"
+     },
+     "viewers": {
+      "title": "Viewers",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "login",
+     "viewers",
+     "favourite"
+    ],
+    "title": "ChannelOut",
+    "type": "object"
+   },
+   "ClaimOut": {
+    "properties": {
+     "at": {
+      "format": "date-time",
+      "title": "At",
+      "type": "string"
+     },
+     "campaign": {
+      "title": "Campaign",
+      "type": "string"
+     },
+     "campaign_id": {
+      "title": "Campaign Id",
+      "type": "string"
+     },
+     "game": {
+      "title": "Game",
+      "type": "string"
+     },
+     "rewards": {
+      "items": {
+       "$ref": "#/components/schemas/RewardOut"
+      },
+      "title": "Rewards",
+      "type": "array"
+     }
+    },
+    "required": [
+     "at",
+     "campaign_id",
+     "campaign",
+     "game",
+     "rewards"
+    ],
+    "title": "ClaimOut",
+    "type": "object"
+   },
+   "CurrentOut": {
+    "properties": {
+     "also_credited": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Also Credited",
+      "type": "array"
+     },
+     "campaign": {
+      "$ref": "#/components/schemas/CampaignOut"
+     },
+     "channel": {
+      "$ref": "#/components/schemas/ChannelOut"
+     },
+     "channel_reason": {
+      "title": "Channel Reason",
+      "type": "string"
+     },
+     "reason": {
+      "title": "Reason",
+      "type": "string"
+     }
+    },
+    "required": [
+     "campaign",
+     "channel",
+     "reason",
+     "channel_reason",
+     "also_credited"
+    ],
+    "title": "CurrentOut",
+    "type": "object"
+   },
+   "DropOut": {
+    "properties": {
+     "claimed": {
+      "title": "Claimed",
+      "type": "boolean"
+     },
+     "current_minutes": {
+      "title": "Current Minutes",
+      "type": "integer"
+     },
+     "ends_at": {
+      "format": "date-time",
+      "title": "Ends At",
+      "type": "string"
+     },
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "required_minutes": {
+      "title": "Required Minutes",
+      "type": "integer"
+     },
+     "rewards": {
+      "items": {
+       "$ref": "#/components/schemas/RewardOut"
+      },
+      "title": "Rewards",
+      "type": "array"
+     },
+     "starts_at": {
+      "format": "date-time",
+      "title": "Starts At",
+      "type": "string"
+     }
+    },
+    "required": [
+     "id",
+     "name",
+     "required_minutes",
+     "current_minutes",
+     "claimed",
+     "starts_at",
+     "ends_at",
+     "rewards"
+    ],
+    "title": "DropOut",
+    "type": "object"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "title": "Detail",
+      "type": "array"
+     }
+    },
+    "title": "HTTPValidationError",
+    "type": "object"
+   },
+   "HistoryOut": {
+    "properties": {
+     "claims": {
+      "items": {
+       "$ref": "#/components/schemas/ClaimOut"
+      },
+      "title": "Claims",
+      "type": "array"
+     },
+     "total_rewards": {
+      "title": "Total Rewards",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "total_rewards",
+     "claims"
+    ],
+    "title": "HistoryOut",
+    "type": "object"
+   },
+   "ListsIn": {
+    "properties": {
+     "favourites": {
+      "items": {
+       "type": "string"
+      },
+      "maxItems": 200,
+      "title": "Favourites",
+      "type": "array"
+     },
+     "never": {
+      "items": {
+       "type": "string"
+      },
+      "maxItems": 200,
+      "title": "Never",
+      "type": "array"
+     },
+     "priority": {
+      "items": {
+       "type": "string"
+      },
+      "maxItems": 200,
+      "title": "Priority",
+      "type": "array"
+     }
+    },
+    "title": "ListsIn",
+    "type": "object"
+   },
+   "ListsOut": {
+    "properties": {
+     "favourites": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Favourites",
+      "type": "array"
+     },
+     "never": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Never",
+      "type": "array"
+     },
+     "priority": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Priority",
+      "type": "array"
+     }
+    },
+    "required": [
+     "priority",
+     "never",
+     "favourites"
+    ],
+    "title": "ListsOut",
+    "type": "object"
+   },
+   "MeOut": {
+    "properties": {
+     "authenticated": {
+      "title": "Authenticated",
+      "type": "boolean"
+     },
+     "setup_required": {
+      "title": "Setup Required",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "authenticated",
+     "setup_required"
+    ],
+    "title": "MeOut",
+    "type": "object"
+   },
+   "MineNowIn": {
+    "properties": {
+     "campaign_id": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Campaign Id",
+      "type": "string"
+     }
+    },
+    "required": [
+     "campaign_id"
+    ],
+    "title": "MineNowIn",
+    "type": "object"
+   },
+   "PasswordIn": {
+    "properties": {
+     "password": {
+      "maxLength": 200,
+      "title": "Password",
+      "type": "string"
+     }
+    },
+    "required": [
+     "password"
+    ],
+    "title": "PasswordIn",
+    "type": "object"
+   },
+   "PauseIn": {
+    "properties": {
+     "minutes": {
+      "anyOf": [
+       {
+        "maximum": 1440.0,
+        "minimum": 1.0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Minutes"
+     }
+    },
+    "title": "PauseIn",
+    "type": "object"
+   },
+   "RewardOut": {
+    "properties": {
+     "image_url": {
+      "title": "Image Url",
+      "type": "string"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "image_url"
+    ],
+    "title": "RewardOut",
+    "type": "object"
+   },
+   "SettingsIn": {
+    "properties": {
+     "claim_points": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Claim Points"
+     },
+     "mine_badges": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mine Badges"
+     },
+     "notify_claimed": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Claimed"
+     },
+     "notify_needs_you": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Needs You"
+     },
+     "notify_signin": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Signin"
+     },
+     "notify_target": {
+      "anyOf": [
+       {
+        "maxLength": 500,
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Target"
+     }
+    },
+    "title": "SettingsIn",
+    "type": "object"
+   },
+   "SettingsOut": {
+    "properties": {
+     "claim_points": {
+      "title": "Claim Points",
+      "type": "boolean"
+     },
+     "mine_badges": {
+      "title": "Mine Badges",
+      "type": "boolean"
+     },
+     "notify_claimed": {
+      "title": "Notify Claimed",
+      "type": "boolean"
+     },
+     "notify_needs_you": {
+      "title": "Notify Needs You",
+      "type": "boolean"
+     },
+     "notify_signin": {
+      "title": "Notify Signin",
+      "type": "boolean"
+     },
+     "notify_target": {
+      "title": "Notify Target",
+      "type": "string"
+     }
+    },
+    "required": [
+     "mine_badges",
+     "claim_points",
+     "notify_target",
+     "notify_claimed",
+     "notify_needs_you",
+     "notify_signin"
+    ],
+    "title": "SettingsOut",
+    "type": "object"
+   },
+   "SignInStatus": {
+    "properties": {
+     "message": {
+      "default": "",
+      "title": "Message",
+      "type": "string"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "status"
+    ],
+    "title": "SignInStatus",
+    "type": "object"
+   },
+   "StateOut": {
+    "properties": {
+     "current": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/CurrentOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "done": {
+      "items": {
+       "$ref": "#/components/schemas/CampaignOut"
+      },
+      "title": "Done",
+      "type": "array"
+     },
+     "last_refresh": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Refresh"
+     },
+     "login": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Login"
+     },
+     "needs_you": {
+      "items": {
+       "$ref": "#/components/schemas/CampaignOut"
+      },
+      "title": "Needs You",
+      "type": "array"
+     },
+     "paused_until": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Paused Until"
+     },
+     "signed_in": {
+      "title": "Signed In",
+      "type": "boolean"
+     },
+     "state": {
+      "title": "State",
+      "type": "string"
+     },
+     "up_next": {
+      "items": {
+       "$ref": "#/components/schemas/CampaignOut"
+      },
+      "title": "Up Next",
+      "type": "array"
+     }
+    },
+    "required": [
+     "state",
+     "signed_in",
+     "login",
+     "paused_until",
+     "last_refresh",
+     "current",
+     "needs_you",
+     "up_next",
+     "done"
+    ],
+    "title": "StateOut",
+    "type": "object"
+   },
+   "SuggestionsOut": {
+    "properties": {
+     "channels": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Channels",
+      "type": "array"
+     },
+     "games": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Games",
+      "type": "array"
+     }
+    },
+    "required": [
+     "games",
+     "channels"
+    ],
+    "title": "SuggestionsOut",
+    "type": "object"
+   },
+   "ValidationError": {
+    "properties": {
+     "ctx": {
+      "title": "Context",
+      "type": "object"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "title": "Location",
+      "type": "array"
+     },
+     "msg": {
+      "title": "Message",
+      "type": "string"
+     },
+     "type": {
+      "title": "Error Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError",
+    "type": "object"
+   }
+  }
+ },
+ "info": {
+  "title": "Drops Miner",
+  "version": "0.2.0"
+ },
+ "openapi": "3.1.0",
+ "paths": {
+  "/api/channel": {
+   "post": {
+    "operationId": "channel_api_channel_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ChannelIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Channel"
+   }
+  },
+  "/api/events": {
+   "get": {
+    "operationId": "events_api_events_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Events"
+   }
+  },
+  "/api/health": {
+   "get": {
+    "operationId": "health_api_health_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response Health Api Health Get",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Health"
+   }
+  },
+  "/api/history": {
+   "get": {
+    "operationId": "get_history_api_history_get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "days",
+      "required": false,
+      "schema": {
+       "default": 30,
+       "maximum": 365,
+       "minimum": 1,
+       "title": "Days",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HistoryOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get History"
+   }
+  },
+  "/api/lists": {
+   "get": {
+    "operationId": "get_lists_api_lists_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ListsOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Lists"
+   },
+   "put": {
+    "operationId": "put_lists_api_lists_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ListsIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ListsOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Put Lists"
+   }
+  },
+  "/api/login": {
+   "post": {
+    "operationId": "login_api_login_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PasswordIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Login"
+   }
+  },
+  "/api/logout": {
+   "post": {
+    "operationId": "logout_api_logout_post",
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Logout"
+   }
+  },
+  "/api/me": {
+   "get": {
+    "operationId": "me_api_me_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MeOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Me"
+   }
+  },
+  "/api/mine-now": {
+   "post": {
+    "operationId": "mine_now_api_mine_now_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MineNowIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Mine Now"
+   }
+  },
+  "/api/pause": {
+   "post": {
+    "operationId": "pause_api_pause_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PauseIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Pause"
+   }
+  },
+  "/api/resume": {
+   "post": {
+    "operationId": "resume_api_resume_post",
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Resume"
+   }
+  },
+  "/api/settings": {
+   "get": {
+    "operationId": "get_settings_api_settings_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SettingsOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Settings"
+   },
+   "put": {
+    "operationId": "put_settings_api_settings_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SettingsIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SettingsOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Put Settings"
+   }
+  },
+  "/api/setup": {
+   "post": {
+    "operationId": "setup_api_setup_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PasswordIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Setup"
+   }
+  },
+  "/api/state": {
+   "get": {
+    "operationId": "get_state_api_state_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/StateOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get State"
+   }
+  },
+  "/api/suggestions": {
+   "get": {
+    "operationId": "get_suggestions_api_suggestions_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SuggestionsOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Suggestions"
+   }
+  },
+  "/api/twitch/signin": {
+   "delete": {
+    "operationId": "signin_cancel_api_twitch_signin_delete",
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Signin Cancel"
+   },
+   "get": {
+    "operationId": "signin_status_api_twitch_signin_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SignInStatus"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Signin Status"
+   },
+   "post": {
+    "operationId": "signin_start_api_twitch_signin_post",
+    "responses": {
+     "202": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Signin Start"
+   }
+  },
+  "/api/twitch/signout": {
+   "post": {
+    "operationId": "signout_api_twitch_signout_post",
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Signout"
+   }
+  }
+ }
+}
