@@ -1,0 +1,12 @@
+Drops Miner ports Twitch protocol logic (client identifiers, GraphQL operation
+names and hashes, the minute-watched heartbeat, PubSub topics, and the browser
+sign-in delegation) from the following MIT-licensed projects:
+
+  TwitchDropsMiner — Copyright (c) 2024 DevilXD
+  https://github.com/DevilXD/TwitchDropsMiner
+
+  TwitchDropsMiner (webui fork) — fireph
+  https://github.com/fireph/TwitchDropsMiner (commit 10706072459ce1125b6747e685bf5c5b3d1a69c6)
+
+The original sources are kept unmodified under reference/ with their LICENSE
+files. They are read for porting only and are not imported at runtime.
