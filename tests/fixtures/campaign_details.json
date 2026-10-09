@@ -1,0 +1,470 @@
+[
+ {
+  "data": {
+   "user": {
+    "__typename": "User",
+    "dropCampaign": {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.plantsonfire.com/twitch-drops",
+     "allow": {
+      "__typename": "DropCampaignACL",
+      "channels": null,
+      "isEnabled": false
+     },
+     "description": "Watch livestreams & earn rewards",
+     "detailsURL": "https://www.plantsonfire.com/twitch-drops",
+     "endAt": "2026-10-09T07:59:59.999Z",
+     "eventBasedDrops": [],
+     "game": {
+      "__typename": "Game",
+      "displayName": "Plants on Fire",
+      "id": "2146281325",
+      "slug": "plants-on-fire"
+     },
+     "id": "5ea11d5c-b1aa-4e4a-b1b0-976a018b84b1",
+     "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/CAMPAIGN/9655f564-5f43-47bb-9ac6-cc1ab9f3d330.png",
+     "name": "Plants on Fire",
+     "owner": {
+      "__typename": "Organization",
+      "id": "c56fa87c-f4e9-44d4-98ed-dad7951a657f",
+      "name": "Plants on Fire"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-29T08:00:00Z",
+     "status": "ACTIVE",
+     "timeBasedDrops": [
+      {
+       "__typename": "TimeBasedDrop",
+       "benefitEdges": [
+        {
+         "__typename": "DropBenefitEdge",
+         "benefit": {
+          "__typename": "DropBenefit",
+          "createdAt": "2026-09-21T08:28:42.374Z",
+          "distributionType": "DIRECT_ENTITLEMENT",
+          "entitlementLimit": 1,
+          "game": {
+           "__typename": "Game",
+           "id": "2146281325",
+           "name": "Plants on Fire"
+          },
+          "id": "c56fa87c-f4e9-44d4-98ed-dad7951a657f_CUSTOM_ID_60min.1.1.800",
+          "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/25580a1a-2678-4d0f-813e-05f1b7c5c629.png",
+          "isIosAvailable": false,
+          "name": "800 Gold",
+          "ownerOrganization": {
+           "__typename": "Organization",
+           "id": "c56fa87c-f4e9-44d4-98ed-dad7951a657f",
+           "name": "Plants on Fire"
+          }
+         },
+         "entitlementLimit": 1
+        }
+       ],
+       "endAt": "2026-10-09T07:59:59.999Z",
+       "id": "465ccb7c-b597-11f1-ae3b-0a58a9feac02",
+       "name": "800 Gold",
+       "preconditionDrops": null,
+       "requiredMinutesWatched": 60,
+       "requiredSubs": 0,
+       "startAt": "2026-09-29T08:00:00Z"
+      },
+      {
+       "__typename": "TimeBasedDrop",
+       "benefitEdges": [
+        {
+         "__typename": "DropBenefitEdge",
+         "benefit": {
+          "__typename": "DropBenefit",
+          "createdAt": "2026-07-28T05:25:32.316Z",
+          "distributionType": "DIRECT_ENTITLEMENT",
+          "entitlementLimit": 1,
+          "game": {
+           "__typename": "Game",
+           "id": "2146281325",
+           "name": "Plants on Fire"
+          },
+          "id": "c56fa87c-f4e9-44d4-98ed-dad7951a657f_CUSTOM_ID_120min.5.11.10",
+          "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/5a1b5a73-727c-4c58-93b0-153dc5af6d23.png",
+          "isIosAvailable": false,
+          "name": "10 Recruit Tokens",
+          "ownerOrganization": {
+           "__typename": "Organization",
+           "id": "c56fa87c-f4e9-44d4-98ed-dad7951a657f",
+           "name": "Plants on Fire"
+          }
+         },
+         "entitlementLimit": 1
+        }
+       ],
+       "endAt": "2026-10-09T07:59:59.999Z",
+       "id": "4d281391-b597-11f1-ae3b-0a58a9feac02",
+       "name": "10 Recruit Tokens",
+       "preconditionDrops": null,
+       "requiredMinutesWatched": 120,
+       "requiredSubs": 0,
+       "startAt": "2026-09-29T08:00:00Z"
+      },
+      {
+       "__typename": "TimeBasedDrop",
+       "benefitEdges": [
+        {
+         "__typename": "DropBenefitEdge",
+         "benefit": {
+          "__typename": "DropBenefit",
+          "createdAt": "2026-09-21T08:29:28.226Z",
+          "distributionType": "DIRECT_ENTITLEMENT",
+          "entitlementLimit": 1,
+          "game": {
+           "__typename": "Game",
+           "id": "2146281325",
+           "name": "Plants on Fire"
+          },
+          "id": "c56fa87c-f4e9-44d4-98ed-dad7951a657f_CUSTOM_ID_240min.3.11.1",
+          "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/c7107fc9-f7a7-46b4-b0ed-c28270eb28c2.png",
+          "isIosAvailable": false,
+          "name": "Legendary Dewdrop",
+          "ownerOrganization": {
+           "__typename": "Organization",
+           "id": "c56fa87c-f4e9-44d4-98ed-dad7951a657f",
+           "name": "Plants on Fire"
+          }
+         },
+         "entitlementLimit": 1
+        }
+       ],
+       "endAt": "2026-10-09T07:59:59.999Z",
+       "id": "54578505-b597-11f1-ba7e-0a58a9feac02",
+       "name": "Legendary Dewdrop",
+       "preconditionDrops": null,
+       "requiredMinutesWatched": 240,
+       "requiredSubs": 0,
+       "startAt": "2026-09-29T08:00:00Z"
+      },
+      {
+       "__typename": "TimeBasedDrop",
+       "benefitEdges": [
+        {
+         "__typename": "DropBenefitEdge",
+         "benefit": {
+          "__typename": "DropBenefit",
+          "createdAt": "2026-07-29T07:45:24.058Z",
+          "distributionType": "DIRECT_ENTITLEMENT",
+          "entitlementLimit": 1,
+          "game": {
+           "__typename": "Game",
+           "id": "2146281325",
+           "name": "Plants on Fire"
+          },
+          "id": "c56fa87c-f4e9-44d4-98ed-dad7951a657f_CUSTOM_ID_360min.3.15.1",
+          "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/dec396bc-aaf8-467a-9ba4-771366722275.png",
+          "isIosAvailable": false,
+          "name": "Legendary Harvest Pot",
+          "ownerOrganization": {
+           "__typename": "Organization",
+           "id": "c56fa87c-f4e9-44d4-98ed-dad7951a657f",
+           "name": "Plants on Fire"
+          }
+         },
+         "entitlementLimit": 1
+        }
+       ],
+       "endAt": "2026-10-09T07:59:59.999Z",
+       "id": "59537135-b597-11f1-ae94-0a58a9feac02",
+       "name": "Legendary Harvest Pot",
+       "preconditionDrops": null,
+       "requiredMinutesWatched": 360,
+       "requiredSubs": 0,
+       "startAt": "2026-09-29T08:00:00Z"
+      }
+     ]
+    },
+    "id": "<USER_ID>"
+   }
+  },
+  "extensions": {
+   "durationMilliseconds": 40,
+   "operationName": "DropCampaignDetails",
+   "requestID": "01M4FH8JDFDWZDC534Q63C2743"
+  }
+ },
+ {
+  "data": {
+   "user": {
+    "__typename": "User",
+    "dropCampaign": {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.marvelrivals.com/twitchdrops/",
+     "allow": {
+      "__typename": "DropCampaignACL",
+      "channels": null,
+      "isEnabled": false
+     },
+     "description": "Tune into your favorite streamers and gain exclusive twitch drops",
+     "detailsURL": "https://www.marvelrivals.com/twitchdrops/",
+     "endAt": "2026-10-09T08:59:59.999Z",
+     "eventBasedDrops": [],
+     "game": {
+      "__typename": "Game",
+      "displayName": "Marvel Rivals",
+      "id": "1264310518",
+      "slug": "marvel-rivals"
+     },
+     "id": "87301354-542a-4bd8-b44e-5b21cc2fe2dd",
+     "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/CAMPAIGN/b66b716b-e7fb-4578-8f13-56e6ddbc74c4.png",
+     "name": "Season 10 Twitch Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ebd81c34-c9e2-49b6-978b-b5cb287e2c30",
+      "name": "Marvel Rivals"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-11T12:00:00Z",
+     "status": "ACTIVE",
+     "timeBasedDrops": [
+      {
+       "__typename": "TimeBasedDrop",
+       "benefitEdges": [
+        {
+         "__typename": "DropBenefitEdge",
+         "benefit": {
+          "__typename": "DropBenefit",
+          "createdAt": "2026-09-07T08:13:10.435Z",
+          "distributionType": "DIRECT_ENTITLEMENT",
+          "entitlementLimit": 1,
+          "game": {
+           "__typename": "Game",
+           "id": "1264310518",
+           "name": "Marvel Rivals"
+          },
+          "id": "f6e5a336-aa93-11f1-8731-0a58a9feac02",
+          "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/e09bb813-2676-4cb0-aacf-ff8d47ec1f5d.png",
+          "isIosAvailable": false,
+          "name": "Squirrel Girl Spray",
+          "ownerOrganization": {
+           "__typename": "Organization",
+           "id": "ebd81c34-c9e2-49b6-978b-b5cb287e2c30",
+           "name": "Marvel Rivals"
+          }
+         },
+         "entitlementLimit": 1
+        }
+       ],
+       "endAt": "2026-10-09T08:59:59.999Z",
+       "id": "811cc113-aa94-11f1-ab0f-0a58a9feac02",
+       "name": "Squirrel Girl\u300cWill of Galacta\u300dSpray",
+       "preconditionDrops": null,
+       "requiredMinutesWatched": 30,
+       "requiredSubs": 0,
+       "startAt": "2026-09-11T12:00:00Z"
+      },
+      {
+       "__typename": "TimeBasedDrop",
+       "benefitEdges": [
+        {
+         "__typename": "DropBenefitEdge",
+         "benefit": {
+          "__typename": "DropBenefit",
+          "createdAt": "2026-09-07T08:13:51.56Z",
+          "distributionType": "DIRECT_ENTITLEMENT",
+          "entitlementLimit": 1,
+          "game": {
+           "__typename": "Game",
+           "id": "1264310518",
+           "name": "Marvel Rivals"
+          },
+          "id": "0f68da56-aa94-11f1-8731-0a58a9feac02",
+          "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/8416c391-1b73-4d69-9990-04fb1957350a.png",
+          "isIosAvailable": false,
+          "name": "Squirrel Girl Nameplate",
+          "ownerOrganization": {
+           "__typename": "Organization",
+           "id": "ebd81c34-c9e2-49b6-978b-b5cb287e2c30",
+           "name": "Marvel Rivals"
+          }
+         },
+         "entitlementLimit": 1
+        }
+       ],
+       "endAt": "2026-10-09T08:59:59.999Z",
+       "id": "85dc9cbd-aa94-11f1-b830-0a58a9feac02",
+       "name": "Squirrel Girl\u300cWill of Galacta\u300dNameplate",
+       "preconditionDrops": null,
+       "requiredMinutesWatched": 60,
+       "requiredSubs": 0,
+       "startAt": "2026-09-11T12:00:00Z"
+      },
+      {
+       "__typename": "TimeBasedDrop",
+       "benefitEdges": [
+        {
+         "__typename": "DropBenefitEdge",
+         "benefit": {
+          "__typename": "DropBenefit",
+          "createdAt": "2026-09-07T08:14:10.092Z",
+          "distributionType": "DIRECT_ENTITLEMENT",
+          "entitlementLimit": 1,
+          "game": {
+           "__typename": "Game",
+           "id": "1264310518",
+           "name": "Marvel Rivals"
+          },
+          "id": "1a749724-aa94-11f1-a44c-0a58a9feac02",
+          "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/6319cd5a-978b-422d-8e92-7851b8b2f3aa.png",
+          "isIosAvailable": false,
+          "name": "Squirrel Girl Emote",
+          "ownerOrganization": {
+           "__typename": "Organization",
+           "id": "ebd81c34-c9e2-49b6-978b-b5cb287e2c30",
+           "name": "Marvel Rivals"
+          }
+         },
+         "entitlementLimit": 1
+        }
+       ],
+       "endAt": "2026-10-09T08:59:59.999Z",
+       "id": "8959d639-aa94-11f1-a7d6-0a58a9feac02",
+       "name": "Squirrel Girl\u300cSkipping Squirrel\u300dEmotes",
+       "preconditionDrops": null,
+       "requiredMinutesWatched": 120,
+       "requiredSubs": 0,
+       "startAt": "2026-09-11T12:00:00Z"
+      },
+      {
+       "__typename": "TimeBasedDrop",
+       "benefitEdges": [
+        {
+         "__typename": "DropBenefitEdge",
+         "benefit": {
+          "__typename": "DropBenefit",
+          "createdAt": "2026-09-07T08:14:30.928Z",
+          "distributionType": "DIRECT_ENTITLEMENT",
+          "entitlementLimit": 1,
+          "game": {
+           "__typename": "Game",
+           "id": "1264310518",
+           "name": "Marvel Rivals"
+          },
+          "id": "26dff35e-aa94-11f1-be00-0a58a9feac02",
+          "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/0362e8b0-b81f-42f1-b536-4b692c246d66.png",
+          "isIosAvailable": false,
+          "name": "Squirrel Girl Costume",
+          "ownerOrganization": {
+           "__typename": "Organization",
+           "id": "ebd81c34-c9e2-49b6-978b-b5cb287e2c30",
+           "name": "Marvel Rivals"
+          }
+         },
+         "entitlementLimit": 1
+        }
+       ],
+       "endAt": "2026-10-09T08:59:59.999Z",
+       "id": "8d3118b4-aa94-11f1-be00-0a58a9feac02",
+       "name": "Squirrel Girl\u300cWill of Galacta\u300dCostume",
+       "preconditionDrops": null,
+       "requiredMinutesWatched": 240,
+       "requiredSubs": 0,
+       "startAt": "2026-09-11T12:00:00Z"
+      }
+     ]
+    },
+    "id": "<USER_ID>"
+   }
+  },
+  "extensions": {
+   "durationMilliseconds": 40,
+   "operationName": "DropCampaignDetails",
+   "requestID": "01M4FH8JDFDWZDC534Q63C2743"
+  }
+ },
+ {
+  "data": {
+   "user": {
+    "__typename": "User",
+    "dropCampaign": {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://albiononline.com/twitch",
+     "allow": {
+      "__typename": "DropCampaignACL",
+      "channels": null,
+      "isEnabled": false
+     },
+     "description": "Earn exclusive rewards by watching Albion Online livestreams!",
+     "detailsURL": "https://forum.albiononline.com/index.php/Thread/214756-New-Twitch-Drops-Launching-Monday-July-28-2025/",
+     "endAt": "2026-10-09T09:29:59.999Z",
+     "eventBasedDrops": [],
+     "game": {
+      "__typename": "Game",
+      "displayName": "Albion Online",
+      "id": "417528",
+      "slug": "albion-online"
+     },
+     "id": "131aee92-5d5a-45ae-91b7-1bded6cb807a",
+     "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/CAMPAIGN/effa1c5d-763d-48bd-aa57-8cc91018869b.png",
+     "name": "Dragonfire 6 - #4/7",
+     "owner": {
+      "__typename": "Organization",
+      "id": "39dcfadd-48e4-4362-8c22-974319aff88e",
+      "name": "Sandbox Interactive"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T10:00:00Z",
+     "status": "ACTIVE",
+     "timeBasedDrops": [
+      {
+       "__typename": "TimeBasedDrop",
+       "benefitEdges": [
+        {
+         "__typename": "DropBenefitEdge",
+         "benefit": {
+          "__typename": "DropBenefit",
+          "createdAt": "2026-08-17T11:04:14.962Z",
+          "distributionType": "DIRECT_ENTITLEMENT",
+          "entitlementLimit": 1,
+          "game": {
+           "__typename": "Game",
+           "id": "417528",
+           "name": "Albion Online"
+          },
+          "id": "39dcfadd-48e4-4362-8c22-974319aff88e_CUSTOM_ID_dragonfire_chest-3474819f-cea2-4320-bbc2-01d78754d811",
+          "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/528cc0ce-24c3-436f-8377-c0bf317bb9bf.png",
+          "isIosAvailable": true,
+          "name": "Dragonfire Chest",
+          "ownerOrganization": {
+           "__typename": "Organization",
+           "id": "39dcfadd-48e4-4362-8c22-974319aff88e",
+           "name": "Sandbox Interactive"
+          }
+         },
+         "entitlementLimit": 1
+        }
+       ],
+       "endAt": "2026-10-09T09:29:59.999Z",
+       "id": "30027a38-bdba-11f1-ac4a-0a58a9feac02",
+       "name": "Dragonfire Chest",
+       "preconditionDrops": null,
+       "requiredMinutesWatched": 180,
+       "requiredSubs": 0,
+       "startAt": "2026-10-08T10:00:00Z"
+      }
+     ]
+    },
+    "id": "<USER_ID>"
+   }
+  },
+  "extensions": {
+   "durationMilliseconds": 40,
+   "operationName": "DropCampaignDetails",
+   "requestID": "01M4FH8JDFDWZDC534Q63C2743"
+  }
+ }
+]

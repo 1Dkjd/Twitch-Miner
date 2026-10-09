@@ -1,0 +1,3441 @@
+{
+ "data": {
+  "currentUser": {
+   "__typename": "User",
+   "dropCampaigns": [
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.plantsonfire.com/twitch-drops",
+     "detailsURL": "https://www.plantsonfire.com/twitch-drops",
+     "endAt": "2026-10-09T07:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2146281325_IGDB-120x160.jpg",
+      "displayName": "Plants on Fire",
+      "id": "2146281325"
+     },
+     "id": "5ea11d5c-b1aa-4e4a-b1b0-976a018b84b1",
+     "name": "Plants on Fire",
+     "owner": {
+      "__typename": "Organization",
+      "id": "c56fa87c-f4e9-44d4-98ed-dad7951a657f",
+      "name": "Plants on Fire"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-29T08:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.marvelrivals.com/twitchdrops/",
+     "detailsURL": "https://www.marvelrivals.com/twitchdrops/",
+     "endAt": "2026-10-09T08:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1264310518_IGDB-120x160.jpg",
+      "displayName": "Marvel Rivals",
+      "id": "1264310518"
+     },
+     "id": "87301354-542a-4bd8-b44e-5b21cc2fe2dd",
+     "name": "Season 10 Twitch Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ebd81c34-c9e2-49b6-978b-b5cb287e2c30",
+      "name": "Marvel Rivals"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-11T12:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://albiononline.com/twitch",
+     "detailsURL": "https://forum.albiononline.com/index.php/Thread/214756-New-Twitch-Drops-Launching-Monday-July-28-2025/",
+     "endAt": "2026-10-09T09:29:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/417528_IGDB-120x160.jpg",
+      "displayName": "Albion Online",
+      "id": "417528"
+     },
+     "id": "131aee92-5d5a-45ae-91b7-1bded6cb807a",
+     "name": "Dragonfire 6 - #4/7",
+     "owner": {
+      "__typename": "Organization",
+      "id": "39dcfadd-48e4-4362-8c22-974319aff88e",
+      "name": "Sandbox Interactive"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T10:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://worldoftanks.eu//news/guides-reviews/twitch-drops-guide/",
+     "detailsURL": "https://worldoftanks.eu//news/guides-reviews/twitch-drops-guide/",
+     "endAt": "2026-10-09T09:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/27546_IGDB-120x160.jpg",
+      "displayName": "World of Tanks",
+      "id": "27546"
+     },
+     "id": "3be0845f-ee00-4a0d-bc88-a57c555cb345",
+     "name": "3 MoE Challenge",
+     "owner": {
+      "__typename": "Organization",
+      "id": "6948a129-2c6d-4d88-9444-6b96918a19f8",
+      "name": "Wargaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T10:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.eveonline.com/twitch",
+     "detailsURL": "https://www.eveonline.com/twitch",
+     "endAt": "2026-10-09T10:57:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/13263-120x160.jpg",
+      "displayName": "EVE Online",
+      "id": "13263"
+     },
+     "id": "f571bf80-91de-4af1-8762-a73eab76870b",
+     "name": "Crimson Harvest Drop 1",
+     "owner": {
+      "__typename": "Organization",
+      "id": "5f41544e-1cde-4002-97dc-497d59f71dda",
+      "name": "CCP Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T11:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.pearlabyss.com/Account/SNSLink",
+     "detailsURL": "https://www.naeu.playblackdesert.com/News/Detail?groupContentNo=5878",
+     "endAt": "2026-10-09T11:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/386821_IGDB-120x160.jpg",
+      "displayName": "Black Desert",
+      "id": "386821"
+     },
+     "id": "d3db47b8-d230-4850-b7df-ef1f856ac706",
+     "name": "2026 BDO Drops (Oct 8)",
+     "owner": {
+      "__typename": "Organization",
+      "id": "3346bf0d-5179-4a89-b760-13e1581dfd12",
+      "name": "Pearl Abyss"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T12:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://pt27.ootpdevelopments.com/twitch",
+     "detailsURL": "https://forums.ootpdevelopments.com/showpost.php?p=5246508&postcount=1",
+     "endAt": "2026-10-09T12:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2099590881_IGDB-120x160.jpg",
+      "displayName": "Out of the Park Baseball 27",
+      "id": "2099590881"
+     },
+     "id": "80b8b421-c6fc-452b-906c-04da743b4309",
+     "name": "Affiliate 10/8/26",
+     "owner": {
+      "__typename": "Organization",
+      "id": "a1a51d5a-233d-41c3-9acd-a03bdab35159",
+      "name": "Out of the Park Developments"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T13:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops.soulbound.tools/",
+     "detailsURL": "https://drops.soulbound.tools/",
+     "endAt": "2026-10-09T14:04:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/811441717_IGDB-120x160.jpg",
+      "displayName": "Soulbound: Online",
+      "id": "811441717"
+     },
+     "id": "ff2f69b4-207e-468c-b719-b71a7c4d920a",
+     "name": "Autumn Steam Sale Drop",
+     "owner": {
+      "__typename": "Organization",
+      "id": "e53dc0f2-42c3-4ffb-9377-4e61666fdc1d",
+      "name": "Webb Technology LTD"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-02T14:05:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://ravenquest.io/myaccount/twitch",
+     "detailsURL": "https://ravenquest.io/myaccount/twitch",
+     "endAt": "2026-10-09T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/608663369_IGDB-120x160.jpg",
+      "displayName": "RavenQuest",
+      "id": "608663369"
+     },
+     "id": "0be8815e-ba78-4fef-be22-61e49a81d8fc",
+     "name": "October 01",
+     "owner": {
+      "__typename": "Organization",
+      "id": "44e24cd6-2269-49b0-8f2a-dbe2e956cfbb",
+      "name": "Tavernlight Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-02T15:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://lesta.ru/personal/?bind-external=twitch",
+     "detailsURL": "https://krbli.ru/4dDrG8N",
+     "endAt": "2026-10-09T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2133072147_IGDB-120x160.jpg",
+      "displayName": "Mir Korabley",
+      "id": "2133072147"
+     },
+     "id": "4966552c-1aa1-451e-a456-256115c5ebd8",
+     "name": "\u041e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u0435 26.10: \u0427\u0430\u0441\u0442\u044c 1",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ef3a94ee-c2ef-487d-bb43-991701f78b25",
+      "name": "Lesta Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-02T15:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://lesta.ru/personal/?bind-external=twitch",
+     "detailsURL": "https://krbli.ru/3RW8D27",
+     "endAt": "2026-10-09T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2133072147_IGDB-120x160.jpg",
+      "displayName": "Mir Korabley",
+      "id": "2133072147"
+     },
+     "id": "ac400121-1a39-4797-a486-0c14a8423df7",
+     "name": "Lestakorabli - 26.10 #1",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ef3a94ee-c2ef-487d-bb43-991701f78b25",
+      "name": "Lesta Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-02T15:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://gss.gaijin.net/",
+     "detailsURL": "https://activematter.game/ru/news/338",
+     "endAt": "2026-10-09T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1413930024_IGDB-120x160.jpg",
+      "displayName": "Active Matter",
+      "id": "1413930024"
+     },
+     "id": "32e0221d-1e83-4e38-8cd8-bdb268b457b1",
+     "name": "Release Drops: Week III",
+     "owner": {
+      "__typename": "Organization",
+      "id": "7522fdb9-5b5e-447e-a54c-af67adb0a660",
+      "name": "Gaijin Network"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-02T15:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://modernarmor.worldoftanks.com/accounts/management/",
+     "detailsURL": "https://modernarmor.worldoftanks.com/en/cms/notes/twitch-drops/",
+     "endAt": "2026-10-09T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/499551-120x160.jpg",
+      "displayName": "World of Tanks Console",
+      "id": "499551"
+     },
+     "id": "b1857e9e-f290-44bf-81ca-bb7e8e9e3058",
+     "name": "Steel Asylum #1",
+     "owner": {
+      "__typename": "Organization",
+      "id": "6948a129-2c6d-4d88-9444-6b96918a19f8",
+      "name": "Wargaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T15:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://ravenquest.io/myaccount/twitch",
+     "detailsURL": "https://ravenquest.io/myaccount/twitch",
+     "endAt": "2026-10-09T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/608663369_IGDB-120x160.jpg",
+      "displayName": "RavenQuest",
+      "id": "608663369"
+     },
+     "id": "c79b33b8-e46e-4ce9-a5d2-049131899143",
+     "name": "C\u00d3PIA DE October 01",
+     "owner": {
+      "__typename": "Organization",
+      "id": "44e24cd6-2269-49b0-8f2a-dbe2e956cfbb",
+      "name": "Tavernlight Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-02T15:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://kid.kabam.com/v1/kid/account/login",
+     "detailsURL": "https://kid.kabam.com/v1/kid/account/login",
+     "endAt": "2026-10-09T16:44:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/461221_IGDB-120x160.jpg",
+      "displayName": "MARVEL Contest of Champions",
+      "id": "461221"
+     },
+     "id": "c90fc89a-4c06-4776-863d-3ee2c978eac7",
+     "name": "October Week 1 ",
+     "owner": {
+      "__typename": "Organization",
+      "id": "787ffa29-14d6-4990-bd94-14f46c513068",
+      "name": "Kabam"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-02T18:30:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops-register.ubi.com/",
+     "detailsURL": "https://www.ubisoft.com/help/article/000065532",
+     "endAt": "2026-10-09T16:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/497431_IGDB-120x160.jpg",
+      "displayName": "Skull and Bones",
+      "id": "497431"
+     },
+     "id": "1dc86c4d-b6bc-4f5f-bccd-942dcda343cf",
+     "name": "SAB - Supereloy77",
+     "owner": {
+      "__typename": "Organization",
+      "id": "59d4f6c2-36bc-4c3f-83c8-f8d9936dc75b",
+      "name": "Ubisoft"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-25T14:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+     "detailsURL": "https://help.twitch.tv/s/article/mission-based-drops?language=en_US",
+     "endAt": "2026-10-09T16:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/670138298_IGDB-120x160.jpg",
+      "displayName": "Madden NFL 27",
+      "id": "670138298"
+     },
+     "id": "24895bd6-15a8-42e5-a872-081e59b6b942",
+     "name": "Madden Live",
+     "owner": {
+      "__typename": "Organization",
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1",
+      "name": "Electronic Arts"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": true
+     },
+     "startAt": "2026-10-08T17:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://mobile.riseonlineworld.com/usercp?do=twitch",
+     "detailsURL": "https://mobile.riseonlineworld.com/usercp?do=twitch",
+     "endAt": "2026-10-09T17:56:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/516588_IGDB-120x160.jpg",
+      "displayName": "Rise Online",
+      "id": "516588"
+     },
+     "id": "88b6f2e8-6970-4638-b7e9-d8fe6dca6cd5",
+     "name": "Mobile Drop 182",
+     "owner": {
+      "__typename": "Organization",
+      "id": "3b99ecc6-a283-449c-9de8-dbf12c0cffdf",
+      "name": "Roko Game Studios"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T17:59:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.riseonlineworld.com/usercp?do=twitch",
+     "detailsURL": "https://www.riseonlineworld.com/usercp?do=twitch",
+     "endAt": "2026-10-09T17:56:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/516588_IGDB-120x160.jpg",
+      "displayName": "Rise Online",
+      "id": "516588"
+     },
+     "id": "bb336df1-5a56-42dd-89c9-a889d5ceea58",
+     "name": "ROW Drop 611",
+     "owner": {
+      "__typename": "Organization",
+      "id": "3b99ecc6-a283-449c-9de8-dbf12c0cffdf",
+      "name": "Roko Game Studios"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T17:59:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.ankama.com/fr/twitch",
+     "detailsURL": "https://account.ankama.com/fr/twitch",
+     "endAt": "2026-10-09T21:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/505045_IGDB-120x160.jpg",
+      "displayName": "DOFUS Touch",
+      "id": "505045"
+     },
+     "id": "ca18dada-86d7-4dd9-8a6e-40f9216a2414",
+     "name": "J25 - 4x Temporix Cps\t",
+     "owner": {
+      "__typename": "Organization",
+      "id": "b49ffdba-da9b-49ba-b5a5-59fcd6f73770",
+      "name": "ANKAMA Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T22:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.quinfall.com/twitch-drops",
+     "detailsURL": "https://www.quinfall.com/twitch-drops",
+     "endAt": "2026-10-09T23:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2128139746_IGDB-120x160.jpg",
+      "displayName": "The Quinfall",
+      "id": "2128139746"
+     },
+     "id": "1b9f7810-66ba-42ef-985f-bb7f683986df",
+     "name": "October Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "82d2c695-36dc-4dd3-a929-3004037ace97",
+      "name": "Vawraek Technology"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-09T00:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops-register.ubi.com/#/en-US",
+     "detailsURL": "https://www.ubisoft.com/en-us/help/connectivity-and-performance/article/information-about-twitch-drops-for-ubisoft-games/000065532#:~:text=You%20can%20earn%20in%2Dgame,stream%20from%20a%20participating%20channel.",
+     "endAt": "2026-10-10T04:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/460630-120x160.jpg",
+      "displayName": "Rainbow Six Siege",
+      "id": "460630"
+     },
+     "id": "84fdd0fb-a22e-41b5-8e31-86431c76b3a7",
+     "name": "R6S S2 2026 15",
+     "owner": {
+      "__typename": "Organization",
+      "id": "59d4f6c2-36bc-4c3f-83c8-f8d9936dc75b",
+      "name": "Ubisoft"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T05:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+     "detailsURL": "https://warforatreia.com/",
+     "endAt": "2026-10-10T06:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/771448419_IGDB-120x160.jpg",
+      "displayName": "AION 2",
+      "id": "771448419"
+     },
+     "id": "991d53f2-eee5-4020-96d9-7f73316fab46",
+     "name": "War for Atreia - Series 2",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4",
+      "name": "NC"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": true
+     },
+     "startAt": "2026-10-07T17:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.battle.net/connections",
+     "detailsURL": "https://esports.overwatch.com/en-us/rewards",
+     "endAt": "2026-10-10T07:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/515025-120x160.jpg",
+      "displayName": "Overwatch",
+      "id": "515025"
+     },
+     "id": "d13db74f-a56d-4985-af69-3bf01adde336",
+     "name": "OWCS Stage 3 Asia Kickoff",
+     "owner": {
+      "__typename": "Organization",
+      "id": "9620a89d-b07c-4160-a851-ae832fa6985e",
+      "name": "Blizzard"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-21T08:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://link.smite2.com/",
+     "detailsURL": "https://www.smite2.com/news/closed-alpha-twitch-drops/",
+     "endAt": "2026-10-10T10:57:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2094865572-120x160.jpg",
+      "displayName": "SMITE 2",
+      "id": "2094865572"
+     },
+     "id": "7be1def9-6d6a-4c61-bb44-80389da41d1e",
+     "name": "Oct Wk 1 - Blue Lotus!",
+     "owner": {
+      "__typename": "Organization",
+      "id": "51a157a0-674a-4863-b120-7bb6ee2466a8",
+      "name": "Hi-Rez Studios"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-03T11:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv",
+     "detailsURL": "https://www.twitch.tv/drops/campaigns",
+     "endAt": "2026-10-10T11:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2113043143_IGDB-120x160.jpg",
+      "displayName": "PAYDAY 3",
+      "id": "2113043143"
+     },
+     "id": "0d0e6d5f-a1b6-4500-a51e-8b3bc2f4f1b3",
+     "name": "PAYDAY 3",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-24T12:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide ",
+     "endAt": "2026-10-11T06:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/494806_IGDB-120x160.jpg",
+      "displayName": "Metaphor: ReFantazio",
+      "id": "494806"
+     },
+     "id": "9bfa228c-d89b-4e0e-8336-c86b9dfb60e6",
+     "name": "Homo Tenta Badge",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-24T16:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide ",
+     "endAt": "2026-10-11T06:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1297497516_IGDB-120x160.jpg",
+      "displayName": "Shin Megami Tensei V: Vengeance",
+      "id": "1297497516"
+     },
+     "id": "8e14a84b-f220-4bf3-8f6f-187bd858c449",
+     "name": "Nahobeeho Badge",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-24T16:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide ",
+     "endAt": "2026-10-11T06:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/32542_IGDB-120x160.jpg",
+      "displayName": "Persona 4 Golden",
+      "id": "32542"
+     },
+     "id": "d2699638-8766-4635-b542-14b2665062f5",
+     "name": "Teddie Badge",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-24T16:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide ",
+     "endAt": "2026-10-11T06:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1089655891_IGDB-120x160.jpg",
+      "displayName": "PERSONA3 RELOAD",
+      "id": "1089655891"
+     },
+     "id": "54efd940-9f52-4938-91cb-6b192ec46ab9",
+     "name": "Koromaru Badge",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-24T16:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide ",
+     "endAt": "2026-10-11T06:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/511864_IGDB-120x160.jpg",
+      "displayName": "Persona 5 Royal",
+      "id": "511864"
+     },
+     "id": "cc3e3fb4-f513-43ad-bd9f-3638464ce841",
+     "name": "Morgana Badge",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-24T16:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.marvelrivals.com/twitchdrops/",
+     "detailsURL": "https://www.marvelrivals.com/twitchdrops/",
+     "endAt": "2026-10-11T15:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1264310518_IGDB-120x160.jpg",
+      "displayName": "Marvel Rivals",
+      "id": "1264310518"
+     },
+     "id": "266bcc38-0922-40cf-885b-79555940199c",
+     "name": "Ignite Stage2 W3",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ebd81c34-c9e2-49b6-978b-b5cb287e2c30",
+      "name": "Marvel Rivals"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-02T08:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.narakathegame.com/news/guide/20230710/35647_1097721.html",
+     "detailsURL": "https://www.narakathegame.com/news/official/20250723/32172_1249209.html",
+     "endAt": "2026-10-11T15:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/515474_IGDB-120x160.jpg",
+      "displayName": "NARAKA: BLADEPOINT",
+      "id": "515474"
+     },
+     "id": "01382127-cc4d-47b4-9e14-7b39a5b8d4ad",
+     "name": "NBPL 10.8-11",
+     "owner": {
+      "__typename": "Organization",
+      "id": "417c83f8-80bc-400e-9cde-0c3289ee0a47",
+      "name": "NetEase"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T08:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.marvelsnap.com/twitchdrops",
+     "detailsURL": "https://www.marvelsnap.com/twitchdrops",
+     "endAt": "2026-10-11T18:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1743359147_IGDB-120x160.jpg",
+      "displayName": "MARVEL SNAP",
+      "id": "1743359147"
+     },
+     "id": "63700f7a-69ef-477a-bc07-62b472f3d150",
+     "name": "Draft and Golden Gauntlet",
+     "owner": {
+      "__typename": "Organization",
+      "id": "1b03f48f-2625-412b-8d14-028282008a11",
+      "name": "Second Dinner"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T19:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://spamgame.com/mon-compte?twitch=link",
+     "detailsURL": "https://spamgame.com/",
+     "endAt": "2026-10-11T19:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1168459646_IGDB-120x160.jpg",
+      "displayName": "SPAM",
+      "id": "1168459646"
+     },
+     "id": "e86f8fd3-fb7f-4fc4-97a7-c23d4fcd8674",
+     "name": "SPAM Launch",
+     "owner": {
+      "__typename": "Organization",
+      "id": "28cf28ca-47bf-45a6-99bb-090e68190425",
+      "name": "Ticroco Entreprise"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T17:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://sfgame.net/",
+     "detailsURL": "https://playa-games.helpshift.com/hc/faq/255-twitch-drops/",
+     "endAt": "2026-10-11T21:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/510389_IGDB-120x160.jpg",
+      "displayName": "Shakes and Fidget",
+      "id": "510389"
+     },
+     "id": "9427db48-891a-456f-a052-f693b8e3db0b",
+     "name": "S&F Drops 1/3",
+     "owner": {
+      "__typename": "Organization",
+      "id": "9eb6bb3a-4ebd-4bf2-8cd2-53576c941286",
+      "name": "Playa-Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T14:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://sfgame.net/",
+     "detailsURL": "https://playa-games.helpshift.com/hc/faq/255-twitch-drops/",
+     "endAt": "2026-10-11T21:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/510389_IGDB-120x160.jpg",
+      "displayName": "Shakes and Fidget",
+      "id": "510389"
+     },
+     "id": "9fd74d51-4779-47e7-9076-ae91c8fb7c96",
+     "name": "S&F Drops 2/3",
+     "owner": {
+      "__typename": "Organization",
+      "id": "9eb6bb3a-4ebd-4bf2-8cd2-53576c941286",
+      "name": "Playa-Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T14:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://mobiledungeon.com/",
+     "detailsURL": "https://playa-games.helpshift.com/hc/faq/463-twitch-drops/",
+     "endAt": "2026-10-11T21:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/383199964_IGDB-120x160.jpg",
+      "displayName": "Mobile Dungeon",
+      "id": "383199964"
+     },
+     "id": "33b64b3d-0949-49d9-869b-8e530ad9d38c",
+     "name": "MD Drops Set 1",
+     "owner": {
+      "__typename": "Organization",
+      "id": "9eb6bb3a-4ebd-4bf2-8cd2-53576c941286",
+      "name": "Playa-Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T00:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://artstorm.com/cabinet/connect-twitch",
+     "detailsURL": "https://artstorm.com/news/weekly-supply-drops-on-twitch",
+     "endAt": "2026-10-11T23:29:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/423797288_IGDB-120x160.jpg",
+      "displayName": "Modern Warships",
+      "id": "423797288"
+     },
+     "id": "cc7e2087-863c-4ad2-97aa-484644c58089",
+     "name": "Weekly Supply Drops #36",
+     "owner": {
+      "__typename": "Organization",
+      "id": "8bdd5247-6bd2-4cb4-8198-ae3b33b4debe",
+      "name": "Artstorm FZE"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T00:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.playdeltaforce.com/act/twitchdrops/index.html",
+     "detailsURL": "https://www.playdeltaforce.com/act/twitchdrops/index.html",
+     "endAt": "2026-10-11T23:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1282866981_IGDB-120x160.jpg",
+      "displayName": "Delta Force",
+      "id": "1282866981"
+     },
+     "id": "b71cc46e-14ff-4e5b-b5ff-c76c299ca7c5",
+     "name": "AM&EMEA Group StageD9-12",
+     "owner": {
+      "__typename": "Organization",
+      "id": "2fdd0d7a-10c5-4527-96d3-218ae7884c11",
+      "name": "Level Infinite"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T00:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://neighborsgame.com/drops",
+     "detailsURL": "https://neighborsgame.com/drops",
+     "endAt": "2026-10-11T23:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/914381364_IGDB-120x160.jpg",
+      "displayName": "Neighbors: Suburban Warfare",
+      "id": "914381364"
+     },
+     "id": "bc52cc79-40e2-4c9f-bcff-79b5ae55bf61",
+     "name": "Neighbors 1.0 Release",
+     "owner": {
+      "__typename": "Organization",
+      "id": "8f59238f-5c80-4caf-8474-4748095dda96",
+      "name": "Invisible Walls"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T13:27:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.wherewindsmeetgame.com/twitchdrops/",
+     "detailsURL": "https://www.wherewindsmeetgame.com/twitchdrops/",
+     "endAt": "2026-10-12T01:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1630982727_IGDB-120x160.jpg",
+      "displayName": "Where Winds Meet",
+      "id": "1630982727"
+     },
+     "id": "2d14347e-18fe-4c94-a5c8-4b24ac5f747c",
+     "name": "Where Winds Meet October",
+     "owner": {
+      "__typename": "Organization",
+      "id": "dd2c35c7-ced7-4fdd-bbd6-e604316f06f9",
+      "name": "Where Winds Meet"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-14T02:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.bhvr.com/twitch/dbd",
+     "detailsURL": "https://account.bhvr.com/twitch/dbd",
+     "endAt": "2026-10-12T03:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/491487-120x160.jpg",
+      "displayName": "Dead by Daylight",
+      "id": "491487"
+     },
+     "id": "c1a3bab3-af60-47fd-a8ae-5ba606edb525",
+     "name": "DbD: October of Horror ",
+     "owner": {
+      "__typename": "Organization",
+      "id": "6da09649-1fda-4446-a061-cacd8e21b886",
+      "name": "Behaviour Interactive Inc."
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T15:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://pt27.ootpdevelopments.com/twitch",
+     "detailsURL": "https://forums.ootpdevelopments.com/showpost.php?p=5246508&postcount=1",
+     "endAt": "2026-10-12T12:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2099590881_IGDB-120x160.jpg",
+      "displayName": "Out of the Park Baseball 27",
+      "id": "2099590881"
+     },
+     "id": "dbfde195-4e55-4534-aba7-26f9bf31fde5",
+     "name": "Laptophound 22",
+     "owner": {
+      "__typename": "Organization",
+      "id": "a1a51d5a-233d-41c3-9acd-a03bdab35159",
+      "name": "Out of the Park Developments"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T13:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://pt27.ootpdevelopments.com/twitch",
+     "detailsURL": "https://forums.ootpdevelopments.com/showpost.php?p=5246508&postcount=1",
+     "endAt": "2026-10-12T12:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2099590881_IGDB-120x160.jpg",
+      "displayName": "Out of the Park Baseball 27",
+      "id": "2099590881"
+     },
+     "id": "5aa12dd6-1818-4024-ba42-346c8d6b2ed4",
+     "name": "Official 22",
+     "owner": {
+      "__typename": "Organization",
+      "id": "a1a51d5a-233d-41c3-9acd-a03bdab35159",
+      "name": "Out of the Park Developments"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T13:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://rushroyale.my.games/en/twitch-drops",
+     "detailsURL": "https://rushroyale.my.games/en/twitch-drops",
+     "endAt": "2026-10-12T13:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/633454324_IGDB-120x160.jpg",
+      "displayName": "Rush Royale",
+      "id": "633454324"
+     },
+     "id": "009fc476-0932-4ff7-9a06-c7848461d71c",
+     "name": "Magic is in the Air! ",
+     "owner": {
+      "__typename": "Organization",
+      "id": "fb676f01-861f-462a-8ce5-4d52d4ee4c29",
+      "name": "MY.GAMES"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T14:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://marvelstrikeforce.com/twitch",
+     "detailsURL": "https://marvelstrikeforce.com/twitch",
+     "endAt": "2026-10-12T20:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/504651_IGDB-120x160.jpg",
+      "displayName": "MARVEL Strike Force",
+      "id": "504651"
+     },
+     "id": "4471f6d2-2d97-4eac-95c5-12c725d1ad15",
+     "name": "MSF | Oct Week 2",
+     "owner": {
+      "__typename": "Organization",
+      "id": "0fe155f9-b10f-47f5-90a8-9f11d1ff427f",
+      "name": "Scopely"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T21:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops-register.ubi.com/#/en-US",
+     "detailsURL": "https://www.ubisoft.com/en-us/help/connectivity-and-performance/article/information-about-twitch-drops-for-ubisoft-games/000065532#:~:text=You%20can%20earn%20in-game,stream%20from%20a%20participating%20channel.",
+     "endAt": "2026-10-12T21:29:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/497431_IGDB-120x160.jpg",
+      "displayName": "Skull and Bones",
+      "id": "497431"
+     },
+     "id": "08012a89-858e-47ca-8dad-5aa11587a233",
+     "name": "Skull and Bones - Y3S2",
+     "owner": {
+      "__typename": "Organization",
+      "id": "59d4f6c2-36bc-4c3f-83c8-f8d9936dc75b",
+      "name": "Ubisoft"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-15T07:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://act.hoyoverse.com/ys/event/e20220511twitchdrops/index.html?mhy_auth_required=true",
+     "detailsURL": "https://act.hoyoverse.com/ys/event/e20220511twitchdrops/index.html?mhy_auth_required=true",
+     "endAt": "2026-10-13T03:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/513181_IGDB-120x160.jpg",
+      "displayName": "Genshin Impact",
+      "id": "513181"
+     },
+     "id": "728141da-5f87-49de-8afd-7fa0be33545f",
+     "name": "V7.1 Genshin Impact Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "4523e84a-450a-4ef5-8c6a-5f78706d1f0d",
+      "name": "Cognosphere"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-23T03:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.arenabreakoutinfinite.com/twitchdrops",
+     "detailsURL": "https://www.arenabreakoutinfinite.com/twitchdrops",
+     "endAt": "2026-10-13T08:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/401587136_IGDB-120x160.jpg",
+      "displayName": "Arena Breakout: Infinite",
+      "id": "401587136"
+     },
+     "id": "c21130db-734b-433a-a9fa-38d8c50194a1",
+     "name": "S7 Support ABI Streamers",
+     "owner": {
+      "__typename": "Organization",
+      "id": "2fdd0d7a-10c5-4527-96d3-218ae7884c11",
+      "name": "Level Infinite"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-16T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.arenabreakoutinfinite.com/twitchdrops",
+     "detailsURL": "https://www.arenabreakoutinfinite.com/twitchdrops",
+     "endAt": "2026-10-13T08:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/401587136_IGDB-120x160.jpg",
+      "displayName": "Arena Breakout: Infinite",
+      "id": "401587136"
+     },
+     "id": "90dbc764-d4ab-4929-8167-abbee3030c70",
+     "name": "S7 Support ABI Streamers",
+     "owner": {
+      "__typename": "Organization",
+      "id": "2fdd0d7a-10c5-4527-96d3-218ae7884c11",
+      "name": "Level Infinite"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-16T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.arenabreakoutinfinite.com/twitchdrops",
+     "detailsURL": "https://www.arenabreakoutinfinite.com/twitchdrops",
+     "endAt": "2026-10-13T08:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/401587136_IGDB-120x160.jpg",
+      "displayName": "Arena Breakout: Infinite",
+      "id": "401587136"
+     },
+     "id": "013dbfe5-025f-4b42-9b46-f7b7cc546f20",
+     "name": "S7 Launch Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "2fdd0d7a-10c5-4527-96d3-218ae7884c11",
+      "name": "Level Infinite"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-16T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.arenabreakoutinfinite.com/twitchdrops",
+     "detailsURL": "https://www.arenabreakoutinfinite.com/twitchdrops",
+     "endAt": "2026-10-13T08:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/401587136_IGDB-120x160.jpg",
+      "displayName": "Arena Breakout: Infinite",
+      "id": "401587136"
+     },
+     "id": "3f5f575f-47d0-4856-88eb-a635b8ec6037",
+     "name": "S7 Support ABI Streamers",
+     "owner": {
+      "__typename": "Organization",
+      "id": "2fdd0d7a-10c5-4527-96d3-218ae7884c11",
+      "name": "Level Infinite"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-16T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.arenabreakoutinfinite.com/twitchdrops",
+     "detailsURL": "https://www.arenabreakoutinfinite.com/twitchdrops",
+     "endAt": "2026-10-13T08:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/401587136_IGDB-120x160.jpg",
+      "displayName": "Arena Breakout: Infinite",
+      "id": "401587136"
+     },
+     "id": "60d49775-74c0-4821-91d0-5fd5e7ac0506",
+     "name": "S7 Support ABI Streamers",
+     "owner": {
+      "__typename": "Organization",
+      "id": "2fdd0d7a-10c5-4527-96d3-218ae7884c11",
+      "name": "Level Infinite"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-16T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops-register.ubi.com/",
+     "detailsURL": "https://www.ubisoft.com/help/article/000065532",
+     "endAt": "2026-10-13T13:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/460630-120x160.jpg",
+      "displayName": "Rainbow Six Siege",
+      "id": "460630"
+     },
+     "id": "114f8b92-b6c3-40d7-bd1e-96fed70d2a9b",
+     "name": "R6S Wasteland circuit",
+     "owner": {
+      "__typename": "Organization",
+      "id": "59d4f6c2-36bc-4c3f-83c8-f8d9936dc75b",
+      "name": "Ubisoft"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-25T12:53:54Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv",
+     "detailsURL": "https://www.twitch.tv/drops/campaigns",
+     "endAt": "2026-10-13T13:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1338428218_IGDB-120x160.jpg",
+      "displayName": "CONTROL Resonant",
+      "id": "1338428218"
+     },
+     "id": "84f27bd4-9c9f-4a03-acc5-096b84081db8",
+     "name": "CONTROL Resonant launch ",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-22T14:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide ",
+     "endAt": "2026-10-13T13:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/460630-120x160.jpg",
+      "displayName": "Rainbow Six Siege",
+      "id": "460630"
+     },
+     "id": "3376e74e-68e8-45b9-a147-ef80b16a6c93",
+     "name": "DRON-E Chat Badge",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-23T14:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops-register.ubi.com/",
+     "detailsURL": "https://www.ubisoft.com/en-us/help/connectivity-and-performance/article/information-about-twitch-drops-for-ubisoft-games/000065532#:~:text=You%20can%20earn%20in%2Dgame,stream%20from%20a%20participating%20channel.",
+     "endAt": "2026-10-13T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/504463_IGDB-120x160.jpg",
+      "displayName": "Tom Clancy's The Division 2",
+      "id": "504463"
+     },
+     "id": "d7d00cda-729b-44d5-b800-2b666a7cef16",
+     "name": "Legacy Twitch Drops Cache",
+     "owner": {
+      "__typename": "Organization",
+      "id": "59d4f6c2-36bc-4c3f-83c8-f8d9936dc75b",
+      "name": "Ubisoft"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T15:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://nte.perfectworld.com/net/260930twitch/index.html",
+     "detailsURL": "https://nte.perfectworld.com/net/260930twitch/index.html",
+     "endAt": "2026-10-13T15:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1901865180_IGDB-120x160.jpg",
+      "displayName": "NTE: Neverness to Everness",
+      "id": "1901865180"
+     },
+     "id": "2014df61-45cc-4519-834d-46774dc1b842",
+     "name": "NTE Twitch Drops Event",
+     "owner": {
+      "__typename": "Organization",
+      "id": "b5d23e72-0bc8-4df6-b16e-3d4ee02c834a",
+      "name": "\u82cf\u5dde\u5e7b\u5854\u7f51\u7edc\u79d1\u6280\u6709\u9650\u516c\u53f8 Hottagames Co.,Ltd"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-30T02:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://accounts.palia.com",
+     "detailsURL": "https://palia.com/news/207-twitch-drops",
+     "endAt": "2026-10-13T17:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/982017546_IGDB-120x160.jpg",
+      "displayName": "Palia",
+      "id": "982017546"
+     },
+     "id": "84d02589-5095-4c35-9f00-41a04c7675c3",
+     "name": "Frights & Delights",
+     "owner": {
+      "__typename": "Organization",
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d",
+      "name": "Singularity 6"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": true
+     },
+     "startAt": "2026-09-29T18:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://accounts.atoma.cloud/twitch-drops",
+     "detailsURL": "https://www.playdarktide.com/news/earn-twitch-drops",
+     "endAt": "2026-10-13T21:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/518873_IGDB-120x160.jpg",
+      "displayName": "Warhammer 40,000: Darktide",
+      "id": "518873"
+     },
+     "id": "42dc35f9-da23-4eaf-8a19-8f1838d58168",
+     "name": "Depths of the Damned Drop",
+     "owner": {
+      "__typename": "Organization",
+      "id": "8b65e332-9430-4b49-a064-b7c4913c82e4",
+      "name": "Fatshark"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-29T12:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.aniimo.com/activity/twitch-drops",
+     "detailsURL": "https://www.aniimo.com/activity/twitch-drops",
+     "endAt": "2026-10-14T01:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1267582829_IGDB-120x160.jpg",
+      "displayName": "Aniimo",
+      "id": "1267582829"
+     },
+     "id": "75c84956-e49d-417f-a8c4-aae97d724d7a",
+     "name": "Aniimo Global Launch",
+     "owner": {
+      "__typename": "Organization",
+      "id": "e2380974-a40c-4797-bbbb-ed9e2403fc83",
+      "name": "Pawprint Studio"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-16T02:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops-register.ubi.com/",
+     "detailsURL": "https://www.ubisoft.com/en-us/help/connectivity-and-performance/article/information-about-twitch-drops-for-ubisoft-games/000065532#",
+     "endAt": "2026-10-14T12:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/633127529_IGDB-120x160.jpg",
+      "displayName": "Riders Republic",
+      "id": "633127529"
+     },
+     "id": "cebb8a27-dede-47e0-9a83-ac9b0e1fb46e",
+     "name": "Riders Republic S20 Drop",
+     "owner": {
+      "__typename": "Organization",
+      "id": "59d4f6c2-36bc-4c3f-83c8-f8d9936dc75b",
+      "name": "Ubisoft"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T13:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.elderscrollsonline.com/",
+     "detailsURL": "https://www.elderscrollsonline.com/en-us/news/post/59435",
+     "endAt": "2026-10-14T13:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/65654_IGDB-120x160.jpg",
+      "displayName": "The Elder Scrolls Online",
+      "id": "65654"
+     },
+     "id": "54136633-c8ea-4a41-ac8e-262b5b18f5fc",
+     "name": "High Seas of Tamriel",
+     "owner": {
+      "__typename": "Organization",
+      "id": "e8dbecb8-428b-43c6-ae8f-f94ee1c632d0",
+      "name": "ZeniMax Online Studios"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-30T14:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://cdn.wotheat.com/articles/twitch-drops-technical-guide/index.html",
+     "detailsURL": "https://cdn.wotheat.com/articles/twitch-drops-season-2-promo/index.html",
+     "endAt": "2026-10-14T15:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/767133634_IGDB-120x160.jpg",
+      "displayName": "World of Tanks: HEAT",
+      "id": "767133634"
+     },
+     "id": "26235968-a64d-4a6f-840d-e559f9f9c278",
+     "name": "HEAT Season 2 - Week 6",
+     "owner": {
+      "__typename": "Organization",
+      "id": "6948a129-2c6d-4d88-9444-6b96918a19f8",
+      "name": "Wargaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T16:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops-register.ubi.com/",
+     "detailsURL": "https://www.ubisoft.com/help/article/000065532",
+     "endAt": "2026-10-14T15:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/666511413_IGDB-120x160.jpg",
+      "displayName": "The Crew: Motorfest",
+      "id": "666511413"
+     },
+     "id": "0ef8e3ae-45a7-4858-9d91-b34864a88054",
+     "name": "TCM S11 Launch Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "59d4f6c2-36bc-4c3f-83c8-f8d9936dc75b",
+      "name": "Ubisoft"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T16:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://wargaming.net/personal/",
+     "detailsURL": "https://worldofwarships.com/en/news/community/community-drops-october-26/",
+     "endAt": "2026-10-14T21:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/32502_IGDB-120x160.jpg",
+      "displayName": "World of Warships",
+      "id": "32502"
+     },
+     "id": "107f5eb2-1479-4e6c-b154-47ae13517533",
+     "name": "15.9 Mystery Drop",
+     "owner": {
+      "__typename": "Organization",
+      "id": "6948a129-2c6d-4d88-9444-6b96918a19f8",
+      "name": "Wargaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T22:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://portal.uflgame.com/twitch",
+     "detailsURL": "https://portal.uflgame.com/twitch/drops",
+     "endAt": "2026-10-14T23:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1471416868_IGDB-120x160.jpg",
+      "displayName": "UFL",
+      "id": "1471416868"
+     },
+     "id": "4ae8cb5a-e3b9-4a4b-94c4-504bf9c76094",
+     "name": "Oct #2",
+     "owner": {
+      "__typename": "Organization",
+      "id": "df246de8-213d-4816-9fdf-1e234784c18a",
+      "name": "XTEN LIMITED"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T08:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://embark-games.embark.net/",
+     "detailsURL": "https://www.reachthefinals.com/twitch",
+     "endAt": "2026-10-15T08:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1910103699-120x160.jpg",
+      "displayName": "THE FINALS",
+      "id": "1910103699"
+     },
+     "id": "bd0498b5-9068-4e4a-8d43-5b66ea0bd992",
+     "name": "FALL IS HERE",
+     "owner": {
+      "__typename": "Organization",
+      "id": "e2a2aacb-acce-4761-8960-3c7f814a3f55",
+      "name": "Embark Studios"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": true
+     },
+     "startAt": "2026-10-01T10:30:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://id.twitch.tv/oauth2/authorize?client_id=9awx3xtp59477gdaslg318amuimqp8&redirect_uri=https%3A%2F%2Fwww.kakele.io%2Fdrops&response_type=code&scope=user:read:email",
+     "detailsURL": "https://www.kakele.io/?utm_source=drops",
+     "endAt": "2026-10-15T11:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/902050890_IGDB-120x160.jpg",
+      "displayName": "Kakele Online - MMORPG",
+      "id": "902050890"
+     },
+     "id": "ed66b50c-b358-4e9d-882e-59f4abbf61fb",
+     "name": "Kakele Online - October",
+     "owner": {
+      "__typename": "Organization",
+      "id": "392e8b0d-e928-437f-a87d-c8f9eae3f8c7",
+      "name": "ViVa Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T10:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://wargaming.net/personal/",
+     "detailsURL": "https://worldofwarships.com/en/news/community/community-drops-october-26/",
+     "endAt": "2026-10-15T15:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/32502_IGDB-120x160.jpg",
+      "displayName": "World of Warships",
+      "id": "32502"
+     },
+     "id": "2c7f9376-a07c-4bee-b7ce-38ec089c02cf",
+     "name": "Update 15.9 Drop: Week 1",
+     "owner": {
+      "__typename": "Organization",
+      "id": "6948a129-2c6d-4d88-9444-6b96918a19f8",
+      "name": "Wargaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T15:13:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.kineticgames.co.uk/twitch-drops",
+     "detailsURL": "https://www.kineticgames.co.uk/news/the-crimson-eye-approaches-once-more",
+     "endAt": "2026-10-15T22:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/518184_IGDB-120x160.jpg",
+      "displayName": "Phasmophobia",
+      "id": "518184"
+     },
+     "id": "576c1066-00c1-4b08-b430-3f79659167f4",
+     "name": "Crimson Eye 2026",
+     "owner": {
+      "__typename": "Organization",
+      "id": "e6ccb13c-19ad-4328-a547-693d402e7680",
+      "name": "Kinetic Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": true
+     },
+     "startAt": "2026-10-08T11:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.ioi.dk/",
+     "detailsURL": "https://account.ioi.dk/",
+     "endAt": "2026-10-16T16:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/229772247_IGDB-120x160.jpg",
+      "displayName": "007 First Light",
+      "id": "229772247"
+     },
+     "id": "4240c65a-577d-47f4-96f5-9371cc99f5b5",
+     "name": "Extended Operations",
+     "owner": {
+      "__typename": "Organization",
+      "id": "dc639b50-1310-465f-a3a2-7a77e73d6014",
+      "name": "IO Interactive"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T13:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://krunker.io/?twitch_auth",
+     "detailsURL": "https://krunker.io/",
+     "endAt": "2026-10-16T22:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/508391-120x160.jpg",
+      "displayName": "Krunker",
+      "id": "508391"
+     },
+     "id": "aa07071a-f2a2-4cc4-90c9-11ec258a60ec",
+     "name": "Krunker Season 10 Update",
+     "owner": {
+      "__typename": "Organization",
+      "id": "b225fd1d-6bdf-4807-a58d-8472b97efac4",
+      "name": "FRVR"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-02T14:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+     "detailsURL": "https://aion2.plaync.com/en-us/twitchdrops/index",
+     "endAt": "2026-10-17T06:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/771448419_IGDB-120x160.jpg",
+      "displayName": "AION 2",
+      "id": "771448419"
+     },
+     "id": "1214217f-aa1a-40be-ac32-9dffd3698775",
+     "name": "Global Launch Celebration",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4",
+      "name": "NC"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": true
+     },
+     "startAt": "2026-10-05T13:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://twitch.tv/settings/connections#riot-connection\t\t\t\t\t",
+     "detailsURL": "https://www.riotgames.com/en",
+     "endAt": "2026-10-17T10:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/516575-120x160.jpg",
+      "displayName": "VALORANT",
+      "id": "516575"
+     },
+     "id": "949e51d4-1322-478d-a669-317d7d769dd0",
+     "name": "VCT26 Champs Shanghai",
+     "owner": {
+      "__typename": "Organization",
+      "id": "931fd934-2149-4a85-a6d8-2190aa4439f3",
+      "name": "Riot Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=qkxawi9g89zrh5p6kyzzxsysgq7g3h&redirect_uri=https%3A%2F%2Fwww.playcoryphaeus.com/twitch-drops&scope=channel%3Amanage%3Aredemptions+channel%3Aread%3Aredemptions+channel%3Aread%3Asubscriptions+moderator%3Aread%3Achatters+channel%3Aread%3Ahype_train+bits%3Aread",
+     "detailsURL": "https://sites.google.com/view/playcoryphaeus/twitch-drops-info",
+     "endAt": "2026-10-17T23:29:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/707002701_IGDB-120x160.jpg",
+      "displayName": "Coryphaeus Championships",
+      "id": "707002701"
+     },
+     "id": "adda5142-106a-4ab8-8fa3-bac1eb78a2da",
+     "name": "Fall Drops ",
+     "owner": {
+      "__typename": "Organization",
+      "id": "e3d13beb-c006-481b-af2e-b818ba77ebc3",
+      "name": "Coryphaeus Corp"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T11:04:18Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops-register.ubi.com/",
+     "detailsURL": "https://www.ubisoft.com/help/article/000065532",
+     "endAt": "2026-10-18T06:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1152239118_IGDB-120x160.jpg",
+      "displayName": "March of Giants",
+      "id": "1152239118"
+     },
+     "id": "b78f8b92-7461-4fd5-8b30-6f982a508acb",
+     "name": "MoG - Pioneer Booster",
+     "owner": {
+      "__typename": "Organization",
+      "id": "59d4f6c2-36bc-4c3f-83c8-f8d9936dc75b",
+      "name": "Ubisoft"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T14:30:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops-register.ubi.com/",
+     "detailsURL": "https://www.ubisoft.com/help/article/000065532",
+     "endAt": "2026-10-18T06:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1152239118_IGDB-120x160.jpg",
+      "displayName": "March of Giants",
+      "id": "1152239118"
+     },
+     "id": "1428e31c-9782-4dfd-9b09-4f302e864c5f",
+     "name": "MoG - Pioneer Giant Token",
+     "owner": {
+      "__typename": "Organization",
+      "id": "59d4f6c2-36bc-4c3f-83c8-f8d9936dc75b",
+      "name": "Ubisoft"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T14:30:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv",
+     "detailsURL": "https://www.twitch.tv/drops/campaigns",
+     "endAt": "2026-10-19T08:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/65632_IGDB-120x160.jpg",
+      "displayName": "DayZ",
+      "id": "65632"
+     },
+     "id": "d66d83da-c3e4-4f03-bc0a-ca51c43c91fb",
+     "name": "DayZ Badlands",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T11:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://twitch.fishingplanet.com/",
+     "detailsURL": "https://fishingplanet.com/haunted-fleet-drops-halloween-twitch-drops-campaign/",
+     "endAt": "2026-10-19T09:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/491117_IGDB-120x160.jpg",
+      "displayName": "Fishing Planet",
+      "id": "491117"
+     },
+     "id": "758d7626-d8c1-44a6-a76e-6e464347f45e",
+     "name": "Haunted Fleet Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "026e2491-7cdb-487a-878c-1115501db154",
+      "name": "Fishing Planet LLC"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T10:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://backend.relicarena.com/twitch/drops",
+     "detailsURL": "https://backend.relicarena.com/twitch/drops",
+     "endAt": "2026-10-19T15:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/851448962_IGDB-120x160.jpg",
+      "displayName": "Relic Arena",
+      "id": "851448962"
+     },
+     "id": "e90f396b-6c1c-4875-b41b-d56041c68a48",
+     "name": "Solo Queue Challenge",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d766a1dd-0f44-4fd9-8df9-1d4df090ef2a",
+      "name": "Double Edge Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-22T16:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://predecessorgame.com/link-accounts",
+     "detailsURL": "https://predecessorgame.com/twitch-drops",
+     "endAt": "2026-10-19T23:29:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/511295_IGDB-120x160.jpg",
+      "displayName": "Predecessor",
+      "id": "511295"
+     },
+     "id": "72662ff7-75c6-44eb-94b0-7868cbc5e89b",
+     "name": "Bloodtide Drops \ud83e\ude78",
+     "owner": {
+      "__typename": "Organization",
+      "id": "22c57757-e520-49ee-a5fa-0313f78c6c1f",
+      "name": "Omeda Studios"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-22T13:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://splinterlands.com/user/account-socials",
+     "detailsURL": "https://peakd.com/splinterlands/@splinterlands/arena-fanatic-influencer-card-plus-twitch-drops",
+     "endAt": "2026-10-20T16:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/589569308_IGDB-120x160.jpg",
+      "displayName": "Splinterlands",
+      "id": "589569308"
+     },
+     "id": "e6b023b5-f78b-4e56-a048-91e7a1c288a4",
+     "name": "October Week 1",
+     "owner": {
+      "__typename": "Organization",
+      "id": "cc435850-3cc9-4cc2-a4fb-150658a1eb43",
+      "name": "Steem Monsters"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T17:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide ",
+     "endAt": "2026-10-21T06:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/509577-120x160.jpg",
+      "displayName": "Dungeons & Dragons",
+      "id": "509577"
+     },
+     "id": "4820ce0c-0ef5-4f53-bf68-b9e03a6acee0",
+     "name": "/dnd d20 Badge",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-24T01:15:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide ",
+     "endAt": "2026-10-21T06:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/509577-120x160.jpg",
+      "displayName": "Dungeons & Dragons",
+      "id": "509577"
+     },
+     "id": "69e7d15e-b1e0-40d8-9c4b-a71446896005",
+     "name": "D&D Ampersand Badge",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-24T01:15:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://twitch.tv/settings/connections#riot-connection",
+     "detailsURL": "https://lolesports.com/",
+     "endAt": "2026-10-21T17:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/21779-120x160.jpg",
+      "displayName": "League of Legends",
+      "id": "21779"
+     },
+     "id": "d10f24b6-3fa8-41b3-b950-2f6d95e4bf16",
+     "name": "Worlds - Sub Drop Pt. 1",
+     "owner": {
+      "__typename": "Organization",
+      "id": "931fd934-2149-4a85-a6d8-2190aa4439f3",
+      "name": "Riot Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T18:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv",
+     "detailsURL": "https://www.twitch.tv/drops/campaigns",
+     "endAt": "2026-10-21T22:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1362102608_IGDB-120x160.jpg",
+      "displayName": "REMATCH",
+      "id": "1362102608"
+     },
+     "id": "828ae239-eff0-4ac1-b4d6-9a2b23da92a4",
+     "name": "Rematch x Blue Lock",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-23T23:01:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://infinitynikki.infoldgames.com/proj/en/twitch-drops.html",
+     "detailsURL": "https://infinitynikki.infoldgames.com/proj/en/twitch-drops.html",
+     "endAt": "2026-10-22T01:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2014795392_IGDB-120x160.jpg",
+      "displayName": "Infinity Nikki",
+      "id": "2014795392"
+     },
+     "id": "65f8f2a5-074c-48ca-8505-f525bb8d75f5",
+     "name": "V2.10 Infinity Nikki",
+     "owner": {
+      "__typename": "Organization",
+      "id": "bc06162e-7510-421a-8862-43f4e00a741e",
+      "name": "INFOLD PTE. LTD."
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-24T03:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://drops-register.ubi.com/",
+     "detailsURL": "https://www.ubisoft.com/help/article/000065532",
+     "endAt": "2026-10-22T22:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/460316_IGDB-120x160.jpg",
+      "displayName": "Brawlhalla",
+      "id": "460316"
+     },
+     "id": "9730d758-4de3-42a4-8550-83500d9e4c42",
+     "name": "Brawlhalloween",
+     "owner": {
+      "__typename": "Organization",
+      "id": "59d4f6c2-36bc-4c3f-83c8-f8d9936dc75b",
+      "name": "Ubisoft"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T11:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://docs.google.com/document/d/1esoC5gpZLW2mtKJRtdvRZoz1t7BJXXMI5q1fRSUZhWw/edit?usp=sharing",
+     "detailsURL": "https://docs.google.com/document/d/1esoC5gpZLW2mtKJRtdvRZoz1t7BJXXMI5q1fRSUZhWw/edit?usp=sharing",
+     "endAt": "2026-10-22T23:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1794564456_IGDB-120x160.jpg",
+      "displayName": "Airport Baggage Simulator",
+      "id": "1794564456"
+     },
+     "id": "8379bc7b-4082-4f4b-b83a-9812625f55a1",
+     "name": "Night Shift Update",
+     "owner": {
+      "__typename": "Organization",
+      "id": "5e301799-2e51-4466-ac63-ac8ab4b49733",
+      "name": "Three River Games (3RG)"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-25T00:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://sonicrumble.sega.com/special/twitch-drops/en/",
+     "detailsURL": "https://sonicrumble.sega.com/special/twitch-drops/en/",
+     "endAt": "2026-10-23T07:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1814419969_IGDB-120x160.jpg",
+      "displayName": "Sonic Rumble Party",
+      "id": "1814419969"
+     },
+     "id": "3bec3616-0c35-4cb8-9533-2db143d26880",
+     "name": "October 2026 Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "6f0a9a29-4e16-488f-99e8-174a2a3c38ad",
+      "name": "SEGA"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T08:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://act.hoyoverse.com/puzzle/hkrpg/pz_u8LiB2qvFN/index.html?game_biz=hkrpg_global&utm_source=twitch&utm_medium=push",
+     "detailsURL": "https://act.hoyoverse.com/puzzle/hkrpg/pz_u8LiB2qvFN/index.html?game_biz=hkrpg_global&utm_source=twitch&utm_medium=push",
+     "endAt": "2026-10-26T00:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/213930085_IGDB-120x160.jpg",
+      "displayName": "Honkai: Star Rail",
+      "id": "213930085"
+     },
+     "id": "520218bf-41ef-4a30-80df-3bd5b0102303",
+     "name": "V4.6 Honkai: Star Rail",
+     "owner": {
+      "__typename": "Organization",
+      "id": "4523e84a-450a-4ef5-8c6a-5f78706d1f0d",
+      "name": "Cognosphere"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-28T01:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide",
+     "endAt": "2026-10-26T06:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/16472_IGDB-120x160.jpg",
+      "displayName": "Ace Combat Zero: The Belkan War",
+      "id": "16472"
+     },
+     "id": "53817dac-8fdb-48cc-91b5-453570e05124",
+     "name": "ACE COMBAT 8 Nugget",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-28T22:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide",
+     "endAt": "2026-10-26T06:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/404069058_IGDB-120x160.jpg",
+      "displayName": "ACE COMBAT 8: WINGS OF THEVE",
+      "id": "404069058"
+     },
+     "id": "3640eef0-76ec-404e-8342-7c1b54d98b81",
+     "name": "ACE COMBAT 8 Nugget",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-28T22:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv",
+     "detailsURL": "https://www.twitch.tv/drops/campaigns",
+     "endAt": "2026-10-27T09:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/115977_IGDB-120x160.jpg",
+      "displayName": "The Witcher 3: Wild Hunt",
+      "id": "115977"
+     },
+     "id": "c7b62569-3b75-4f72-9700-957479fe3460",
+     "name": "The Witcher 3 Remaster",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-29T10:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://accounts.cdprojektred.com/realms/cdp/account/#/connected/twitch",
+     "detailsURL": "https://www.thewitcher.com/twitch-drops",
+     "endAt": "2026-10-27T09:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/115977_IGDB-120x160.jpg",
+      "displayName": "The Witcher 3: Wild Hunt",
+      "id": "115977"
+     },
+     "id": "5ccd33aa-a869-4de4-aca7-44775bf07823",
+     "name": "Remastered Release",
+     "owner": {
+      "__typename": "Organization",
+      "id": "c21cf767-1c39-4b0d-a9d7-a2df5ce80383",
+      "name": "CD PROJEKT RED"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-29T10:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.legendofymir.com/mypage/account",
+     "detailsURL": "https://www.legendofymir.com/en/news/notice/758959",
+     "endAt": "2026-10-27T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/889298168_IGDB-120x160.jpg",
+      "displayName": "Legend of YMIR",
+      "id": "889298168"
+     },
+     "id": "8e15c074-d564-4bfa-8d14-a644696745cc",
+     "name": "LOY DROPS_ALL (26_OCT)",
+     "owner": {
+      "__typename": "Organization",
+      "id": "a35b422a-64fd-416f-b4f0-96f8497b4f90",
+      "name": "Wemade Entertainment"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.legendofymir.com/mypage/account",
+     "detailsURL": "https://www.legendofymir.com/en/news/notice/758959",
+     "endAt": "2026-10-27T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/889298168_IGDB-120x160.jpg",
+      "displayName": "Legend of YMIR",
+      "id": "889298168"
+     },
+     "id": "b08e6c0e-ac1c-4b93-906c-5646ed5559ad",
+     "name": "LOY DROPS_SSS (26_OCT)",
+     "owner": {
+      "__typename": "Organization",
+      "id": "a35b422a-64fd-416f-b4f0-96f8497b4f90",
+      "name": "Wemade Entertainment"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://nightcrows.com/mypage/account",
+     "detailsURL": "https://www.nightcrows.com/en/notice/notice/758958",
+     "endAt": "2026-10-27T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/450732811_IGDB-120x160.jpg",
+      "displayName": "Night Crows",
+      "id": "450732811"
+     },
+     "id": "16189ff3-a54e-434f-95e8-b8c538814020",
+     "name": "NC DROPS ALL (26_OCT)",
+     "owner": {
+      "__typename": "Organization",
+      "id": "a35b422a-64fd-416f-b4f0-96f8497b4f90",
+      "name": "Wemade Entertainment"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://nightcrows.com/mypage/account",
+     "detailsURL": "https://www.nightcrows.com/en/notice/notice/758958",
+     "endAt": "2026-10-27T14:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/450732811_IGDB-120x160.jpg",
+      "displayName": "Night Crows",
+      "id": "450732811"
+     },
+     "id": "5f43889c-c819-428c-8419-64c639b8f4f3",
+     "name": "NC DROPS_SSS (26_OCT)",
+     "owner": {
+      "__typename": "Organization",
+      "id": "a35b422a-64fd-416f-b4f0-96f8497b4f90",
+      "name": "Wemade Entertainment"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://event.igg.com/twitch/drops?code=dls_drops",
+     "detailsURL": "https://event.igg.com/twitch/drops?code=dls_drops",
+     "endAt": "2026-10-27T22:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1102857083_IGDB-120x160.jpg",
+      "displayName": "Doomsday: Last Survivors",
+      "id": "1102857083"
+     },
+     "id": "d7095399-62d2-4ff7-bb73-dcbf1f513ec8",
+     "name": "Twitch Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "c29ff9c6-6048-4e09-b996-e8136be568cc",
+      "name": "IGG"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-30T09:05:57Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://twitchdrops-wutheringwaves.kurogames-global.com/?source=twitch",
+     "detailsURL": "https://twitchdrops-wutheringwaves.kurogames-global.com/?source=twitch",
+     "endAt": "2026-10-28T02:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/209738946_IGDB-120x160.jpg",
+      "displayName": "Wuthering Waves",
+      "id": "209738946"
+     },
+     "id": "8146a56b-1e86-46b4-ae62-628f218f3ce9",
+     "name": "V3.7 Wuthering Waves",
+     "owner": {
+      "__typename": "Organization",
+      "id": "beda0fa5-d8c5-4465-be03-fded75d8c01e",
+      "name": "KURO GAMES"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-30T03:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.bandainamcoid.com/sns.html?client_id=cosmos_025421_bnid&redirect_uri=https%3A%2F%2Fwww.twitch.tv%2Fdrops%2Fcampaigns&backto=https%3A%2F%2Fwww.twitch.tv%2Fdrops%2Fcampaigns&sns=twitch",
+     "detailsURL": "https://mhaur.bn-ent.net/twitch/en.php",
+     "endAt": "2026-10-28T03:28:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/451007760_IGDB-120x160.jpg",
+      "displayName": "My Hero Ultra Rumble",
+      "id": "451007760"
+     },
+     "id": "0317f83e-9c61-4bc3-b484-41275e681eae",
+     "name": "Twitch Drops campaign 3rd",
+     "owner": {
+      "__typename": "Organization",
+      "id": "20035618-1b2e-43ba-8f80-894f2aee1808",
+      "name": "Bandai/Namco"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T08:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://help.twitch.tv/s/article/how-to-use-emotes",
+     "detailsURL": "https://help.twitch.tv/s/article/how-to-use-emotes",
+     "endAt": "2026-10-28T19:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/55453844_IGDB-120x160.jpg",
+      "displayName": "Street Fighter 6",
+      "id": "55453844"
+     },
+     "id": "711b6068-c16e-4d0f-bcb1-6be54eb91c3f",
+     "name": "Street Fighter 6",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T20:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://wolvesville.com/",
+     "detailsURL": "https://wolvesville.com/",
+     "endAt": "2026-10-28T23:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/615993466_IGDB-120x160.jpg",
+      "displayName": "Wolvesville",
+      "id": "615993466"
+     },
+     "id": "5b32b5e7-7421-40ae-be32-e45b4df19a12",
+     "name": "October 2026",
+     "owner": {
+      "__typename": "Organization",
+      "id": "afc3b59c-a88e-4009-8114-cce32dfd0e23",
+      "name": "Wolvesville"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T00:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv/",
+     "detailsURL": "https://help.twitch.tv/s/article/twitch-chat-badges-guide",
+     "endAt": "2026-10-29T06:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/512953_IGDB-120x160.jpg",
+      "displayName": "ELDEN RING",
+      "id": "512953"
+     },
+     "id": "5e6e8172-09f9-4e28-bf54-0b4bef23804d",
+     "name": "Bloody Finger ELDEN RING",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T07:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv",
+     "detailsURL": "https://www.twitch.tv/drops/campaigns",
+     "endAt": "2026-10-29T07:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/223869970_IGDB-120x160.jpg",
+      "displayName": "Warhammer 40,000: Space Marine II",
+      "id": "223869970"
+     },
+     "id": "0979f1bb-fa0d-40d8-b175-c19b8d30bab8",
+     "name": "SM2 - 3rd Anniversary",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T08:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv",
+     "detailsURL": "https://www.twitch.tv/drops/campaigns",
+     "endAt": "2026-10-29T08:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/458443_IGDB-120x160.jpg",
+      "displayName": "Alien: Isolation",
+      "id": "458443"
+     },
+     "id": "ef371a6b-b762-4d7e-b31e-e4211be15030",
+     "name": "Alien: Isolation Horror",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T09:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://prismray.io/account?section=connections",
+     "detailsURL": "https://support.saber.games/hc/en/pros/articles/how-to-get-twitch-drops-8",
+     "endAt": "2026-10-29T08:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/223869970_IGDB-120x160.jpg",
+      "displayName": "Warhammer 40,000: Space Marine II",
+      "id": "223869970"
+     },
+     "id": "19800c70-7d90-45bc-894b-b1765188b529",
+     "name": "The Anniversary Update II",
+     "owner": {
+      "__typename": "Organization",
+      "id": "2e4bad9d-3613-48a1-a3e7-b66c6a2b181d",
+      "name": "Saber Interactive"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-01T09:20:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv",
+     "detailsURL": "https://www.twitch.tv/drops/campaigns",
+     "endAt": "2026-10-31T22:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/435870350_IGDB-120x160.jpg",
+      "displayName": "Dragon's Dogma II",
+      "id": "435870350"
+     },
+     "id": "26a32c34-dfd6-48a4-87fc-a8da6de68e47",
+     "name": "Dragon\u2019s Dogma 2 - DA",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T12:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://artstorm.com/cabinet/connect-twitch",
+     "detailsURL": "https://artstorm.com/news/twitch-drops-leviathan-harvest",
+     "endAt": "2026-10-31T23:29:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/423797288_IGDB-120x160.jpg",
+      "displayName": "Modern Warships",
+      "id": "423797288"
+     },
+     "id": "efb9b018-9c9e-4721-8659-6690bfd8cb63",
+     "name": "MW: Leviathan Harvest",
+     "owner": {
+      "__typename": "Organization",
+      "id": "8bdd5247-6bd2-4cb4-8198-ae3b33b4debe",
+      "name": "Artstorm FZE"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T00:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://littygames.net/drops",
+     "detailsURL": "https://littygames.net/drops",
+     "endAt": "2026-10-31T23:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1426040084_IGDB-120x160.jpg",
+      "displayName": "Coin Pusher Live",
+      "id": "1426040084"
+     },
+     "id": "35e7547f-0b2a-430d-850e-bfd9d5729eab",
+     "name": "Halloween 2026",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ee72c65a-2121-4882-acc0-9758e27cc604",
+      "name": "Litty Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T19:50:37Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.battle.net/connections",
+     "detailsURL": "https://us.forums.blizzard.com/en/overwatch/t/reign-of-talon-season-5-launch-twitch-drops/1042026",
+     "endAt": "2026-11-03T07:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/515025-120x160.jpg",
+      "displayName": "Overwatch",
+      "id": "515025"
+     },
+     "id": "dfa9c27f-877b-417a-8a49-279ecf0fbb15",
+     "name": "Reign of Talon S5 Launch",
+     "owner": {
+      "__typename": "Organization",
+      "id": "9620a89d-b07c-4160-a851-ae832fa6985e",
+      "name": "Blizzard"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T18:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://embark-games.embark.net/",
+     "detailsURL": "https://arcraiders.com/twitch-drops/",
+     "endAt": "2026-11-04T12:44:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/464339927-120x160.jpg",
+      "displayName": "ARC Raiders",
+      "id": "464339927"
+     },
+     "id": "e4f226c6-c9c3-4d99-9c13-e0050e004f9a",
+     "name": "Frozen Trail",
+     "owner": {
+      "__typename": "Organization",
+      "id": "e2a2aacb-acce-4761-8960-3c7f814a3f55",
+      "name": "Embark Studios"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": true
+     },
+     "startAt": "2026-10-08T11:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://3rg.eu/cash-is-king/",
+     "detailsURL": "https://docs.google.com/document/d/1FELkhrUW6rpww1ksFqGXZOY37lrpZ0p3SZ6e30AgBPI/edit?usp=sharing",
+     "endAt": "2026-11-05T12:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1979426071_IGDB-120x160.jpg",
+      "displayName": "Cash is King!",
+      "id": "1979426071"
+     },
+     "id": "379ef4ec-630e-4680-be66-afa041847757",
+     "name": "Steam Next Fest 2026",
+     "owner": {
+      "__typename": "Organization",
+      "id": "5e301799-2e51-4466-ac63-ac8ab4b49733",
+      "name": "Three River Games (3RG)"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T13:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.twitch.tv",
+     "detailsURL": "https://www.twitch.tv/drops/campaigns",
+     "endAt": "2026-11-05T16:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/547208385_IGDB-120x160.jpg",
+      "displayName": "Vaultbreakers",
+      "id": "547208385"
+     },
+     "id": "773f4909-b958-455c-be7a-641ade4067c5",
+     "name": "Vaultbreakers",
+     "owner": {
+      "__typename": "Organization",
+      "id": "d32de13d-937e-4196-8198-1a7f875f295a",
+      "name": "Twitch Gaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T17:00:00Z",
+     "status": "ACTIVE"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.bandainamcoid.com/sns.html?client_id=mZuOqUqgJHiT8phi9LkLQMrtVJbLNuWQwzIICHiE&redirect_uri=https%3A%2F%2Fwww.twitch.tv%2Fdrops%2Fcampaigns&backto=https%3A%2F%2Fwww.twitch.tv%2Fdrops%2Fcampaigns&sns=twitch",
+     "detailsURL": "https://dbg-squadra.bn-ent.net/en-us/news/dxp09wlzxs0",
+     "endAt": "2026-10-08T05:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/801541637_IGDB-120x160.jpg",
+      "displayName": "DRAGON BALL GEKISHIN SQUADRA",
+      "id": "801541637"
+     },
+     "id": "ce649625-7dae-4946-b60a-1b78285c4833",
+     "name": "SQUADRA SEASON 7 Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "20035618-1b2e-43ba-8f80-894f2aee1808",
+      "name": "Bandai/Namco"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-10T06:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.warframe.com/user",
+     "detailsURL": "https://forums.warframe.com/topic/1526973-pmcfq-community-fundraising-stream-schedule-october-5-11-2026/",
+     "endAt": "2026-10-08T05:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/66170_IGDB-120x160.jpg",
+      "displayName": "Warframe",
+      "id": "66170"
+     },
+     "id": "3a565701-88c0-45c5-8853-c6bf86a00591",
+     "name": "PMCFQ - kalon75",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ede84f2f-2e8e-47bf-b260-43d2185bb458",
+      "name": "Digital Extremes"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T04:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://albiononline.com/twitch",
+     "detailsURL": "https://forum.albiononline.com/index.php/Thread/214756-New-Twitch-Drops-Launching-Monday-July-28-2025/",
+     "endAt": "2026-10-08T09:29:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/417528_IGDB-120x160.jpg",
+      "displayName": "Albion Online",
+      "id": "417528"
+     },
+     "id": "eb3ca3d7-1075-4d7a-86d9-3e53e0d93fdc",
+     "name": "Dragonfire 6 - #3/7",
+     "owner": {
+      "__typename": "Organization",
+      "id": "39dcfadd-48e4-4362-8c22-974319aff88e",
+      "name": "Sandbox Interactive"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T10:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://huntclubonstream.lovable.app/auth-twitch",
+     "detailsURL": "https://huntclubonstream.lovable.app/legal",
+     "endAt": "2026-10-08T10:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2097881176_IGDB-120x160.jpg",
+      "displayName": "Hunt Club On Stream",
+      "id": "2097881176"
+     },
+     "id": "af6f4d87-1374-4371-ae16-5e11bbad468e",
+     "name": "Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "1670b524-5775-4d70-937f-a240277ca00c",
+      "name": "Hunt Club on Stream"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-06T14:17:33Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.pearlabyss.com/Account/SNSLink",
+     "detailsURL": "https://www.naeu.playblackdesert.com/News/Detail?groupContentNo=5878",
+     "endAt": "2026-10-08T11:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/386821_IGDB-120x160.jpg",
+      "displayName": "Black Desert",
+      "id": "386821"
+     },
+     "id": "dd483005-189a-441b-8ff8-0aa6ffd8db46",
+     "name": "2026 BDO Drops (Oct 7)",
+     "owner": {
+      "__typename": "Organization",
+      "id": "3346bf0d-5179-4a89-b760-13e1581dfd12",
+      "name": "Pearl Abyss"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T12:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://pt27.ootpdevelopments.com/twitch",
+     "detailsURL": "https://forums.ootpdevelopments.com/showpost.php?p=5246508&postcount=1",
+     "endAt": "2026-10-08T12:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2099590881_IGDB-120x160.jpg",
+      "displayName": "Out of the Park Baseball 27",
+      "id": "2099590881"
+     },
+     "id": "30605f6f-fd8c-4968-87e0-9c12958c03cc",
+     "name": "Affiliate 10/7/26",
+     "owner": {
+      "__typename": "Organization",
+      "id": "a1a51d5a-233d-41c3-9acd-a03bdab35159",
+      "name": "Out of the Park Developments"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T13:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.ioi.dk/",
+     "detailsURL": "https://account.ioi.dk/",
+     "endAt": "2026-10-08T13:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1780647523_IGDB-120x160.jpg",
+      "displayName": "HITMAN World of Assassination",
+      "id": "1780647523"
+     },
+     "id": "aa05e383-ee2e-4af2-a204-bb5e405ae984",
+     "name": "The Herbalist #3",
+     "owner": {
+      "__typename": "Organization",
+      "id": "dc639b50-1310-465f-a3a2-7a77e73d6014",
+      "name": "IO Interactive"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-28T14:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+     "detailsURL": "https://help.twitch.tv/s/article/mission-based-drops?language=en_US",
+     "endAt": "2026-10-08T15:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/670138298_IGDB-120x160.jpg",
+      "displayName": "Madden NFL 27",
+      "id": "670138298"
+     },
+     "id": "f28d0150-105e-4851-8e85-80ebbadd22e9",
+     "name": "Good Morning Madden",
+     "owner": {
+      "__typename": "Organization",
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1",
+      "name": "Electronic Arts"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": true
+     },
+     "startAt": "2026-10-08T14:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.narakathegame.com/news/guide/20230710/35647_1097721.html",
+     "detailsURL": "https://www.narakathegame.com/news/official/20250723/32172_1249209.html",
+     "endAt": "2026-10-08T15:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/515474_IGDB-120x160.jpg",
+      "displayName": "NARAKA: BLADEPOINT",
+      "id": "515474"
+     },
+     "id": "cf6c4638-66d6-446a-a149-9fb41f66d8ab",
+     "name": " NBPL 10.8",
+     "owner": {
+      "__typename": "Organization",
+      "id": "417c83f8-80bc-400e-9cde-0c3289ee0a47",
+      "name": "NetEase"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T08:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://mobile.riseonlineworld.com/usercp?do=twitch",
+     "detailsURL": "https://mobile.riseonlineworld.com/usercp?do=twitch",
+     "endAt": "2026-10-08T17:56:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/516588_IGDB-120x160.jpg",
+      "displayName": "Rise Online",
+      "id": "516588"
+     },
+     "id": "7829a353-9f24-4862-9643-14ec82347eb3",
+     "name": "Mobile Drop 181",
+     "owner": {
+      "__typename": "Organization",
+      "id": "3b99ecc6-a283-449c-9de8-dbf12c0cffdf",
+      "name": "Roko Game Studios"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T17:59:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.riseonlineworld.com/usercp?do=twitch",
+     "detailsURL": "https://www.riseonlineworld.com/usercp?do=twitch",
+     "endAt": "2026-10-08T17:56:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/516588_IGDB-120x160.jpg",
+      "displayName": "Rise Online",
+      "id": "516588"
+     },
+     "id": "a50fc721-c6f2-40ef-b86d-bec62e42f19a",
+     "name": "ROW Drop 610",
+     "owner": {
+      "__typename": "Organization",
+      "id": "3b99ecc6-a283-449c-9de8-dbf12c0cffdf",
+      "name": "Roko Game Studios"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T17:59:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://sfgame.net/",
+     "detailsURL": "https://playa-games.helpshift.com/hc/faq/255-twitch-drops/",
+     "endAt": "2026-10-08T21:58:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/510389_IGDB-120x160.jpg",
+      "displayName": "Shakes and Fidget",
+      "id": "510389"
+     },
+     "id": "a8e98068-8b11-472a-818c-8b66e4bb5f44",
+     "name": "S&F Droplets",
+     "owner": {
+      "__typename": "Organization",
+      "id": "9eb6bb3a-4ebd-4bf2-8cd2-53576c941286",
+      "name": "Playa-Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-02T14:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://account.ankama.com/fr/twitch",
+     "detailsURL": "https://account.ankama.com/fr/twitch",
+     "endAt": "2026-10-08T21:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/505045_IGDB-120x160.jpg",
+      "displayName": "DOFUS Touch",
+      "id": "505045"
+     },
+     "id": "47c4d134-bb35-4456-9003-b47c394188f8",
+     "name": "J24 - 4x Temporix Cps\t",
+     "owner": {
+      "__typename": "Organization",
+      "id": "b49ffdba-da9b-49ba-b5a5-59fcd6f73770",
+      "name": "ANKAMA Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T22:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://worldoftanks.eu//news/guides-reviews/twitch-drops-guide/",
+     "detailsURL": "https://worldoftanks.eu/news/live-streams/token-store-september-2026/",
+     "endAt": "2026-10-08T22:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/27546_IGDB-120x160.jpg",
+      "displayName": "World of Tanks",
+      "id": "27546"
+     },
+     "id": "8960fd81-aecd-414b-a75b-d34accd6b90a",
+     "name": "AMD OLS#7 Phase 2 End",
+     "owner": {
+      "__typename": "Organization",
+      "id": "6948a129-2c6d-4d88-9444-6b96918a19f8",
+      "name": "Wargaming"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T16:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.quinfall.com/twitch-drops",
+     "detailsURL": "https://www.quinfall.com/twitch-drops",
+     "endAt": "2026-10-08T23:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2128139746_IGDB-120x160.jpg",
+      "displayName": "The Quinfall",
+      "id": "2128139746"
+     },
+     "id": "fad2ffca-4178-44a6-a10b-40060932905b",
+     "name": "October Drops",
+     "owner": {
+      "__typename": "Organization",
+      "id": "82d2c695-36dc-4dd3-a929-3004037ace97",
+      "name": "Vawraek Technology"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T00:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.warframe.com/user",
+     "detailsURL": "https://forums.warframe.com/topic/1526973-pmcfq-community-fundraising-stream-schedule-october-5-11-2026/",
+     "endAt": "2026-10-09T00:14:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/66170_IGDB-120x160.jpg",
+      "displayName": "Warframe",
+      "id": "66170"
+     },
+     "id": "ea5798d3-f85f-4743-aba4-fe12ee5a45db",
+     "name": "Prime Time #500",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ede84f2f-2e8e-47bf-b260-43d2185bb458",
+      "name": "Digital Extremes"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-07T19:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.warframe.com/user",
+     "detailsURL": "https://forums.warframe.com/topic/1526973-pmcfq-community-fundraising-stream-schedule-october-5-11-2026/",
+     "endAt": "2026-10-09T01:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/66170_IGDB-120x160.jpg",
+      "displayName": "Warframe",
+      "id": "66170"
+     },
+     "id": "b975eb15-e9e3-4e00-85df-1974cc3fb200",
+     "name": "PMCFQ - SiejoUmbra",
+     "owner": {
+      "__typename": "Organization",
+      "id": "ede84f2f-2e8e-47bf-b260-43d2185bb458",
+      "name": "Digital Extremes"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-09T00:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://twitch.playeternalreturn.com/",
+     "detailsURL": "https://twitch.playeternalreturn.com/",
+     "endAt": "2026-10-09T02:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/512864_IGDB-120x160.jpg",
+      "displayName": "Eternal Return",
+      "id": "512864"
+     },
+     "id": "9ff424b9-73a8-42e6-a404-29f38a1ae8af",
+     "name": "PRO-Fessors: Seres",
+     "owner": {
+      "__typename": "Organization",
+      "id": "bac7ec48-b5ec-4bdf-9f91-2491adda1c66",
+      "name": "Nimble Neuron Games"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-08T22:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.narakathegame.com/news/guide/20230710/35647_1097721.html",
+     "detailsURL": "https://www.narakathegame.com/news/official/20250723/32172_1249209.html",
+     "endAt": "2026-10-09T03:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/515474_IGDB-120x160.jpg",
+      "displayName": "NARAKA: BLADEPOINT",
+      "id": "515474"
+     },
+     "id": "8c909a6b-23fa-4107-b1e3-7ef882b56356",
+     "name": "JS1 Weekly 10.5",
+     "owner": {
+      "__typename": "Organization",
+      "id": "417c83f8-80bc-400e-9cde-0c3289ee0a47",
+      "name": "NetEase"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-10-05T04:00:00Z",
+     "status": "EXPIRED"
+    },
+    {
+     "__typename": "DropCampaign",
+     "accountLinkURL": "https://www.narakathegame.com/news/guide/20230710/35647_1097721.html",
+     "detailsURL": "https://www.narakathegame.com/news/official/20250723/32172_1249209.html",
+     "endAt": "2026-10-09T03:59:59.999Z",
+     "game": {
+      "__typename": "Game",
+      "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/515474_IGDB-120x160.jpg",
+      "displayName": "NARAKA: BLADEPOINT",
+      "id": "515474"
+     },
+     "id": "c36d6341-49ef-4c39-9d87-b8f4e6b34e6f",
+     "name": "JS1 PARTNER\u21609.3\uff081\uff09",
+     "owner": {
+      "__typename": "Organization",
+      "id": "417c83f8-80bc-400e-9cde-0c3289ee0a47",
+      "name": "NetEase"
+     },
+     "self": {
+      "__typename": "DropCampaignSelfEdge",
+      "isAccountConnected": false
+     },
+     "startAt": "2026-09-30T04:00:00Z",
+     "status": "EXPIRED"
+    }
+   ],
+   "id": "<USER_ID>",
+   "login": "<LOGIN>"
+  }
+ },
+ "extensions": {
+  "durationMilliseconds": 128,
+  "operationName": "ViewerDropsDashboard",
+  "requestID": "01M4FH8J3EBQGM32BN5MYYWFNZ"
+ }
+}

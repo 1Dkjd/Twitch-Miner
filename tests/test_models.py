@@ -126,3 +126,12 @@ def test_with_drop_replaces_by_id(now):
     c2 = with_drop(c, drop("a", now, cur=5))
     assert c2.drop("a").current_minutes == 5
     assert c2.drop("b") == c.drop("b")
+
+
+def test_game_slug_matches_reference_rule():
+    from dropsminer.models import game_slug
+    assert game_slug("Marvel Rivals") == "marvel-rivals"
+    assert game_slug("Tom Clancy's Rainbow Six Siege") == "tom-clancys-rainbow-six-siege"
+    assert game_slug("Out of the Park Baseball 27") == "out-of-the-park-baseball-27"
+    assert game_slug("  Dead by Daylight  ") == "dead-by-daylight"
+    assert game_slug("Pokémon UNITE") == "pokémon-unite"  # reference keeps unicode word chars

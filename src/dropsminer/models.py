@@ -7,12 +7,20 @@ Nothing here reads the clock; callers pass `now`.
 from __future__ import annotations
 
 import math
+import re
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 
 SPECIAL_GAME_IDS = frozenset({509663, 509672})  # earnable on any channel (reference utils.Game)
 BADGE_KINDS = frozenset({"BADGE", "EMOTE"})
 CLAIM_GRACE = timedelta(hours=24)  # Twitch help: claimable until 24 h after the campaign ends
+
+
+def game_slug(name: str) -> str:
+    """Game name -> GQL directory slug. Verbatim rule from reference utils.Game.slug."""
+    slug = re.sub(r"'", "", name.lower())
+    slug = re.sub(r"\W+", "-", slug)
+    return re.sub(r"-{2,}", "-", slug.strip("-"))
 
 
 @dataclass(frozen=True)
