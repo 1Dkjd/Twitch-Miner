@@ -5,6 +5,7 @@ JourneyDocker/TwitchDropsMiner 870c8b5 (MIT), see reference/journeydocker/channe
 """
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
@@ -25,6 +26,9 @@ from .transport import HttpTransport
 
 log = logging.getLogger("dropsminer.watch")
 USHER = "https://usher.ttvnw.net/api/channel/hls"
+# Per-step bounds, as in the JourneyDocker reference: a slow CDN edge must not stall playback.
+POLL_TIMEOUT, MEDIA_TIMEOUT, HEAD_TIMEOUT, SPADE_TIMEOUT = 10.0, 5.0, 3.0, 5.0
+NET_ERRORS = (OSError, TimeoutError, aiohttp.ClientError, UnicodeDecodeError, ValueError)
 SETTINGS_RE = re.compile(r'src="(https://[\w.]+/config/settings\.[0-9a-f]{32}\.js)"', re.I)
 SPADE_RE = re.compile(r'"spade_?url": ?"(https://[.\w\-/]+)"', re.I)
 
@@ -83,8 +87,12 @@ def playlist_urls(playlist: str, base: str, *, master: bool = False) -> list[str
             continue
         if not pending:
             return []
-        url = urljoin(base, line)
-        parts = urlsplit(url)
+        try:
+            url = urljoin(base, line)
+            parts = urlsplit(url)
+            _ = parts.hostname
+        except ValueError:  # e.g. an invalid IPv6 literal; never let a body reach a traceback
+            return []
         if (parts.scheme not in ("http", "https") or not parts.hostname or parts.username
                 or (master and not parts.path.endswith(".m3u8"))):
             return []
@@ -118,7 +126,8 @@ class Watcher:
         if channel.login in self._media:
             return self._media[channel.login]
         resp = await self._gql.run(op("PlaybackAccessToken", login=channel.login))
-        tok = (resp.get("data") or {}).get("streamPlaybackAccessToken")
+        data = resp.get("data") if isinstance(resp, dict) else None
+        tok = data.get("streamPlaybackAccessToken") if isinstance(data, dict) else None
         if not isinstance(tok, dict) or not tok.get("value") or not tok.get("signature"):
             log.info("No playback token for %s", channel.login)
             return None
@@ -138,11 +147,12 @@ class Watcher:
             self._broadcast = channel.broadcast_id
             self._segments.clear()
             self._last_spade = None
+            self._media.pop(channel.login, None)  # a new broadcast needs a new playback token
         url = await self._media_url(channel)
         if url is None:
             return False
         headers = {"User-Agent": ANDROID_APP.user_agent}
-        r = await self._t.request("GET", url, headers=headers)
+        r = await asyncio.wait_for(self._t.request("GET", url, headers=headers), MEDIA_TIMEOUT)
         if r.status != 200:
             if r.status in (401, 403, 404):
                 self._media.pop(channel.login, None)
@@ -154,7 +164,11 @@ class Watcher:
         for seg in segments:
             if seg in self._segments:
                 continue
-            h = await self._t.request("HEAD", seg, headers=headers)
+            try:
+                h = await asyncio.wait_for(self._t.request("HEAD", seg, headers=headers), HEAD_TIMEOUT)
+            except NET_ERRORS:
+                ok = False  # one bad segment must not stop the others
+                continue
             if h.status == 200:
                 self._segments[seg] = None
                 if len(self._segments) > 256:
@@ -195,13 +209,16 @@ class Watcher:
     async def send(self, channel: LiveChannel, now: datetime) -> bool:
         """True when playback succeeded. Network/GQL errors count as a failed send, never raise."""
         try:
-            if not await self._play(channel):
+            if not await asyncio.wait_for(self._play(channel), POLL_TIMEOUT):
                 return False
-            t = self._clock()
-            if self._last_spade is None or t - self._last_spade >= WATCH_INTERVAL:
-                self._last_spade = t
-                await self._post_spade(channel, now)  # auxiliary: playback is what earns credit
-            return True
-        except (OSError, TimeoutError, aiohttp.ClientError, GqlError) as exc:
+        except (*NET_ERRORS, GqlError) as exc:
             log.warning("Watching %s failed: %s", channel.login, type(exc).__name__)
             return False
+        t = self._clock()
+        if self._last_spade is None or t - self._last_spade >= WATCH_INTERVAL:
+            self._last_spade = t
+            try:  # auxiliary: playback is what earns credit, so a spade failure never fails the send
+                await asyncio.wait_for(self._post_spade(channel, now), SPADE_TIMEOUT)
+            except (*NET_ERRORS, GqlError) as exc:
+                log.info("Heartbeat to %s failed: %s", channel.login, type(exc).__name__)
+        return True

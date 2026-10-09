@@ -25,12 +25,12 @@ from .twitch.gql import AuthExpired, GqlError
 from .twitch.pubsub import DropClaimable, DropProgress, StreamChanged, StreamDown, StreamUp, topic
 
 log = logging.getLogger("dropsminer.runner")
-FAILS_BEFORE_SWITCH = 3
+FAILS_BEFORE_SWITCH = 9  # ticks are 10 s apart: ~90 s of failed playback before excluding
 STALL_TICKS = 18  # ticks are PLAY_INTERVAL (10 s) apart: resync after ~3 min of silence
 EXCLUDE_FOR = timedelta(minutes=10)
 REFRESH_EVERY = timedelta(minutes=5)
 CAMPAIGNS_EVERY = timedelta(hours=1)
-MAX_CLAIM_WAIT_FETCHES = 12  # ~1 h of 5-minute refreshes; the hourly fetch covers the rest
+CLAIM_WAIT = timedelta(hours=1)  # force campaign re-fetches this long; the hourly fetch covers the rest
 BACKOFF_START, BACKOFF_MAX = 60.0, 600.0
 # GqlError covers TwitchUnreachable; the rest are unexpected response shapes from parsing.
 TWITCH_ERRORS = (GqlError, KeyError, TypeError, ValueError)
@@ -69,7 +69,10 @@ class Runner:
         self._lock = asyncio.Lock()
         self._claimed: set[str] = set()
         self._backoff = 0.0
-        self._awaiting_claim: dict[str, int] = {}  # drop id -> forced fetches so far
+        self._awaiting_claim: dict[str, datetime] = {}  # drop id -> stop forcing re-fetches at
+        self._gave_up_claim: set[str] = set()
+        self._refresh_backoff = 0.0
+        self._retry_refresh_at: datetime | None = None
 
     # --- commands
     def pause(self, until: datetime | None) -> None:
@@ -109,7 +112,7 @@ class Runner:
                 self._campaigns_at = now
                 if await self._catch_up_claims(now):
                     self.campaigns = await self._client.campaigns()
-                self._settle_awaiting()
+                self._settle_awaiting(now)
             self.live = await self._client.live_channels(self.campaigns, prefs, now)
         except AuthExpired:
             self.watching = None
@@ -117,9 +120,13 @@ class Runner:
             return
         except TWITCH_ERRORS as exc:
             log.warning("Refresh failed: %s: %s", type(exc).__name__, exc)
+            self._refresh_backoff = (min(self._refresh_backoff * 2, BACKOFF_MAX)
+                                     if self._refresh_backoff else BACKOFF_START)
+            self._retry_refresh_at = now + timedelta(seconds=self._refresh_backoff)
             self._set_state(State.TWITCH_UNREACHABLE, {"error": f"{type(exc).__name__}: {exc}"})
             return
         self.last_refresh = now
+        self._refresh_backoff, self._retry_refresh_at = 0.0, None
         self._excluded = {k: v for k, v in self._excluded.items() if v > now}
         usable = [c for c in self.live if c.login not in self._excluded]
         previous = self.watching
@@ -148,13 +155,15 @@ class Runner:
         else:
             self._set_state(State.MINING)
 
-    def _settle_awaiting(self) -> None:
-        """Stop forcing campaign fetches for drops that are claimed, gone, or tried for ~1 h."""
-        for drop_id in list(self._awaiting_claim):
+    def _settle_awaiting(self, now: datetime) -> None:
+        """Stop forcing campaign fetches for drops that are claimed, gone, or waited on for 1 h."""
+        for drop_id, deadline in list(self._awaiting_claim.items()):
             d = next((d for c in self.campaigns if (d := c.drop(drop_id))), None)
-            self._awaiting_claim[drop_id] += 1
-            if d is None or d.claimed or self._awaiting_claim[drop_id] > MAX_CLAIM_WAIT_FETCHES:
+            if d is None or d.claimed:
                 del self._awaiting_claim[drop_id]
+            elif now >= deadline:
+                del self._awaiting_claim[drop_id]
+                self._gave_up_claim.add(drop_id)  # never re-armed this run
 
     async def _catch_up_claims(self, now: datetime) -> bool:
         """Claim anything Twitch has issued a claim id for (reference can_claim). Lock held."""
@@ -191,8 +200,11 @@ class Runner:
                 self._set_state(State.PAUSED)
                 return
             self.resume()
-        if (self.last_refresh is None or now - self.last_refresh >= REFRESH_EVERY
-                or self.state == State.TWITCH_UNREACHABLE):
+        if self.state == State.TWITCH_UNREACHABLE and self._retry_refresh_at is not None:
+            due = now >= self._retry_refresh_at  # back off while Twitch is failing
+        else:
+            due = self.last_refresh is None or now - self.last_refresh >= REFRESH_EVERY
+        if due:
             await self.refresh()
         if self.watching is None:
             return
@@ -215,11 +227,13 @@ class Runner:
             except TWITCH_ERRORS as exc:
                 log.info("Progress resync failed: %s", type(exc).__name__)
                 cur = None
+            self._ticks_since_progress = 0  # whatever the outcome, wait STALL_TICKS again
             if cur:
                 await self.handle(DropProgress(cur[0], cur[1], -1))
 
     async def safe_tick(self) -> float:
         """One tick that never raises. Returns how long to sleep before the next one."""
+        started = self._clock()
         try:
             await self.tick()
         except Exception as exc:  # noqa: BLE001  the loop must survive anything
@@ -228,7 +242,8 @@ class Runner:
             self._backoff = min(self._backoff * 2, BACKOFF_MAX) if self._backoff else BACKOFF_START
             return self._backoff
         self._backoff = 0.0
-        return float(PLAY_INTERVAL)
+        elapsed = (self._clock() - started).total_seconds()
+        return max(0.0, PLAY_INTERVAL - elapsed)  # keep a steady 10 s period like the reference
 
     async def handle(self, event: object) -> None:
         if isinstance(event, DropProgress):
@@ -239,7 +254,8 @@ class Runner:
                     self.campaigns[i] = with_drop(c, replace(d, current_minutes=event.current))
                     if event.current >= d.required_minutes > 0 and not d.claimed:
                         # Twitch may never send drop-claim; fetch the claim id at the next refresh
-                        self._awaiting_claim.setdefault(d.id, 0)
+                        if d.id not in self._gave_up_claim:
+                            self._awaiting_claim.setdefault(d.id, self._clock() + CLAIM_WAIT)
             self._emit("progress", {"drop": event.drop_id, "minutes": event.current})
         elif isinstance(event, DropClaimable):
             async with self._lock:

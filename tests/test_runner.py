@@ -129,7 +129,8 @@ async def test_three_heartbeat_failures_drop_the_channel():
     r = runner(c, w)
     await r.refresh()
     bad = r.watching.login
-    for _ in range(3):
+    from dropsminer.runner import FAILS_BEFORE_SWITCH
+    for _ in range(FAILS_BEFORE_SWITCH):
         await r.tick()
     assert w.forgotten == [bad]
     assert r.watching.login != bad
