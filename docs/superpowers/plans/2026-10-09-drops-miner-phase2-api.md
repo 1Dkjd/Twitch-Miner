@@ -1285,7 +1285,7 @@ async def test_me_and_setup_flow(tmp_path):
         r = await c.post("/api/setup", json={"password": "correct horse"})
         assert r.status_code == 204 and "dm_session" in r.cookies
         assert (await c.get("/api/me")).json() == {"authenticated": True, "setup_required": False}
-        assert (await c.get("/api/state")).status_code == 200
+        assert (await c.get("/api/state")).status_code != 401  # cookie accepted (stub until Task 7)
 
 
 async def test_setup_refused_once_password_exists(tmp_path):
