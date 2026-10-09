@@ -185,3 +185,25 @@ async def test_safe_tick_paces_at_play_interval():
     r = runner(FakeClient([camp()], [chan("a", 7)]))
     await r.refresh()
     assert await r.safe_tick() == PLAY_INTERVAL
+
+
+async def test_completed_drop_is_claimed_at_next_refresh_not_hourly():
+    # Twitch may never send drop-claim on PubSub: a drop reaching its minutes must trigger a
+    # campaign re-fetch (to pick up the claim id) at the next 5-minute refresh, not an hour later.
+    now = [NOW]
+
+    class C(FakeClient):
+        fetches = 0
+
+        async def campaigns(self):
+            C.fetches += 1
+            if C.fetches > 1:   # Twitch has issued the claim id by the next fetch
+                return [camp(cur=60, claim_id="inst")]
+            return [camp(cur=50)]
+    c = C([camp(cur=50)], [chan("a", 7)])
+    r = Runner(c, FakeWatcher(), FakePubSub(), FakeStore(), user_id=42, clock=lambda: now[0])
+    await r.refresh()
+    await r.handle(DropProgress("d1", 60, 60))
+    now[0] = NOW + timedelta(minutes=6)
+    await r.tick()
+    assert c.claims == ["inst"]

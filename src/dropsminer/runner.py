@@ -30,6 +30,7 @@ STALL_TICKS = 18  # ticks are PLAY_INTERVAL (10 s) apart: resync after ~3 min of
 EXCLUDE_FOR = timedelta(minutes=10)
 REFRESH_EVERY = timedelta(minutes=5)
 CAMPAIGNS_EVERY = timedelta(hours=1)
+MAX_CLAIM_WAIT_FETCHES = 12  # ~1 h of 5-minute refreshes; the hourly fetch covers the rest
 BACKOFF_START, BACKOFF_MAX = 60.0, 600.0
 # GqlError covers TwitchUnreachable; the rest are unexpected response shapes from parsing.
 TWITCH_ERRORS = (GqlError, KeyError, TypeError, ValueError)
@@ -68,6 +69,7 @@ class Runner:
         self._lock = asyncio.Lock()
         self._claimed: set[str] = set()
         self._backoff = 0.0
+        self._awaiting_claim: dict[str, int] = {}  # drop id -> forced fetches so far
 
     # --- commands
     def pause(self, until: datetime | None) -> None:
@@ -100,12 +102,14 @@ class Runner:
         now = self._clock()
         prefs = self._store.get_prefs()
         try:
-            due = self._campaigns_at is None or now - self._campaigns_at >= CAMPAIGNS_EVERY
+            due = (self._campaigns_at is None or now - self._campaigns_at >= CAMPAIGNS_EVERY
+                   or bool(self._awaiting_claim))
             if force_campaigns or due:
                 self.campaigns = await self._client.campaigns()
                 self._campaigns_at = now
                 if await self._catch_up_claims(now):
                     self.campaigns = await self._client.campaigns()
+                self._settle_awaiting()
             self.live = await self._client.live_channels(self.campaigns, prefs, now)
         except AuthExpired:
             self.watching = None
@@ -143,6 +147,14 @@ class Runner:
             self._set_state(State.SWITCHED, info)
         else:
             self._set_state(State.MINING)
+
+    def _settle_awaiting(self) -> None:
+        """Stop forcing campaign fetches for drops that are claimed, gone, or tried for ~1 h."""
+        for drop_id in list(self._awaiting_claim):
+            d = next((d for c in self.campaigns if (d := c.drop(drop_id))), None)
+            self._awaiting_claim[drop_id] += 1
+            if d is None or d.claimed or self._awaiting_claim[drop_id] > MAX_CLAIM_WAIT_FETCHES:
+                del self._awaiting_claim[drop_id]
 
     async def _catch_up_claims(self, now: datetime) -> bool:
         """Claim anything Twitch has issued a claim id for (reference can_claim). Lock held."""
@@ -225,6 +237,9 @@ class Runner:
                 d = c.drop(event.drop_id)
                 if d is not None:
                     self.campaigns[i] = with_drop(c, replace(d, current_minutes=event.current))
+                    if event.current >= d.required_minutes > 0 and not d.claimed:
+                        # Twitch may never send drop-claim; fetch the claim id at the next refresh
+                        self._awaiting_claim.setdefault(d.id, 0)
             self._emit("progress", {"drop": event.drop_id, "minutes": event.current})
         elif isinstance(event, DropClaimable):
             async with self._lock:
