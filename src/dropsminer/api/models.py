@@ -1,0 +1,137 @@
+"""Request/response models. Field names are the contract phase 3's UI types are generated from."""
+from __future__ import annotations
+
+from datetime import datetime
+
+from pydantic import BaseModel, Field, StrictBool
+
+
+class RewardOut(BaseModel):
+    name: str
+    image_url: str
+
+
+class DropOut(BaseModel):
+    id: str
+    name: str
+    required_minutes: int
+    current_minutes: int
+    claimed: bool
+    starts_at: datetime
+    ends_at: datetime
+    rewards: list[RewardOut]
+
+
+class CampaignOut(BaseModel):
+    id: str
+    name: str
+    game: str
+    box_art_url: str
+    ends_at: datetime
+    linked: bool
+    link_url: str
+    allowed_channels: list[str]
+    minutes_needed: int
+    verdict: str | None
+    drops: list[DropOut]
+
+
+class ChannelOut(BaseModel):
+    login: str
+    viewers: int
+    favourite: bool
+
+
+class CurrentOut(BaseModel):
+    campaign: CampaignOut
+    channel: ChannelOut
+    reason: str
+    channel_reason: str
+    also_credited: list[str]
+
+
+class StateOut(BaseModel):
+    state: str
+    signed_in: bool
+    login: str | None
+    paused_until: datetime | None
+    last_refresh: datetime | None
+    current: CurrentOut | None
+    needs_you: list[CampaignOut]
+    up_next: list[CampaignOut]
+    done: list[CampaignOut]
+
+
+class ListsIn(BaseModel):
+    priority: list[str] = Field(default_factory=list, max_length=200)
+    never: list[str] = Field(default_factory=list, max_length=200)
+    favourites: list[str] = Field(default_factory=list, max_length=200)
+
+
+class ListsOut(BaseModel):
+    priority: list[str]
+    never: list[str]
+    favourites: list[str]
+
+
+class SettingsIn(BaseModel):
+    # StrictBool: pydantic's lax mode would turn "yes" or 1 into True
+    mine_badges: StrictBool | None = None
+    claim_points: StrictBool | None = None
+    notify_target: str | None = Field(default=None, max_length=500)
+    notify_claimed: StrictBool | None = None
+    notify_needs_you: StrictBool | None = None
+    notify_signin: StrictBool | None = None
+
+
+class SettingsOut(BaseModel):
+    mine_badges: bool
+    claim_points: bool
+    notify_target: str
+    notify_claimed: bool
+    notify_needs_you: bool
+    notify_signin: bool
+
+
+class PasswordIn(BaseModel):
+    password: str = Field(max_length=200)
+
+
+class PauseIn(BaseModel):
+    minutes: int | None = Field(default=None, ge=1, le=1440)
+
+
+class MineNowIn(BaseModel):
+    campaign_id: str = Field(min_length=1, max_length=100)
+
+
+class ChannelIn(BaseModel):
+    login: str = Field(min_length=1, max_length=50, pattern=r"^[A-Za-z0-9_]+$")
+
+
+class ClaimOut(BaseModel):
+    at: datetime
+    campaign_id: str
+    campaign: str
+    game: str
+    rewards: list[RewardOut]
+
+
+class HistoryOut(BaseModel):
+    total_rewards: int
+    claims: list[ClaimOut]  # newest first; the page groups by the viewer's local day
+
+
+class SignInStatus(BaseModel):
+    status: str  # idle | running | done | failed
+    message: str = ""
+
+
+class MeOut(BaseModel):
+    authenticated: bool
+    setup_required: bool
+
+
+class SuggestionsOut(BaseModel):
+    games: list[str]
+    channels: list[str]

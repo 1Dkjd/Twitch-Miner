@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import logging
 import os
 from pathlib import Path
@@ -72,6 +73,49 @@ def cmd_lists(store: Store, args: argparse.Namespace) -> int:
     return 0
 
 
+def build_app_for_schema():
+    from .api.app import AppContext, create_app
+    return create_app(AppContext(store=None, bus=None, service=None, signin=None))
+
+
+def server_config(app, host: str, port: int):
+    import uvicorn
+
+    return uvicorn.Config(app, host=host, port=port, log_config=None, access_log=False)
+
+
+async def serve(store: Store, host: str, port: int) -> int:
+    import uvicorn
+
+    from .api.app import AppContext, create_app
+    from .api.signin import SignInManager
+    from .events import EventBus
+    from .service import MinerService
+
+    bus = EventBus()
+    service = MinerService(store, bus)
+
+    def provider():
+        t = AiohttpTransport()
+        return BrowserSignIn(t, report=lambda m: logging.getLogger("dropsminer.signin").info(m)), t.close
+
+    async def on_signed_in() -> None:
+        await service.stop()
+        await service.start()
+
+    signin = SignInManager(store, bus, provider, on_signed_in)
+    app = create_app(AppContext(store=store, bus=bus, service=service, signin=signin))
+    started = await service.start()
+    logging.getLogger("dropsminer").info(
+        "Serving on http://%s:%s (%s)", host, port, "mining" if started else "not signed in to Twitch")
+    server = uvicorn.Server(server_config(app, host, port))
+    try:
+        await server.serve()
+    finally:
+        await service.stop()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="dropsminer")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -84,6 +128,11 @@ def main(argv: list[str] | None = None) -> int:
     ls.add_argument("--favourites")
     ls.add_argument("--show", action="store_true")
     sub.add_parser("run")
+    sv = sub.add_parser("serve")
+    sv.add_argument("--host", default="127.0.0.1")
+    sv.add_argument("--port", type=int, default=5810)
+    oa = sub.add_parser("openapi")
+    oa.add_argument("--out", type=Path, default=Path("docs/api/openapi.json"))
     args = ap.parse_args(argv)
     store = Store(data_dir() / "drops.db")
     setup_logging(store)
@@ -96,4 +145,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "run":
         from .runner import run_cli  # added in Task 11
         return asyncio.run(run_cli(store))
+    if args.cmd == "serve":
+        return asyncio.run(serve(store, args.host, args.port))
+    if args.cmd == "openapi":
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        text = json.dumps(build_app_for_schema().openapi(), indent=1, sort_keys=True) + "\n"
+        args.out.write_bytes(text.encode("utf-8"))
+        print(f"wrote {args.out}")
+        return 0
     return 2

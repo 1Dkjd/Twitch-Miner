@@ -4,12 +4,17 @@ Synchronous sqlite3. Every call is a few milliseconds, so the runner calls it di
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import secrets
 import sqlite3
 from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+
+from argon2 import PasswordHasher
+from argon2.exceptions import VerificationError
 
 from .models import Prefs
 from .twitch.session import TwitchSession
@@ -23,8 +28,20 @@ CREATE TABLE IF NOT EXISTS priority (position INTEGER PRIMARY KEY, game_name TEX
 CREATE TABLE IF NOT EXISTS never (game_name TEXT PRIMARY KEY);
 CREATE TABLE IF NOT EXISTS favourites (position INTEGER PRIMARY KEY, channel_login TEXT NOT NULL UNIQUE);
 CREATE TABLE IF NOT EXISTS events (at TEXT NOT NULL, kind TEXT NOT NULL, data TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS claims (at TEXT NOT NULL, campaign_id TEXT NOT NULL, campaign TEXT NOT NULL,
+  game TEXT NOT NULL, rewards TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS web_sessions (token_hash TEXT PRIMARY KEY, expires_at TEXT NOT NULL);
 """
 EVENT_RETENTION = timedelta(days=7)
+SESSION_TTL = timedelta(days=30)
+MIN_PASSWORD = 8
+SETTINGS: dict[str, type] = {
+    "mine_badges": bool, "claim_points": bool, "notify_target": str,
+    "notify_claimed": bool, "notify_needs_you": bool, "notify_signin": bool,
+}
+SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True, "notify_target": "",
+                    "notify_claimed": True, "notify_needs_you": True, "notify_signin": True}
+_ph = PasswordHasher()
 
 
 class Store:
@@ -66,18 +83,20 @@ class Store:
         fv = tuple(
             r[0] for r in self._db.execute("SELECT channel_login FROM favourites ORDER BY position")
         )
-        return Prefs(pr, nv, fv, self.get_setting("mine_badges") == "1")
+        return Prefs(pr, nv, fv, self.get_settings()["mine_badges"])
 
     def set_lists(
         self, priority: Sequence[str], never: Iterable[str], favourites: Sequence[str]
     ) -> None:
+        pr = list(dict.fromkeys(priority))
+        fv = list(dict.fromkeys(f.strip().lower() for f in favourites if f.strip()))
         with self._db:
             self._db.execute("DELETE FROM priority")
             self._db.execute("DELETE FROM never")
             self._db.execute("DELETE FROM favourites")
-            self._db.executemany("INSERT INTO priority VALUES (?, ?)", enumerate(priority))
-            self._db.executemany("INSERT INTO never VALUES (?)", [(g,) for g in never])
-            self._db.executemany("INSERT INTO favourites VALUES (?, ?)", enumerate(favourites))
+            self._db.executemany("INSERT INTO priority VALUES (?, ?)", enumerate(pr))
+            self._db.executemany("INSERT INTO never VALUES (?)", [(g,) for g in dict.fromkeys(never)])
+            self._db.executemany("INSERT INTO favourites VALUES (?, ?)", enumerate(fv))
 
     def get_setting(self, key: str, default: str | None = None) -> str | None:
         row = self._db.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
@@ -106,3 +125,80 @@ class Store:
             "SELECT at, kind, data FROM events ORDER BY at DESC LIMIT ?", (limit,)
         )
         return [(kind, at, json.loads(data)) for at, kind, data in rows]
+
+    # --- typed settings
+    def get_settings(self) -> dict:
+        out = dict(SETTING_DEFAULTS)
+        for key, kind in SETTINGS.items():
+            raw = self.get_setting(key)
+            if raw is not None:
+                out[key] = (raw == "1") if kind is bool else raw
+        return out
+
+    def put_settings(self, values: dict) -> dict:
+        for key, value in values.items():
+            kind = SETTINGS.get(key)
+            if kind is None:
+                raise ValueError(f"unknown setting {key!r}")
+            if type(value) is not kind:
+                raise ValueError(f"{key} must be {kind.__name__}")
+        for key, value in values.items():
+            self.set_setting(key, ("1" if value else "0") if SETTINGS[key] is bool else value)
+        return self.get_settings()
+
+    # --- claims
+    def add_claim(self, at: datetime, campaign_id: str, campaign: str, game: str,
+                  rewards: list[tuple[str, str]]) -> None:
+        payload = json.dumps([{"name": n, "image_url": u} for n, u in rewards])
+        with self._db:
+            self._db.execute("INSERT INTO claims VALUES (?, ?, ?, ?, ?)",
+                             (at.astimezone(UTC).isoformat(), campaign_id, campaign, game, payload))
+
+    def claims_since(self, since: datetime) -> list[dict]:
+        rows = self._db.execute(
+            "SELECT at, campaign_id, campaign, game, rewards FROM claims WHERE at >= ? ORDER BY at DESC",
+            (since.astimezone(UTC).isoformat(),))
+        return [{"at": datetime.fromisoformat(at), "campaign_id": cid, "campaign": camp, "game": game,
+                 "rewards": json.loads(rw)} for at, cid, camp, game, rw in rows]
+
+    # --- page password (argon2) and web sessions (sha256 of the token only)
+    def has_password(self) -> bool:
+        return self.get_setting("page_password_hash") is not None
+
+    def set_password(self, plain: str) -> None:
+        if len(plain) < MIN_PASSWORD:
+            raise ValueError(f"password must be at least {MIN_PASSWORD} characters")
+        self.set_setting("page_password_hash", _ph.hash(plain))
+
+    def check_password(self, plain: str) -> bool:
+        h = self.get_setting("page_password_hash")
+        if h is None:
+            return False
+        try:
+            return _ph.verify(h, plain)
+        except VerificationError:
+            return False
+
+    @staticmethod
+    def _token_hash(token: str) -> str:
+        return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+    def create_web_session(self, now: datetime) -> str:
+        token = secrets.token_urlsafe(32)
+        with self._db:
+            self._db.execute("INSERT INTO web_sessions VALUES (?, ?)",
+                             (self._token_hash(token), (now + SESSION_TTL).astimezone(UTC).isoformat()))
+            self._db.execute("DELETE FROM web_sessions WHERE expires_at < ?",
+                             (now.astimezone(UTC).isoformat(),))
+        return token
+
+    def valid_web_session(self, token: str | None, now: datetime) -> bool:
+        if not token:
+            return False
+        row = self._db.execute("SELECT expires_at FROM web_sessions WHERE token_hash = ?",
+                               (self._token_hash(token),)).fetchone()
+        return bool(row) and datetime.fromisoformat(row[0]) > now
+
+    def delete_web_session(self, token: str) -> None:
+        with self._db:
+            self._db.execute("DELETE FROM web_sessions WHERE token_hash = ?", (self._token_hash(token),))

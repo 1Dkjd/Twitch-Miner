@@ -137,23 +137,28 @@ class Runner:
                          current_campaign=self.plan.current.campaign_id
                          if self.plan and self.plan.current else None)
         cur = self.plan.current
+        # spec §6: overrides last only while the plan still honours them
+        if self._override_campaign and (cur is None or cur.campaign_id != self._override_campaign):
+            self._override_campaign = None
+        if self._override_channel and (cur is None or cur.channel_login != self._override_channel):
+            self._override_channel = None
         self.watching = next((c for c in usable if cur and c.login == cur.channel_login), None)
         topics = {topic("user_drops", self._user_id), topic("user_notifications", self._user_id)}
         if self.watching:
             topics |= {topic("stream_state", self.watching.id), topic("stream_update", self.watching.id)}
         self._pubsub.set_topics(topics)
-        if self._paused:
-            return
-        if self.watching is None:
-            self._set_state(State.IDLE)
-        elif previous and previous.login != self.watching.login:
-            self._fails = 0
-            info = {"from": previous.login, "to": self.watching.login}
-            self._emit("switched", info)
-            self._store.log_event("switched", info)
-            self._set_state(State.SWITCHED, info)
-        else:
-            self._set_state(State.MINING)
+        if not self._paused:
+            if self.watching is None:
+                self._set_state(State.IDLE)
+            elif previous and previous.login != self.watching.login:
+                self._fails = 0
+                info = {"from": previous.login, "to": self.watching.login}
+                self._emit("switched", info)
+                self._store.log_event("switched", info)
+                self._set_state(State.SWITCHED, info)
+            else:
+                self._set_state(State.MINING)
+        self._emit("refreshed", {"at": now.isoformat()})
 
     def _settle_awaiting(self, now: datetime) -> None:
         """Stop forcing campaign fetches for drops that are claimed, gone, or waited on for 1 h."""
@@ -189,6 +194,9 @@ class Runner:
             info = {"campaign": c.name, "reward": ", ".join(r.name for r in d.rewards) if d else drop_id}
             self._emit("claimed", info)
             self._store.log_event("claimed", info)
+            if hasattr(self._store, "add_claim"):
+                self._store.add_claim(self._clock(), c.id, c.name, c.game.name,
+                                      [(r.name, r.image_url) for r in (d.rewards if d else ())])
             return True
         self._store.log_event("claim_failed", {"campaign": c.name, "drop": drop_id})
         return False
@@ -285,43 +293,17 @@ class Runner:
 
 
 async def run_cli(store) -> int:
-    """`dropsminer run`: wire the real pieces and loop until Ctrl+C or the session expires."""
-    from .twitch.client import TwitchClient
-    from .twitch.gql import Gql
-    from .twitch.pubsub import PubSub
-    from .twitch.transport import AiohttpTransport
-    from .twitch.watch import Watcher
+    """`dropsminer run`: headless mining until Ctrl+C or the Twitch session expires."""
+    from .events import EventBus
+    from .service import MinerService
 
-    session = store.get_session()
-    if session is None:
+    svc = MinerService(store, EventBus())
+    if not await svc.start():
         print("Not signed in. Run: dropsminer signin")
         return 1
-    transport = AiohttpTransport()
-    pubsub = PubSub(lambda: session.access_token)
-
-    def emit(kind: str, data: dict) -> None:
-        log.info("%s %s", kind, data)
-
-    gql = Gql(transport, lambda: session)
-    r = Runner(TwitchClient(gql, session.user_id),
-               Watcher(transport, lambda: session, gql), pubsub, store,
-               user_id=session.user_id, emit=emit)
-
-    async def events() -> None:
-        async for ev in pubsub.events():
-            await r.safe_handle(ev)
-
-    events_task = asyncio.create_task(events())
     try:
-        await r.refresh()
-        while True:
-            if r.state == State.SIGNED_OUT:
-                break
-            delay = await r.safe_tick()
-            await asyncio.sleep(delay)
-        print("Twitch session expired. Run: dropsminer signin")
-        return 1
+        await svc.wait_stopped()
     finally:
-        events_task.cancel()
-        await pubsub.close()
-        await transport.close()
+        await svc.stop()
+    print("Twitch session expired. Run: dropsminer signin")
+    return 1
