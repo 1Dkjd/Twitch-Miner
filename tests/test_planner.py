@@ -154,3 +154,42 @@ def test_ties_are_deterministic(now):
     live = [ch("x", PALIA), ch("y", PHAS)]
     assert plan([b, a], live, Prefs(), now).current.campaign_id == "a"
     assert plan([a, b], live, Prefs(), now).current.campaign_id == "a"
+
+
+def test_unlinked_campaign_with_nothing_left_is_not_needs_you(now):
+    c = mk(now, "old", PALIA, linked=False, claimed=True)
+    assert plan([c], [ch("a", PALIA)], Prefs(), now).needs_you == ()
+
+
+def test_partly_claimed_campaign_is_not_done(now):
+    d1 = Drop("p-1", "d", (R,), now - timedelta(days=1), now + timedelta(days=4), 60, 60, True, None)
+    d2 = Drop("p-2", "d", (R,), now - timedelta(days=1), now + timedelta(days=4), 120, 60, False, None)
+    c = Campaign("p", "p", PALIA, now - timedelta(days=1), now + timedelta(days=4), True, "", (), (d1, d2))
+    p = plan([c], [ch("a", PALIA)], Prefs(), now)
+    assert p.done == ()
+    assert p.current.campaign_id == "p"
+
+
+def test_drop_not_started_is_not_mined_yet(now):
+    later = Drop("l-1", "d", (R,), now + timedelta(hours=2), now + timedelta(days=4), 60, 0, False, None)
+    c = Campaign("l", "l", PALIA, now - timedelta(days=1), now + timedelta(days=4), True, "", (), (later,))
+    assert plan([c], [ch("a", PALIA)], Prefs(), now).current is None
+
+
+def test_favourite_list_order_decides_between_live_favourites(now):
+    c = mk(now, "palia", PALIA)
+    live = [ch("second", PALIA, 900), ch("first", PALIA, 5)]
+    p = plan([c], live, Prefs(favourites=("first", "second")), now)
+    assert p.current.channel_login == "first"
+
+
+def test_inactive_campaigns_are_ignored(now):
+    past, gone = now - timedelta(days=9), now - timedelta(hours=1)
+    soon, later = now + timedelta(days=1), now + timedelta(days=9)
+    ended = Campaign("e", "e", PALIA, past, gone, True, "", (),
+                     (Drop("e-1", "d", (R,), past, gone, 60, 60, True, None),))
+    upcoming = Campaign("u", "u", PHAS, soon, later, False, "", (),
+                        (Drop("u-1", "d", (R,), soon, later, 60, 0, False, None),))
+    p = plan([ended, upcoming], [ch("a", PALIA)], Prefs(), now)
+    assert p.done == ()
+    assert p.needs_you == ()
