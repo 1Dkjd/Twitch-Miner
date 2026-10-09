@@ -9,6 +9,7 @@ from .models import (
     Campaign,
     LiveChannel,
     Prefs,
+    account_eligible,
     campaign_active,
     campaign_minutes_needed,
     campaign_ratio,
@@ -43,10 +44,6 @@ def _qualifies(c: Campaign, ch: LiveChannel) -> bool:
     return c.game.special or ch.game_id == c.game.id
 
 
-def _account_ok(c: Campaign, prefs: Prefs) -> bool:
-    return prefs.mine_badges if c.has_badge_or_emote else c.linked
-
-
 def _channel_rank(c: Campaign, ch: LiveChannel, prefs: Prefs) -> tuple:
     if ch.login in prefs.favourites:
         return (0, prefs.favourites.index(ch.login), -ch.viewers, ch.login)
@@ -67,6 +64,7 @@ def plan(
     watching: str | None = None,
     override_campaign: str | None = None,
     override_channel: str | None = None,
+    current_campaign: str | None = None,
 ) -> Plan:
     considered = [c for c in campaigns if campaign_active(c, now) and c.game.name not in prefs.never]
     needs_you = tuple(
@@ -84,7 +82,7 @@ def plan(
 
     qualifying: dict[str, list[LiveChannel]] = {}
     for c in considered:
-        if not _account_ok(c, prefs):
+        if not account_eligible(c, prefs):
             continue
         if not any(drop_earnable_now(c, d, now) for d in c.drops):
             continue
@@ -104,6 +102,8 @@ def plan(
         return Plan(None, (), needs_you, done, verdicts, ())
 
     chosen = next((c for c in eligible if c.id == override_campaign), eligible[0])
+    if chosen.id != override_campaign:
+        chosen = _hold_current(chosen, eligible, current_campaign, prefs, now)
     if chosen.id == override_campaign:
         reason = "you picked it"
     elif chosen.game.name in prefs.priority:
@@ -136,3 +136,25 @@ def _favourite_outranks(c: Campaign, best: LiveChannel, current: LiveChannel, pr
     if best.login not in prefs.favourites or best.login == current.login:
         return False
     return _channel_rank(c, best, prefs) < _channel_rank(c, current, prefs)
+
+
+HYSTERESIS = 0.8  # a challenger must have 20% less spare time to take over
+
+
+def _hold_current(
+    chosen: Campaign, eligible: list[Campaign], current: str | None, prefs: Prefs, now: datetime
+) -> Campaign:
+    """Keep mining the current non-priority campaign unless the challenger is clearly more urgent.
+
+    Mining a campaign raises its spare-time ratio while the others fall, so a strict re-sort
+    every refresh would alternate between near-equal campaigns. Priority order always wins.
+    """
+    cur = next((c for c in eligible if c.id == current), None)
+    if cur is None or cur.id == chosen.id:
+        return chosen
+    if cur.game.name in prefs.priority or chosen.game.name in prefs.priority:
+        return chosen
+    rc, rn = campaign_ratio(cur, now), campaign_ratio(chosen, now)
+    if rn < HYSTERESIS * rc or rn < 1 <= rc:
+        return chosen
+    return cur

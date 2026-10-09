@@ -121,7 +121,18 @@ def drop_open(c: Campaign, d: Drop, now: datetime) -> bool:
 
 
 def drop_earnable_now(c: Campaign, d: Drop, now: datetime) -> bool:
-    return _earn_conditions(c, d) and preconditions_met(c, d) and d.starts_at <= now < d.ends_at
+    # A drop at full minutes but not yet claimed earns nothing more; claiming is the runner's job.
+    return (
+        _earn_conditions(c, d)
+        and d.current_minutes < d.required_minutes
+        and preconditions_met(c, d)
+        and d.starts_at <= now < d.ends_at
+    )
+
+
+def account_eligible(c: Campaign, prefs: Prefs) -> bool:
+    """Badge/emote campaigns need no account link but are opt-in (reference enable_badges_emotes)."""
+    return prefs.mine_badges if c.has_badge_or_emote else c.linked
 
 
 def total_remaining(c: Campaign, d: Drop) -> int:

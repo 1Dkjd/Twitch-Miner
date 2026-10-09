@@ -174,14 +174,18 @@ class PubSub:
                 return
             if msg.type != aiohttp.WSMsgType.TEXT:
                 continue
-            data = json.loads(msg.data)
-            kind = data.get("type")
+            try:
+                data = json.loads(msg.data)
+                kind = data.get("type")
+            except (ValueError, AttributeError):
+                log.warning("Skipping malformed PubSub frame")
+                continue
             if kind == "PONG":
                 pong_deadline = None
             elif kind == "RECONNECT":
                 return
             elif kind == "MESSAGE":
-                t = data["data"]["topic"]
+                t = (data.get("data") or {}).get("topic", "?")
                 try:
                     ev = parse_message(t, json.loads(data["data"]["message"]))
                 except (KeyError, ValueError, TypeError) as exc:

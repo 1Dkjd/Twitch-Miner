@@ -4,7 +4,14 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from ..models import Campaign, LiveChannel, Prefs, campaign_active
+from ..models import (
+    Campaign,
+    LiveChannel,
+    Prefs,
+    account_eligible,
+    campaign_active,
+    drop_earnable_now,
+)
 from . import parse
 from .gql import GqlError, op
 
@@ -44,15 +51,21 @@ class TwitchClient:
     async def live_channels(
         self, campaigns: list[Campaign], prefs: Prefs, now: datetime
     ) -> list[LiveChannel]:
-        wanted = {c.game.id: c.game for c in campaigns
-                  if campaign_active(c, now) and c.game.name not in prefs.never}
+        # Only campaigns the planner could actually pick: active, not Never, account-eligible,
+        # with a drop earnable now. Games whose minable campaigns are all channel-restricted
+        # need no directory lookup, only their allowed channels (reference twitch.py ~760-800).
+        minable = [c for c in campaigns
+                   if campaign_active(c, now) and c.game.name not in prefs.never
+                   and account_eligible(c, prefs)
+                   and any(drop_earnable_now(c, d, now) for d in c.drops)]
+        open_games = {c.game.id: c.game for c in minable if not c.allowed_logins}
         seen: dict[str, LiveChannel] = {}
-        for game in wanted.values():
+        for game in open_games.values():
             resp = await self._gql.run(op("GameDirectory", slug=game.slug,
                                           options={"systemFilters": ["DROPS_ENABLED"]}))
             for ch in parse.directory_channels(resp, game):
                 seen.setdefault(ch.login, ch)
-        acl = {lg for c in campaigns if c.game.id in wanted for lg in c.allowed_logins} - set(seen)
+        acl = {lg for c in minable for lg in c.allowed_logins} - set(seen)
         acl |= set(prefs.favourites) - set(seen)
         if acl:
             for resp in await self._gql.run_many([op("GetStreamInfo", channel=lg) for lg in sorted(acl)]):

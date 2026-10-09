@@ -8,6 +8,8 @@ import re
 from collections.abc import Callable
 from datetime import datetime
 
+import aiohttp
+
 from ..models import LiveChannel
 from .constants import ANDROID_APP
 from .session import TwitchSession, base_headers
@@ -72,13 +74,18 @@ class Watcher:
         self._spade.pop(login, None)
 
     async def send(self, channel: LiveChannel, now: datetime) -> bool:
-        url = await self._spade_url(channel.login)
-        if url is None:
-            log.warning("No spade URL for %s", channel.login)
+        """True on HTTP 204. Network errors count as a failed heartbeat, never raise."""
+        try:
+            url = await self._spade_url(channel.login)
+            if url is None:
+                log.warning("No spade URL for %s", channel.login)
+                return False
+            s = self._session()
+            r = await self._t.request("POST", url, headers=base_headers(s, ANDROID_APP),
+                                      data=watch_payload(channel, s.user_id, now))
+        except (OSError, TimeoutError, aiohttp.ClientError) as exc:
+            log.warning("Heartbeat to %s failed: %s", channel.login, type(exc).__name__)
             return False
-        s = self._session()
-        r = await self._t.request("POST", url, headers=base_headers(s, ANDROID_APP),
-                                  data=watch_payload(channel, s.user_id, now))
         if r.status != 204:
             log.info("Heartbeat to %s returned HTTP %s", channel.login, r.status)
         return r.status == 204
