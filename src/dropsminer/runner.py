@@ -293,43 +293,17 @@ class Runner:
 
 
 async def run_cli(store) -> int:
-    """`dropsminer run`: wire the real pieces and loop until Ctrl+C or the session expires."""
-    from .twitch.client import TwitchClient
-    from .twitch.gql import Gql
-    from .twitch.pubsub import PubSub
-    from .twitch.transport import AiohttpTransport
-    from .twitch.watch import Watcher
+    """`dropsminer run`: headless mining until Ctrl+C or the Twitch session expires."""
+    from .events import EventBus
+    from .service import MinerService
 
-    session = store.get_session()
-    if session is None:
+    svc = MinerService(store, EventBus())
+    if not await svc.start():
         print("Not signed in. Run: dropsminer signin")
         return 1
-    transport = AiohttpTransport()
-    pubsub = PubSub(lambda: session.access_token)
-
-    def emit(kind: str, data: dict) -> None:
-        log.info("%s %s", kind, data)
-
-    gql = Gql(transport, lambda: session)
-    r = Runner(TwitchClient(gql, session.user_id),
-               Watcher(transport, lambda: session, gql), pubsub, store,
-               user_id=session.user_id, emit=emit)
-
-    async def events() -> None:
-        async for ev in pubsub.events():
-            await r.safe_handle(ev)
-
-    events_task = asyncio.create_task(events())
     try:
-        await r.refresh()
-        while True:
-            if r.state == State.SIGNED_OUT:
-                break
-            delay = await r.safe_tick()
-            await asyncio.sleep(delay)
-        print("Twitch session expired. Run: dropsminer signin")
-        return 1
+        await svc.wait_stopped()
     finally:
-        events_task.cancel()
-        await pubsub.close()
-        await transport.close()
+        await svc.stop()
+    print("Twitch session expired. Run: dropsminer signin")
+    return 1
