@@ -1,0 +1,138 @@
+"""Decide what to mine and where. Pure: no I/O and no clock reads (spec §6)."""
+from __future__ import annotations
+
+from collections.abc import Sequence
+from dataclasses import dataclass, field
+from datetime import datetime
+
+from .models import (
+    Campaign,
+    LiveChannel,
+    Prefs,
+    campaign_active,
+    campaign_minutes_needed,
+    campaign_ratio,
+    deadline_verdict,
+    drop_earnable_now,
+)
+
+
+@dataclass(frozen=True)
+class Choice:
+    campaign_id: str
+    channel_login: str
+    reason: str
+    channel_reason: str
+
+
+@dataclass(frozen=True)
+class Plan:
+    current: Choice | None
+    queue: tuple[str, ...] = ()
+    needs_you: tuple[str, ...] = ()
+    done: tuple[str, ...] = ()
+    verdicts: dict[str, str] = field(default_factory=dict)
+    also_credited: tuple[str, ...] = ()
+
+
+def _qualifies(c: Campaign, ch: LiveChannel) -> bool:
+    if not ch.drops_enabled:
+        return False
+    if c.allowed_logins and ch.login not in c.allowed_logins:
+        return False
+    return c.game.special or ch.game_id == c.game.id
+
+
+def _account_ok(c: Campaign, prefs: Prefs) -> bool:
+    return prefs.mine_badges if c.has_badge_or_emote else c.linked
+
+
+def _channel_rank(c: Campaign, ch: LiveChannel, prefs: Prefs) -> tuple:
+    if ch.login in prefs.favourites:
+        return (0, prefs.favourites.index(ch.login), -ch.viewers, ch.login)
+    if ch.login in c.allowed_logins:
+        return (1, 0, -ch.viewers, ch.login)
+    return (2, 0, -ch.viewers, ch.login)
+
+
+_TIER = {0: "favourite", 1: "allowed channel", 2: "any channel"}
+
+
+def plan(
+    campaigns: Sequence[Campaign],
+    live: Sequence[LiveChannel],
+    prefs: Prefs,
+    now: datetime,
+    *,
+    watching: str | None = None,
+    override_campaign: str | None = None,
+    override_channel: str | None = None,
+) -> Plan:
+    considered = [c for c in campaigns if campaign_active(c, now) and c.game.name not in prefs.never]
+    needs_you = tuple(
+        c.id for c in sorted(considered, key=lambda c: (c.ends_at, c.id))
+        if not c.linked and not c.has_badge_or_emote and campaign_minutes_needed(c, now) > 0
+    )
+    done = tuple(
+        c.id for c in sorted(considered, key=lambda c: (c.ends_at, c.id))
+        if c.drops and all(d.claimed for d in c.drops)
+    )
+    verdicts = {
+        c.id: deadline_verdict(campaign_ratio(c, now))
+        for c in considered if campaign_minutes_needed(c, now) > 0
+    }
+
+    qualifying: dict[str, list[LiveChannel]] = {}
+    for c in considered:
+        if not _account_ok(c, prefs):
+            continue
+        if not any(drop_earnable_now(c, d, now) for d in c.drops):
+            continue
+        chans = [ch for ch in live if _qualifies(c, ch)]
+        if chans:
+            qualifying[c.id] = sorted(chans, key=lambda ch: _channel_rank(c, ch, prefs))
+
+    eligible = [c for c in considered if c.id in qualifying]
+
+    def order(c: Campaign) -> tuple:
+        if c.game.name in prefs.priority:
+            return (0, prefs.priority.index(c.game.name), 0.0, c.ends_at, c.id)
+        return (1, 0, campaign_ratio(c, now), c.ends_at, c.id)
+
+    eligible.sort(key=order)
+    if not eligible:
+        return Plan(None, (), needs_you, done, verdicts, ())
+
+    chosen = next((c for c in eligible if c.id == override_campaign), eligible[0])
+    if chosen.id == override_campaign:
+        reason = "you picked it"
+    elif chosen.game.name in prefs.priority:
+        reason = f"priority {prefs.priority.index(chosen.game.name) + 1}"
+    else:
+        reason = "most urgent"
+
+    chans = qualifying[chosen.id]
+    best = chans[0]
+    by_login = {ch.login: ch for ch in chans}
+    if override_channel in by_login:
+        channel, channel_reason = by_login[override_channel], "you picked it"
+    elif watching in by_login and not _favourite_outranks(chosen, best, by_login[watching], prefs):
+        channel, channel_reason = by_login[watching], "already watching"
+    else:
+        channel, channel_reason = best, _TIER[_channel_rank(chosen, best, prefs)[0]]
+
+    also = tuple(
+        c.id for c in eligible
+        if c.id != chosen.id and c.game.id == chosen.game.id and _qualifies(c, channel)
+    )
+    queue = tuple(c.id for c in eligible if c.id != chosen.id)
+    return Plan(
+        Choice(chosen.id, channel.login, reason, channel_reason),
+        queue, needs_you, done, verdicts, also,
+    )
+
+
+def _favourite_outranks(c: Campaign, best: LiveChannel, current: LiveChannel, prefs: Prefs) -> bool:
+    if best.login not in prefs.favourites or best.login == current.login:
+        return False
+    return _channel_rank(c, best, prefs) < _channel_rank(c, current, prefs)
