@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi.responses import StreamingResponse
 
 from .auth import private_auth, public, require_session
 from .models import (
@@ -20,6 +21,7 @@ from .models import (
     StateOut,
     SuggestionsOut,
 )
+from .sse import sse_stream
 from .views import history_view, state_view
 
 api = APIRouter(prefix="/api", dependencies=[Depends(require_session)])
@@ -39,7 +41,7 @@ async def _todo() -> None:
 
 
 for _method, _path in [
-    ("GET", "/events"), ("POST", "/twitch/signin"), ("DELETE", "/twitch/signin"),
+    ("POST", "/twitch/signin"), ("DELETE", "/twitch/signin"),
     ("GET", "/twitch/signin"), ("POST", "/twitch/signout"),
 ]:
     api.add_api_route(_path, _todo, methods=[_method])
@@ -138,6 +140,13 @@ async def channel(body: ChannelIn, request: Request) -> None:
         raise HTTPException(status_code=404, detail="That channel isn't live with drops right now.")
     r.use_channel(login)
     await r.refresh()
+
+
+@api.get("/events")
+async def events(request: Request) -> StreamingResponse:
+    return StreamingResponse(sse_stream(_c(request).bus, request.is_disconnected),
+                             media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 def create_app(ctx: AppContext) -> FastAPI:
