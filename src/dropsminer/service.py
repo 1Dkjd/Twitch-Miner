@@ -40,12 +40,14 @@ def build_parts(store, session, emit) -> Parts:
 
 
 class MinerService:
+    """One miner at most: start/stop are serialized, and the loop tears itself down when it ends."""
+
     def __init__(self, store, bus: EventBus, build=build_parts):
         self._store, self._bus, self._build = store, bus, build
         self._parts: Parts | None = None
         self._tasks: list[asyncio.Task] = []
-        self._stopped = asyncio.Event()
-        self._stopped.set()
+        self._lock = asyncio.Lock()
+        self._reaper: asyncio.Task | None = None
 
     @property
     def runner(self) -> Runner | None:
@@ -60,46 +62,65 @@ class MinerService:
         self._bus.publish(kind, data)
 
     async def start(self) -> bool:
-        if self._parts is not None:
+        async with self._lock:
+            if self._parts is not None:
+                return True
+            session = self._store.get_session()
+            if session is None:
+                return False
+            parts = self._build(self._store, session, self._emit)
+            self._parts = parts
+            loop = asyncio.create_task(self._loop(parts))
+            loop.add_done_callback(self._loop_ended)
+            self._tasks = [loop, asyncio.create_task(self._events(parts))]
             return True
-        session = self._store.get_session()
-        if session is None:
-            return False
-        self._parts = self._build(self._store, session, self._emit)
-        self._stopped.clear()
-        self._tasks = [asyncio.create_task(self._loop()), asyncio.create_task(self._events())]
-        return True
 
-    async def _loop(self) -> None:
-        r = self._parts.runner
-        await r.refresh()
-        while r.state != State.SIGNED_OUT:
-            delay = await r.safe_tick()
+    async def _loop(self, parts: Parts) -> None:
+        r = parts.runner
+        while True:
+            delay = await r.safe_tick()  # the first tick refreshes; safe_tick never raises
+            if r.state == State.SIGNED_OUT:
+                break
             await asyncio.sleep(delay)
-        self._bus.publish("signin", {"status": "expired"})
+        self._store.clear_session()  # the token is dead: never retry it
+        self._bus.publish("signin", {"status": "expired",
+                                     "message": "Twitch session expired. Sign in again."})
 
-    async def _events(self) -> None:
-        pubsub = self._parts.pubsub
+    def _loop_ended(self, task: asyncio.Task) -> None:
+        if task.cancelled():
+            return  # stop() did this
+        if (exc := task.exception()) is not None:
+            log.error("Mining loop crashed; mining stopped", exc_info=exc)
+            self._bus.publish("state", {"state": "idle", "error": type(exc).__name__})
+        self._reaper = asyncio.get_running_loop().create_task(self.stop())
+
+    async def _events(self, parts: Parts) -> None:
+        pubsub = parts.pubsub
         if not hasattr(pubsub, "events"):
             return
         async for ev in pubsub.events():
-            await self._parts.runner.safe_handle(ev)
+            await parts.runner.safe_handle(ev)
 
     async def stop(self) -> None:
-        for t in self._tasks:
-            t.cancel()
-        for t in self._tasks:
-            with contextlib.suppress(asyncio.CancelledError, Exception):
-                await t
-        self._tasks = []
-        if self._parts is not None:
-            await self._parts.close()
-            self._parts = None
-        self._stopped.set()
+        async with self._lock:
+            # take ownership before the first await, so an overlapping start() can't be undone
+            parts, tasks = self._parts, self._tasks
+            self._parts, self._tasks = None, []
+            me = asyncio.current_task()
+            for t in tasks:
+                if t is not me:
+                    t.cancel()
+            for t in tasks:
+                if t is not me:
+                    with contextlib.suppress(asyncio.CancelledError, Exception):
+                        await t
+            if parts is not None:
+                await parts.close()
 
     async def wait_stopped(self) -> None:
+        """Until the mining loop ends (session expired or crash), then make sure it is torn down."""
         loop = self._tasks[0] if self._tasks else None
         if loop is not None:
-            with contextlib.suppress(asyncio.CancelledError):
+            with contextlib.suppress(asyncio.CancelledError, Exception):
                 await loop
         await self.stop()

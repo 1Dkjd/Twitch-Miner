@@ -8,6 +8,7 @@ from datetime import UTC, datetime, timedelta
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
+from ..runner import State
 from .auth import private_auth, public, require_session
 from .models import (
     ChannelIn,
@@ -98,7 +99,7 @@ async def get_history(request: Request, days: int = Query(30, ge=1, le=365)) -> 
 
 def _runner(ctx):
     r = ctx.service.runner
-    if r is None:
+    if r is None or r.state == State.SIGNED_OUT:
         raise HTTPException(status_code=409, detail="Not signed in to Twitch.")
     return r
 
@@ -122,6 +123,9 @@ async def mine_now(body: MineNowIn, request: Request) -> None:
         raise HTTPException(status_code=404, detail="No such campaign.")
     r.mine_now(body.campaign_id)
     await r.refresh()
+    if not (r.plan and r.plan.current and r.plan.current.campaign_id == body.campaign_id):
+        raise HTTPException(status_code=409, detail="Can't mine that campaign right now: it needs a linked "
+                            "account, a live channel, or it's on your Never list.")
 
 
 @api.post("/channel", status_code=204)
@@ -132,6 +136,8 @@ async def channel(body: ChannelIn, request: Request) -> None:
         raise HTTPException(status_code=404, detail="That channel isn't live with drops right now.")
     r.use_channel(login)
     await r.refresh()
+    if not (r.watching and r.watching.login == login):
+        raise HTTPException(status_code=409, detail="That channel can't earn the campaign being mined.")
 
 
 @api.get("/events")

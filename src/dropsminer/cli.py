@@ -78,6 +78,12 @@ def build_app_for_schema():
     return create_app(AppContext(store=None, bus=None, service=None, signin=None))
 
 
+def server_config(app, host: str, port: int):
+    import uvicorn
+
+    return uvicorn.Config(app, host=host, port=port, log_config=None, access_log=False)
+
+
 async def serve(store: Store, host: str, port: int) -> int:
     import uvicorn
 
@@ -102,7 +108,7 @@ async def serve(store: Store, host: str, port: int) -> int:
     started = await service.start()
     logging.getLogger("dropsminer").info(
         "Serving on http://%s:%s (%s)", host, port, "mining" if started else "not signed in to Twitch")
-    server = uvicorn.Server(uvicorn.Config(app, host=host, port=port, log_config=None, access_log=False))
+    server = uvicorn.Server(server_config(app, host, port))
     try:
         await server.serve()
     finally:
