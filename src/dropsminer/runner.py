@@ -137,23 +137,28 @@ class Runner:
                          current_campaign=self.plan.current.campaign_id
                          if self.plan and self.plan.current else None)
         cur = self.plan.current
+        # spec §6: overrides last only while the plan still honours them
+        if self._override_campaign and (cur is None or cur.campaign_id != self._override_campaign):
+            self._override_campaign = None
+        if self._override_channel and (cur is None or cur.channel_login != self._override_channel):
+            self._override_channel = None
         self.watching = next((c for c in usable if cur and c.login == cur.channel_login), None)
         topics = {topic("user_drops", self._user_id), topic("user_notifications", self._user_id)}
         if self.watching:
             topics |= {topic("stream_state", self.watching.id), topic("stream_update", self.watching.id)}
         self._pubsub.set_topics(topics)
-        if self._paused:
-            return
-        if self.watching is None:
-            self._set_state(State.IDLE)
-        elif previous and previous.login != self.watching.login:
-            self._fails = 0
-            info = {"from": previous.login, "to": self.watching.login}
-            self._emit("switched", info)
-            self._store.log_event("switched", info)
-            self._set_state(State.SWITCHED, info)
-        else:
-            self._set_state(State.MINING)
+        if not self._paused:
+            if self.watching is None:
+                self._set_state(State.IDLE)
+            elif previous and previous.login != self.watching.login:
+                self._fails = 0
+                info = {"from": previous.login, "to": self.watching.login}
+                self._emit("switched", info)
+                self._store.log_event("switched", info)
+                self._set_state(State.SWITCHED, info)
+            else:
+                self._set_state(State.MINING)
+        self._emit("refreshed", {"at": now.isoformat()})
 
     def _settle_awaiting(self, now: datetime) -> None:
         """Stop forcing campaign fetches for drops that are claimed, gone, or waited on for 1 h."""
@@ -189,6 +194,9 @@ class Runner:
             info = {"campaign": c.name, "reward": ", ".join(r.name for r in d.rewards) if d else drop_id}
             self._emit("claimed", info)
             self._store.log_event("claimed", info)
+            if hasattr(self._store, "add_claim"):
+                self._store.add_claim(self._clock(), c.id, c.name, c.game.name,
+                                      [(r.name, r.image_url) for r in (d.rewards if d else ())])
             return True
         self._store.log_event("claim_failed", {"campaign": c.name, "drop": drop_id})
         return False
