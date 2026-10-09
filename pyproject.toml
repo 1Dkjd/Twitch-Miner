@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
   "aiohttp>=3.10",
   "zendriver==0.17.0",
+  "argon2-cffi>=23.1",
 ]
 
 [project.scripts]
