@@ -6,7 +6,7 @@ import json
 import logging
 import re
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, datetime
 
 import aiohttp
 
@@ -37,7 +37,8 @@ def watch_payload(channel: LiveChannel, user_id: int, now: datetime) -> dict:
             "broadcast_id": channel.broadcast_id,
             "channel_id": str(channel.id),
             "channel": channel.login,
-            "client_time": now.isoformat(),
+            # exact reference utils.isonow() format: milliseconds and a literal Z
+            "client_time": now.astimezone(UTC).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
             "game": channel.game_name,
             "game_id": str(channel.game_id) if channel.game_id is not None else "",
             "hidden": False,

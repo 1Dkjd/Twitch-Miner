@@ -62,3 +62,10 @@ async def test_send_fetches_spade_once_then_posts():
 async def test_send_reports_failure():
     t = T([HttpResponse(200, '"spade_url": "https://spade.example/x"'), HttpResponse(400, "")])
     assert await Watcher(t, lambda: S).send(CH, NOW) is False
+
+
+def test_client_time_matches_reference_format():
+    # reference utils.isonow(): milliseconds and a literal Z, e.g. 2026-10-09T12:00:00.000Z
+    import re
+    props = json.loads(base64.b64decode(watch_payload(CH, 42, NOW)["data"]))[0]["properties"]
+    assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z", props["client_time"])
