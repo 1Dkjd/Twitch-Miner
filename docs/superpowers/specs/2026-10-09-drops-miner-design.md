@@ -186,8 +186,10 @@ Inputs:
    - `queue` (the ordered eligible campaigns after it);
    - `needs_you` (unlinked, with the link URL when Twitch gives one);
    - `done` (open campaigns with everything claimed);
-   - a deadline verdict per campaign: `ratio > 1` → "won't finish", `ratio > 0.5` → "tight",
-     otherwise "plenty of time".
+   - a deadline verdict per campaign, from the same spare-time ratio: `ratio < 1` → "won't finish",
+     `ratio < 2` → "tight", otherwise "plenty of time". The ratio is taken per drop as in the reference
+     (`(drop end − now) / minutes the drop and its preconditions still need`), and the campaign's is the
+     minimum over its open drops. *(Corrected 2026-10-09: the first draft inverted these thresholds.)*
 
 "Mine now" and "change channel" are **overrides** the runner holds until the overridden campaign or
 channel stops being eligible. They are not planner inputs that persist forever.
