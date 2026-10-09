@@ -4,12 +4,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from dropsminer.models import LiveChannel
-from dropsminer.twitch.session import TwitchSession
-from dropsminer.twitch.transport import HttpResponse
-from dropsminer.twitch.watch import Watcher, find_settings_js, find_spade_url, watch_payload
+from dropsminer.twitch.watch import find_settings_js, find_spade_url, watch_payload
 
 CH = LiveChannel(77, "streamer", 1, 10, True, "b123", "Palia")
-S = TwitchSession("tok", 42, "me", "dev", "cid", "sess")
 NOW = datetime(2026, 10, 9, 12, tzinfo=UTC)
 
 
@@ -38,30 +35,6 @@ def test_find_settings_js():
 def test_real_channel_page_yields_a_url():
     html = (Path(__file__).parent / "fixtures" / "channel_page.html").read_text(encoding="utf-8")
     assert find_spade_url(html) or find_settings_js(html)
-
-
-class T:
-    def __init__(self, replies):
-        self.replies, self.calls = list(replies), []
-
-    async def request(self, method, url, *, headers, json=None, data=None):
-        self.calls.append((method, url, data))
-        return self.replies.pop(0)
-
-
-async def test_send_fetches_spade_once_then_posts():
-    page = HttpResponse(200, '"spade_url": "https://spade.example/x"')
-    t = T([page, HttpResponse(204, ""), HttpResponse(204, "")])
-    w = Watcher(t, lambda: S)
-    assert await w.send(CH, NOW) is True
-    assert await w.send(CH, NOW) is True
-    assert [c[0] for c in t.calls] == ["GET", "POST", "POST"]
-    assert t.calls[1][1] == "https://spade.example/x"
-
-
-async def test_send_reports_failure():
-    t = T([HttpResponse(200, '"spade_url": "https://spade.example/x"'), HttpResponse(400, "")])
-    assert await Watcher(t, lambda: S).send(CH, NOW) is False
 
 
 def test_client_time_matches_reference_format():

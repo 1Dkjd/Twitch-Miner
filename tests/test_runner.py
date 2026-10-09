@@ -178,3 +178,10 @@ async def test_idle_when_nothing_live():
     r = runner(FakeClient([camp()], []))
     await r.refresh()
     assert r.state == State.IDLE and r.watching is None
+
+
+async def test_safe_tick_paces_at_play_interval():
+    from dropsminer.twitch.constants import PLAY_INTERVAL
+    r = runner(FakeClient([camp()], [chan("a", 7)]))
+    await r.refresh()
+    assert await r.safe_tick() == PLAY_INTERVAL

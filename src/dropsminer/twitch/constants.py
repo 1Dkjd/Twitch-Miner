@@ -27,7 +27,8 @@ WEB = ClientInfo(
 
 GQL_URL = "https://gql.twitch.tv/gql"
 PUBSUB_URL = "wss://pubsub-edge.twitch.tv/v1"
-WATCH_INTERVAL = 59
+WATCH_INTERVAL = 59  # spade minute-watched cadence
+PLAY_INTERVAL = 10  # playlist poll cadence while simulating playback (JourneyDocker 870c8b5)
 PING_INTERVAL = 180
 PONG_TIMEOUT = 10
 GQL_BATCH = 20
@@ -54,6 +55,10 @@ GQL_OPS: dict[str, tuple[str, str, dict]] = {
     "CampaignDetails": ("DropCampaignDetails",
                         "039277bf98f3130929262cc7c6efd9c141ca3749cb6dca442fc8ead9a53f77c1",
                         {"channelLogin": None, "dropID": None}),
+    "PlaybackAccessToken": ("PlaybackAccessToken",
+                            "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
+                            {"isLive": True, "isVod": False, "login": None, "platform": "web",
+                             "playerType": "site", "vodID": ""}),
     "GameDirectory": ("DirectoryPage_Game",
                       "86bcceb4e8b1a51256ff8eed8bd8aae4acacf80d737efe904f84f3aeadf8cafd",
                       {"limit": 30, "slug": None, "imageWidth": 50, "includeCostreaming": False,

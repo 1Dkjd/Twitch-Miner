@@ -20,13 +20,13 @@ from enum import StrEnum
 
 from .models import Campaign, LiveChannel, claimable, with_drop
 from .planner import Plan, plan
-from .twitch.constants import WATCH_INTERVAL
+from .twitch.constants import PLAY_INTERVAL
 from .twitch.gql import AuthExpired, GqlError
 from .twitch.pubsub import DropClaimable, DropProgress, StreamChanged, StreamDown, StreamUp, topic
 
 log = logging.getLogger("dropsminer.runner")
 FAILS_BEFORE_SWITCH = 3
-STALL_TICKS = 3
+STALL_TICKS = 18  # ticks are PLAY_INTERVAL (10 s) apart: resync after ~3 min of silence
 EXCLUDE_FOR = timedelta(minutes=10)
 REFRESH_EVERY = timedelta(minutes=5)
 CAMPAIGNS_EVERY = timedelta(hours=1)
@@ -216,7 +216,7 @@ class Runner:
             self._backoff = min(self._backoff * 2, BACKOFF_MAX) if self._backoff else BACKOFF_START
             return self._backoff
         self._backoff = 0.0
-        return float(WATCH_INTERVAL)
+        return float(PLAY_INTERVAL)
 
     async def handle(self, event: object) -> None:
         if isinstance(event, DropProgress):
@@ -271,8 +271,9 @@ async def run_cli(store) -> int:
     def emit(kind: str, data: dict) -> None:
         log.info("%s %s", kind, data)
 
-    r = Runner(TwitchClient(Gql(transport, lambda: session), session.user_id),
-               Watcher(transport, lambda: session), pubsub, store,
+    gql = Gql(transport, lambda: session)
+    r = Runner(TwitchClient(gql, session.user_id),
+               Watcher(transport, lambda: session, gql), pubsub, store,
                user_id=session.user_id, emit=emit)
 
     async def events() -> None:

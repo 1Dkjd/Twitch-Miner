@@ -8,5 +8,8 @@ sign-in delegation) from the following MIT-licensed projects:
   TwitchDropsMiner (webui fork) — fireph
   https://github.com/fireph/TwitchDropsMiner (commit 10706072459ce1125b6747e685bf5c5b3d1a69c6)
 
+  TwitchDropsMiner (JourneyDocker fork) — simulated HLS playback
+  https://github.com/JourneyDocker/TwitchDropsMiner (commit 870c8b52793bbf54cfbaec0ac9a5db68ded959f4)
+
 The original sources are kept unmodified under reference/ with their LICENSE
 files. They are read for porting only and are not imported at runtime.

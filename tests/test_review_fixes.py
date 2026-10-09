@@ -46,10 +46,12 @@ class RaisingWatcher(FakeWatcher):
 async def test_c1_watcher_transport_error_returns_false():
     class T:
         async def request(self, method, url, *, headers, json=None, data=None):
-            if method == "GET":
-                return HttpResponse(200, '"spade_url": "https://spade.example/x"')
             raise OSError("reset")
-    assert await Watcher(T(), lambda: S).send(chan("a", 7), NOW) is False
+
+    class G:
+        async def run(self, payload):
+            return {"data": {"streamPlaybackAccessToken": {"value": "v", "signature": "s"}}}
+    assert await Watcher(T(), lambda: S, G()).send(chan("a", 7), NOW) is False
 
 
 async def test_c1_refresh_survives_plain_gql_error():
@@ -75,7 +77,8 @@ async def test_c1_current_drop_error_is_swallowed():
             raise GqlError("service error")
     r = runner(C([camp()], [chan("a", 7)]))
     await r.refresh()
-    for _ in range(4):
+    from dropsminer.runner import STALL_TICKS
+    for _ in range(STALL_TICKS + 1):
         await r.tick()
     assert r.state == State.MINING
 
