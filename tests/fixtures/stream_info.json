@@ -1,0 +1,35 @@
+{
+ "data": {
+  "user": {
+   "__typename": "User",
+   "broadcastSettings": {
+    "__typename": "BroadcastSettings",
+    "game": {
+     "__typename": "Game",
+     "displayName": "Plants on Fire",
+     "id": "2146281325",
+     "name": "Plants on Fire",
+     "slug": "plants-on-fire"
+    },
+    "id": "261557176",
+    "title": "\ud83c\udf31\ud83c\udf81[DROPS ON]\ud83c\udf81\ud83c\udf31 PLANTS ON FIRE |MARATHON STREAM !DROPS !CLAIM"
+   },
+   "displayName": "leafy_tissuepaper",
+   "id": "261557176",
+   "login": "leafy_tissuepaper",
+   "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/2a0e2341-6856-48e6-a8f9-1518203bb837-profile_image-150x150.png",
+   "profileURL": "https://www.twitch.tv/leafy_tissuepaper",
+   "stream": {
+    "__typename": "Stream",
+    "id": "316332495979",
+    "tags": [],
+    "viewersCount": 56
+   }
+  }
+ },
+ "extensions": {
+  "durationMilliseconds": 62,
+  "operationName": "VideoPlayerStreamInfoOverlayChannel",
+  "requestID": "01M4FH8JS1SPZJ3E9MKT9YDM2M"
+ }
+}

@@ -1,0 +1,1836 @@
+{
+ "data": {
+  "currentUser": {
+   "__typename": "User",
+   "id": "<USER_ID>",
+   "inventory": {
+    "__typename": "Inventory",
+    "dropCampaignsInProgress": [
+     {
+      "__typename": "DropCampaign",
+      "accountLinkURL": "https://account.bhvr.com/twitch/dbd",
+      "allow": {
+       "__typename": "DropCampaignACL",
+       "channels": null
+      },
+      "detailsURL": "https://account.bhvr.com/twitch/dbd",
+      "endAt": "2026-10-12T03:59:59.999Z",
+      "eventBasedDrops": [],
+      "game": {
+       "__typename": "Game",
+       "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/491487-285x380.jpg",
+       "id": "491487",
+       "name": "Dead by Daylight",
+       "slug": "dead-by-daylight"
+      },
+      "id": "c1a3bab3-af60-47fd-a8ae-5ba606edb525",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/CAMPAIGN/ef4fb25b-242e-4adc-8c3b-4cc177109237.png",
+      "name": "DbD: October of Horror ",
+      "self": {
+       "__typename": "DropCampaignSelfEdge",
+       "isAccountConnected": false
+      },
+      "startAt": "2026-10-01T15:00:00Z",
+      "status": "ACTIVE",
+      "timeBasedDrops": [
+       {
+        "__typename": "TimeBasedDrop",
+        "benefitEdges": [
+         {
+          "__typename": "DropBenefitEdge",
+          "benefit": {
+           "__typename": "DropBenefit",
+           "distributionType": "DIRECT_ENTITLEMENT",
+           "id": "6da09649-1fda-4446-a061-cacd8e21b886_CUSTOM_ID_UDO_004",
+           "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/dcf071a8-4de4-4ee8-878c-f50f81092a44.png",
+           "name": "Corvidicus Malificus"
+          },
+          "claimCount": 0,
+          "entitlementLimit": 1
+         }
+        ],
+        "campaign": {
+         "__typename": "DropCampaign",
+         "accountLinkURL": "https://account.bhvr.com/twitch/dbd",
+         "detailsURL": "https://account.bhvr.com/twitch/dbd",
+         "id": "c1a3bab3-af60-47fd-a8ae-5ba606edb525",
+         "self": {
+          "__typename": "DropCampaignSelfEdge",
+          "isAccountConnected": false
+         }
+        },
+        "endAt": "2026-10-12T03:59:59.999Z",
+        "id": "78d000e6-bc50-11f1-b230-0a58a9feac02",
+        "localizedContent": {
+         "__typename": "DropTypeInventoryLocalizedContent",
+         "progress": "1% of {MinutesWatchedRequirement}"
+        },
+        "name": "Corvidicus Malificus Charm",
+        "preconditionDrops": null,
+        "requiredMinutesWatched": 60,
+        "requiredSubs": 0,
+        "self": {
+         "__typename": "TimeBasedDropSelfEdge",
+         "currentMinutesWatched": 1,
+         "currentSubs": 0,
+         "dropInstanceID": null,
+         "hasPreconditionsMet": true,
+         "isClaimed": false
+        },
+        "startAt": "2026-10-01T15:00:00Z"
+       }
+      ]
+     },
+     {
+      "__typename": "DropCampaign",
+      "accountLinkURL": "https://accounts.palia.com",
+      "allow": {
+       "__typename": "DropCampaignACL",
+       "channels": null
+      },
+      "detailsURL": "https://palia.com/news/207-twitch-drops",
+      "endAt": "2026-10-13T17:59:59.999Z",
+      "eventBasedDrops": [],
+      "game": {
+       "__typename": "Game",
+       "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/982017546_IGDB-285x380.jpg",
+       "id": "982017546",
+       "name": "Palia",
+       "slug": "palia"
+      },
+      "id": "84d02589-5095-4c35-9f00-41a04c7675c3",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/CAMPAIGN/deecaf71-a963-48b9-a5e7-a81f2a9a5a94.png",
+      "name": "Frights & Delights",
+      "self": {
+       "__typename": "DropCampaignSelfEdge",
+       "isAccountConnected": true
+      },
+      "startAt": "2026-09-29T18:00:00Z",
+      "status": "ACTIVE",
+      "timeBasedDrops": [
+       {
+        "__typename": "TimeBasedDrop",
+        "benefitEdges": [
+         {
+          "__typename": "DropBenefitEdge",
+          "benefit": {
+           "__typename": "DropBenefit",
+           "distributionType": "DIRECT_ENTITLEMENT",
+           "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_694f3b11-382b-49e0-95ae-e923f116e998",
+           "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/93cce38d-c1a9-4551-bc04-01d483b0ae7b.png",
+           "name": "10x Ectoplasm"
+          },
+          "claimCount": 0,
+          "entitlementLimit": 1
+         },
+         {
+          "__typename": "DropBenefitEdge",
+          "benefit": {
+           "__typename": "DropBenefit",
+           "distributionType": "DIRECT_ENTITLEMENT",
+           "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_db739e21-5013-4760-845e-27e024e5ff87",
+           "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/5f853fbc-c540-4387-835d-91a3d43efead.png",
+           "name": "5x Tattered Cloth"
+          },
+          "claimCount": 0,
+          "entitlementLimit": 1
+         }
+        ],
+        "campaign": {
+         "__typename": "DropCampaign",
+         "accountLinkURL": "https://accounts.palia.com",
+         "detailsURL": "https://palia.com/news/207-twitch-drops",
+         "id": "84d02589-5095-4c35-9f00-41a04c7675c3",
+         "self": {
+          "__typename": "DropCampaignSelfEdge",
+          "isAccountConnected": true
+         }
+        },
+        "endAt": "2026-10-13T17:59:59.999Z",
+        "id": "ac7806f6-b06b-11f1-9264-0a58a9feac02",
+        "localizedContent": {
+         "__typename": "DropTypeInventoryLocalizedContent",
+         "progress": "36% of {MinutesWatchedRequirement}"
+        },
+        "name": "Tier One",
+        "preconditionDrops": null,
+        "requiredMinutesWatched": 60,
+        "requiredSubs": 0,
+        "self": {
+         "__typename": "TimeBasedDropSelfEdge",
+         "currentMinutesWatched": 22,
+         "currentSubs": 0,
+         "dropInstanceID": null,
+         "hasPreconditionsMet": true,
+         "isClaimed": false
+        },
+        "startAt": "2026-09-29T18:00:00Z"
+       },
+       {
+        "__typename": "TimeBasedDrop",
+        "benefitEdges": [
+         {
+          "__typename": "DropBenefitEdge",
+          "benefit": {
+           "__typename": "DropBenefit",
+           "distributionType": "DIRECT_ENTITLEMENT",
+           "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_da57f4bd-a0ce-4b11-8c2e-6cea4cc87e99",
+           "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/ee7680dd-35ef-4e1a-a416-23a75f861bdc.png",
+           "name": "1x Fancypod Prize Bag"
+          },
+          "claimCount": 0,
+          "entitlementLimit": 1
+         },
+         {
+          "__typename": "DropBenefitEdge",
+          "benefit": {
+           "__typename": "DropBenefit",
+           "distributionType": "DIRECT_ENTITLEMENT",
+           "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_32fc5a3c-bcb2-4548-9abb-b93b3ef11ed0",
+           "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/5df1fb80-e0ef-4f1e-aa5a-ffa41d1d29c3.png",
+           "name": "1x Shinypod Prize Bag"
+          },
+          "claimCount": 0,
+          "entitlementLimit": 1
+         },
+         {
+          "__typename": "DropBenefitEdge",
+          "benefit": {
+           "__typename": "DropBenefit",
+           "distributionType": "DIRECT_ENTITLEMENT",
+           "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_b6ead0be-32bd-48b4-9696-a8896fa71f9e",
+           "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/7fd437fe-26c1-4534-ae5a-03a2c4152b80.png",
+           "name": "1x Pumpkin Pod Prize Bag"
+          },
+          "claimCount": 0,
+          "entitlementLimit": 1
+         }
+        ],
+        "campaign": {
+         "__typename": "DropCampaign",
+         "accountLinkURL": "https://accounts.palia.com",
+         "detailsURL": "https://palia.com/news/207-twitch-drops",
+         "id": "84d02589-5095-4c35-9f00-41a04c7675c3",
+         "self": {
+          "__typename": "DropCampaignSelfEdge",
+          "isAccountConnected": true
+         }
+        },
+        "endAt": "2026-10-13T17:59:59.999Z",
+        "id": "b06f04e5-b06b-11f1-b63b-0a58a9feac02",
+        "localizedContent": {
+         "__typename": "DropTypeInventoryLocalizedContent",
+         "progress": "12% of {MinutesWatchedRequirement}"
+        },
+        "name": "Tier Two",
+        "preconditionDrops": null,
+        "requiredMinutesWatched": 180,
+        "requiredSubs": 0,
+        "self": {
+         "__typename": "TimeBasedDropSelfEdge",
+         "currentMinutesWatched": 22,
+         "currentSubs": 0,
+         "dropInstanceID": null,
+         "hasPreconditionsMet": true,
+         "isClaimed": false
+        },
+        "startAt": "2026-09-29T18:00:00Z"
+       },
+       {
+        "__typename": "TimeBasedDrop",
+        "benefitEdges": [
+         {
+          "__typename": "DropBenefitEdge",
+          "benefit": {
+           "__typename": "DropBenefit",
+           "distributionType": "DIRECT_ENTITLEMENT",
+           "id": "165ed2b3-991e-11ee-b30c-0a58a9feac02",
+           "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/6b657abb-92b5-4367-baa7-8c1d68f4525b.jpeg",
+           "name": "Palcat Glasses"
+          },
+          "claimCount": 0,
+          "entitlementLimit": 1
+         }
+        ],
+        "campaign": {
+         "__typename": "DropCampaign",
+         "accountLinkURL": "https://accounts.palia.com",
+         "detailsURL": "https://palia.com/news/207-twitch-drops",
+         "id": "84d02589-5095-4c35-9f00-41a04c7675c3",
+         "self": {
+          "__typename": "DropCampaignSelfEdge",
+          "isAccountConnected": true
+         }
+        },
+        "endAt": "2026-10-13T17:59:59.999Z",
+        "id": "b4fa928b-b06b-11f1-b3ad-0a58a9feac02",
+        "localizedContent": {
+         "__typename": "DropTypeInventoryLocalizedContent",
+         "progress": "6% of {MinutesWatchedRequirement}"
+        },
+        "name": "Tier Three",
+        "preconditionDrops": null,
+        "requiredMinutesWatched": 360,
+        "requiredSubs": 0,
+        "self": {
+         "__typename": "TimeBasedDropSelfEdge",
+         "currentMinutesWatched": 22,
+         "currentSubs": 0,
+         "dropInstanceID": null,
+         "hasPreconditionsMet": true,
+         "isClaimed": false
+        },
+        "startAt": "2026-09-29T18:00:00Z"
+       }
+      ]
+     },
+     {
+      "__typename": "DropCampaign",
+      "accountLinkURL": "https://www.kineticgames.co.uk/twitch-drops",
+      "allow": {
+       "__typename": "DropCampaignACL",
+       "channels": null
+      },
+      "detailsURL": "https://www.kineticgames.co.uk/news/the-crimson-eye-approaches-once-more",
+      "endAt": "2026-10-15T22:59:59.999Z",
+      "eventBasedDrops": [],
+      "game": {
+       "__typename": "Game",
+       "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/518184_IGDB-285x380.jpg",
+       "id": "518184",
+       "name": "Phasmophobia",
+       "slug": "phasmophobia"
+      },
+      "id": "576c1066-00c1-4b08-b430-3f79659167f4",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/CAMPAIGN/df28f984-e371-4c1e-a9ee-72d55002a059.png",
+      "name": "Crimson Eye 2026",
+      "self": {
+       "__typename": "DropCampaignSelfEdge",
+       "isAccountConnected": true
+      },
+      "startAt": "2026-10-08T11:00:00Z",
+      "status": "ACTIVE",
+      "timeBasedDrops": [
+       {
+        "__typename": "TimeBasedDrop",
+        "benefitEdges": [
+         {
+          "__typename": "DropBenefitEdge",
+          "benefit": {
+           "__typename": "DropBenefit",
+           "distributionType": "DIRECT_ENTITLEMENT",
+           "id": "27bbbf5d-bb26-11f1-ba62-0a58a9feac02",
+           "imageAssetURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/1582d7f0-9dcc-4db5-92e7-c40de1f7e141.png",
+           "name": "Crimson Eye 2026 T-Shirt"
+          },
+          "claimCount": 0,
+          "entitlementLimit": 1
+         }
+        ],
+        "campaign": {
+         "__typename": "DropCampaign",
+         "accountLinkURL": "https://www.kineticgames.co.uk/twitch-drops",
+         "detailsURL": "https://www.kineticgames.co.uk/news/the-crimson-eye-approaches-once-more",
+         "id": "576c1066-00c1-4b08-b430-3f79659167f4",
+         "self": {
+          "__typename": "DropCampaignSelfEdge",
+          "isAccountConnected": true
+         }
+        },
+        "endAt": "2026-10-15T22:59:59.999Z",
+        "id": "760e7e51-be41-11f1-8b69-0a58a9feac02",
+        "localizedContent": {
+         "__typename": "DropTypeInventoryLocalizedContent",
+         "progress": "29% of {MinutesWatchedRequirement}"
+        },
+        "name": "Crimson Eye 2026 Tee",
+        "preconditionDrops": null,
+        "requiredMinutesWatched": 120,
+        "requiredSubs": 0,
+        "self": {
+         "__typename": "TimeBasedDropSelfEdge",
+         "currentMinutesWatched": 35,
+         "currentSubs": 0,
+         "dropInstanceID": null,
+         "hasPreconditionsMet": true,
+         "isClaimed": false
+        },
+        "startAt": "2026-10-08T11:00:00Z"
+       }
+      ]
+     }
+    ],
+    "gameEventDrops": [
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132a94186e7608830b5722",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/2036c9fa-c431-4949-baa4-b08d3e75c0db.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T18:46:17Z",
+      "name": "Common 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_M26-GMM-481",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/7382361f-c628-49e3-a3f9-4d9f70bae65a.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-06-03T00:52:04Z",
+      "name": "Twitch Pack",
+      "requiredAccountLink": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1324a6543663116a0eea32",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/a23d63c7-6c35-483c-b800-c2091c6298d3.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-27T17:18:19Z",
+      "name": "Rare 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_M26-GMM-483",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/2f41bc74-6757-4d26-a354-e1af1204177f.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-06-03T01:52:14Z",
+      "name": "Twitch Pack",
+      "requiredAccountLink": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132adc543663116a0eea37",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/01e27d7e-5948-4af4-a517-b808496c5193.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-31T00:48:09Z",
+      "name": "Legendary 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "03a31d4b-43be-11f1-b39b-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/610c0c78-6897-4ce0-8409-eca8e1af3709.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-19T13:15:53Z",
+      "name": "The Seer - Static",
+      "requiredAccountLink": "https://www.kineticgames.co.uk/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a13288a46b2184a59042cc4",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/a30b3760-189b-4b7c-978e-dc6910ca04b6.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T22:18:36Z",
+      "name": "Legendary 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1324b54ca4210c5205e0ef",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/36f22f9d-698f-4ffc-9af5-9b285ffddfb1.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-27T18:18:28Z",
+      "name": "Common 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132849c9a8398505036cbe",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d70d725a-f498-4f58-9e0c-f65a9e211d25.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T18:19:00Z",
+      "name": "Rare 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "9f8615b8-5a09-41eb-aac5-12224258ba68_CUSTOM_ID_lego-batman-drinks-fridge",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/8fb2c9e9-3b97-47ed-b9a9-292236d97ebf.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-19T07:46:56Z",
+      "name": "Drinks Fridge",
+      "requiredAccountLink": "https://account.wbgames.com/connect/twitch?entry=rewards-wbgames-com-lego-batman-twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_FCPRO_2652",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/47491bb0-532a-4775-a355-6a4d85439bb7.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T15:07:12Z",
+      "name": "85+ x2 Players Pack",
+      "requiredAccountLink": "https://www.ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_M26-GMM-492",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/21235612-5880-4547-8cf4-8aa339e97e31.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T00:18:52Z",
+      "name": "Twitch Pack",
+      "requiredAccountLink": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "9f8615b8-5a09-41eb-aac5-12224258ba68_CUSTOM_ID_lego-batman-collectable-display-case",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d6d4ad1b-a8fd-44aa-8526-94ac897bb44c.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-22T07:51:43Z",
+      "name": "Collectible Display Case",
+      "requiredAccountLink": "https://account.wbgames.com/connect/twitch?entry=rewards-wbgames-com-lego-batman-twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132510a22c35bdf907c90d",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/08619e0c-e53e-4af2-b7da-29ff5d0c6ba0.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-27T21:18:55Z",
+      "name": "Legendary 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132aca543663116a0eea36",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/2ed1b450-52f7-48ad-93eb-f7281fd9ef1b.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T22:46:55Z",
+      "name": "Rare 3",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a13263ed2004bf8160018b4",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/8e397e74-1096-43d5-a565-b6f8a30efbd5.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T20:35:39Z",
+      "name": "Common 3",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "92fd426d-5760-11f1-a2d1-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/78fd358c-fc05-4397-a2de-95bd847b30a2.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-25T17:20:50Z",
+      "name": "Big Splash GE (Painted)",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132497186e7608830b5720",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/485e20b2-0991-470a-8005-f9899a66caa8.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-27T16:18:12Z",
+      "name": "Common 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "2aa9a8f7-9281-11f1-a76c-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/7105f0e0-59f1-4f8e-940c-9efe70263fc9.png",
+      "isConnected": false,
+      "lastAwardedAt": "2026-08-14T02:32:57.951Z",
+      "name": "EnchantedBigBoiBoxers",
+      "requiredAccountLink": "https://blog.twitch.tv/2026/08/13/sub-and-get-free-audible-premium/",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_4195FCC84684306684F62FAB5C8C480A",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/95083cfe-9805-48f2-93aa-3c2df05f6b93.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T14:17:05Z",
+      "name": "Tome of Skulls",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a13265fc9a8398505036cbc",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/3bdc125e-4031-49d2-a68c-e3ce5afdb825.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T22:48:59Z",
+      "name": "Rare 3",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "e2a2aacb-acce-4761-8960-3c7f814a3f55_CUSTOM_ID_BackpackCharmFloppy",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/920e3811-8225-40dd-82ed-d2b98d11ef38.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T08:20:12Z",
+      "name": "Floppy Disk",
+      "requiredAccountLink": "https://embark-games.embark.net/",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_M26-GMM-182",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/0dea523c-062b-4a53-b432-772f657d98f1.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T14:36:43Z",
+      "name": "Madden Twitch Pack",
+      "requiredAccountLink": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a131d888995c2296c0f3f0f",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/58b644dd-417a-4ff1-a650-3ce07fd9c971.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-26T20:19:44Z",
+      "name": "Common 3",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_S3Launch-15minHWXP",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d0fecc51-29be-4cff-bd10-6100e96d4764.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T03:05:40Z",
+      "name": "15 min Hardware XP Boost",
+      "requiredAccountLink": "https://ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_D9BA26D149A492C5FE1EC6ABBE12C8CA",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/ad5999ff-b150-4f46-94c5-abacd60ff0b1.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T07:21:02Z",
+      "name": "Kings Originals",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1328d28995c2296c0f3f13",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/5f6e4f09-2a3e-4675-9650-1cb831fa8501.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T01:18:16Z",
+      "name": "Rare 3",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a13250246b2184a59042cc1",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/28688a3d-3350-4d8e-82b5-ee8571828b83.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-27T20:18:46Z",
+      "name": "Common 3",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1325c5d2004bf8160018b3",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/7d2c170a-b19a-49d1-ae5d-a8755766f079.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T18:35:22Z",
+      "name": "Common 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a131cbb186e7608830b571f",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/db8b16e8-aa28-4d64-a561-c38769238ec1.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-26T18:19:24Z",
+      "name": "Common 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_M26-GMM-489",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/cd261bbe-668b-4dd9-9207-cf1386d94e26.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T00:48:24Z",
+      "name": "Twitch Pack",
+      "requiredAccountLink": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_dbd66604-3d4d-4996-9b7e-3b7c5a6f2a72",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d0de557b-da1b-4a9f-bc38-df56c900c0b9.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-06-02T20:23:57Z",
+      "name": "3x Rider's Reroll Cookie",
+      "requiredAccountLink": "https://accounts.palia.com",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "0bc42102-53d5-11f1-b3b8-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/2e74ee52-0046-4a3c-ab55-63ff6b81a244.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-20T14:29:44Z",
+      "name": "Big Splash GE (Cobalt)",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_da57f4bd-a0ce-4b11-8c2e-6cea4cc87e99",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/ee7680dd-35ef-4e1a-a416-23a75f861bdc.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-06-02T22:23:17Z",
+      "name": "1x Fancypod Prize Bag",
+      "requiredAccountLink": "https://accounts.palia.com",
+      "totalCount": 2
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ff87b563-9280-11f1-9dbc-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d2d2795a-a957-4491-b837-7d17bb5ab172.png",
+      "isConnected": false,
+      "lastAwardedAt": "2026-08-14T02:32:57.994Z",
+      "name": "PrincessDonutBrown",
+      "requiredAccountLink": "https://blog.twitch.tv/2026/08/13/sub-and-get-free-audible-premium/",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a13262c46b2184a59042cc3",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/4961451d-40ee-4893-8b7e-dee2dc9bb3ba.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T19:35:31Z",
+      "name": "Rare 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_2026RCTest8hr_CL",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/540389fe-f195-437b-91a2-595787655050.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T16:35:27.779Z",
+      "name": "Resurrection Stone x10",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_S3Launch-BGR0039",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/a425872f-2c77-4416-9174-f45e4e888965.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T04:35:26Z",
+      "name": "Unique Skill",
+      "requiredAccountLink": "https://ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1328678995c2296c0f3f12",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/da577f6a-79c6-4f7c-a452-d5c321a6e5b5.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T20:18:19Z",
+      "name": "Rare 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1328528995c2296c0f3f11",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/9bfc3bd7-441f-431b-b6e5-9cefbbe406ea.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T19:18:10Z",
+      "name": "Common 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_32fc5a3c-bcb2-4548-9abb-b93b3ef11ed0",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/5df1fb80-e0ef-4f1e-aa5a-ffa41d1d29c3.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-06-02T22:23:17Z",
+      "name": "1x Shinypod Prize Bag",
+      "requiredAccountLink": "https://accounts.palia.com",
+      "totalCount": 2
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_AtreiaRCTest30min_2",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/3dc0dbc7-03e7-4af7-9185-b216e04bd0df.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T18:05:22.006Z",
+      "name": "Customization Voucher x3",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_S3Launch-ICR0047",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/a0a93329-602f-4bda-83dc-1f89bd1638f3.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T02:35:10Z",
+      "name": "Stinger",
+      "requiredAccountLink": "https://ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a13264f4ca4210c5205e0f1",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d67491fc-4976-4fc5-b008-a88ec926cdc3.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T21:48:49Z",
+      "name": "Legendary 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "1aa4060f-5315-11f1-a04c-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/82f9fc7b-6040-405c-974f-5e7db0f6bf55.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-20T16:41:54Z",
+      "name": "Rocket Baguette ",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_AtreiaRCTest2hour_2",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/04d30b14-e05e-48b7-bada-c74c6f8a4104.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T19:35:30.335Z",
+      "name": "Soul Codex: Reset x3",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_92ce3688-580b-48fe-aba8-6ffd62b2130f",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/852c1217-b793-4390-87c1-1ab9f1a85906.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T16:21:06Z",
+      "name": "Rider's Pedigree Cookie",
+      "requiredAccountLink": "https://accounts.palia.com",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3622b3e-5760-11f1-803d-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/166e8472-90b5-406a-86a1-eadee1a49c71.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-25T18:20:59Z",
+      "name": "Nemesis (Painted)",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132a7d543663116a0eea35",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/7e08442d-6467-4d3f-8607-606cf3af09f2.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T16:47:00Z",
+      "name": "Common 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "15e97a4c-9281-11f1-99ca-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/51104f18-a106-4600-a340-01a813c52f5b.png",
+      "isConnected": false,
+      "lastAwardedAt": "2026-08-14T02:32:57.994Z",
+      "name": "PrincessDonutPink",
+      "requiredAccountLink": "https://blog.twitch.tv/2026/08/13/sub-and-get-free-audible-premium/",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_S3Launch-WSR0004",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d633feeb-535b-4559-9fae-3f53cd5377d9.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T05:50:19Z",
+      "name": "Heartbreaker",
+      "requiredAccountLink": "https://ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_2026RCTest10hr_CL",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/b1de164d-dadb-45f4-b2e3-1f22091b1a1a.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T18:36:03.868Z",
+      "name": "Adorable Young Elim x1",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_S3Launch-60minHWXP",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/597a1264-8647-4c45-a589-1df2005f5efe.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T05:20:46Z",
+      "name": "60 min Hardware XP Boost",
+      "requiredAccountLink": "https://ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_FCPRO_2657",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/9a2a6bec-c2b3-4629-b1ff-2968a9248139.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T05:16:08Z",
+      "name": "86+ x2 Players Pack",
+      "requiredAccountLink": "https://www.ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "9f8615b8-5a09-41eb-aac5-12224258ba68_CUSTOM_ID_lego-batman-controller-backdrop",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/4cbe450c-9de1-41db-bd0b-23edba5ecd76.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-22T08:21:16Z",
+      "name": "Controller Backdrop",
+      "requiredAccountLink": "https://account.wbgames.com/connect/twitch?entry=rewards-wbgames-com-lego-batman-twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_EB91E373445A34A9040465B9CA8AFC32",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/e347e565-5eb3-4a5a-b2ea-4586a97e081f.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-16T06:50:08Z",
+      "name": "Kings Dynasty",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132a89cffba96ea401e476",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/8441e8d6-280e-4a05-a633-282538dcfd61.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T17:46:10Z",
+      "name": "Rare 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "165fe558-43be-11f1-a34b-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/f9833a7f-6cd6-4fdd-aee4-27900fb2b953.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-19T13:15:53Z",
+      "name": "The Seer - Animated",
+      "requiredAccountLink": "https://www.kineticgames.co.uk/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_731a9ca1-5724-4b6d-a111-babb30ad358d",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/cd3367bd-6539-4119-8c4b-e8d8c35a3252.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-06-02T20:23:57Z",
+      "name": "3x Pedigree Cookie",
+      "requiredAccountLink": "https://accounts.palia.com",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "9f8615b8-5a09-41eb-aac5-12224258ba68_CUSTOM_ID_lego-batman-gamer-desk",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/dffedae7-9e5a-48e9-bb3e-4107cf3307fb.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-22T08:51:53Z",
+      "name": "Gamer Desk",
+      "requiredAccountLink": "https://account.wbgames.com/connect/twitch?entry=rewards-wbgames-com-lego-batman-twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132aa94ca4210c5205e0f2",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/e1b5425d-33a1-4a20-941d-84fad738ecd1.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T19:46:27Z",
+      "name": "Rare 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a131e3994834707050e634d",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/03629059-d189-46e5-9f3d-f1302f23cd70.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-26T23:19:17Z",
+      "name": "Common 4",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "9f8615b8-5a09-41eb-aac5-12224258ba68_CUSTOM_ID_lego-batman-neon-bat-symbol",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/c15265a2-6a93-4fdf-9e83-3ce6fadcb2dc.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-19T22:49:46Z",
+      "name": "Neon Bat-Symbol",
+      "requiredAccountLink": "https://account.wbgames.com/connect/twitch?entry=rewards-wbgames-com-lego-batman-twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_M26-GMM-487",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/f61764ee-5e87-4ccd-86b9-b421f7b95e40.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T23:18:33Z",
+      "name": "Twitch Pack",
+      "requiredAccountLink": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_BB82DAB84F1C9DA43B98B09F1F2AFE66",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/e4169f30-9882-41df-9fa6-42ea1be61b37.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T14:47:41Z",
+      "name": "Skeletal Cyberscythe",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a131c7ec9a8398505036cbb",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/2cf3393b-ccf8-4ec4-b574-9b1cab969923.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-26T17:19:17Z",
+      "name": "Rare 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "e2a2aacb-acce-4761-8960-3c7f814a3f55_CUSTOM_ID_BackpackCharmCannedTomatoes",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/0326b61e-b431-48cf-93bb-231f457332c1.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-21T13:21:33Z",
+      "name": "Canned Tomatoes",
+      "requiredAccountLink": "https://id.embark.games/",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_FCPRO_2654",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/43a6a692-8764-41db-886c-2b8d771b7168.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-17T16:02:16Z",
+      "name": "85+ x2 Players Pack",
+      "requiredAccountLink": "https://www.ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_FCPRO_2656",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/06af32e7-23df-4c3e-959d-34fd48bb17f8.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T06:01:32Z",
+      "name": "85+ x2 Players Pack",
+      "requiredAccountLink": "https://www.ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_2026RCTest4hr_CL",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/428eaa49-d0f4-4b28-b98b-2e7739533cf1.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T04:58:18.887Z",
+      "name": "Head Bow x1",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_252012b6-736b-4017-91c3-d32532a5ed79",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/99518e89-2c22-47ed-8014-97912cbb4b3a.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-06-02T22:23:17Z",
+      "name": "1x Smartypod Prize Bag",
+      "requiredAccountLink": "https://accounts.palia.com",
+      "totalCount": 2
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "25702543-5315-11f1-90be-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/af131764-54b1-432c-8ed1-acdf8bf59037.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-20T18:21:44Z",
+      "name": "noir chat",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a131ea78995c2296c0f3f10",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/eb473052-a778-4775-ba36-397c2ab23a86.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-27T00:19:25Z",
+      "name": "Legendary 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "7147f292-6353-11f1-b0a2-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/9b79bc30-f04e-450b-ab9e-42555b1b447f.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-07-22T03:45:18Z",
+      "name": "Cool Cat",
+      "requiredAccountLink": "https://www.kineticgames.co.uk/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_AtreiaRCTest1hour_2",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/e2a2a912-41ad-4232-89c0-400de59d9573.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T18:36:03.816Z",
+      "name": "Skin Chest (10 Skins) x1",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a13251f46b2184a59042cc2",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/7334ff91-a130-4d17-8109-c6e739cf2412.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-27T22:18:05Z",
+      "name": "Rare 3",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1328eacffba96ea401e475",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/41421f74-d077-4a7d-a2d7-e876d960d0b4.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T03:18:32Z",
+      "name": "Legendary 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_EC3176A8450E6532C0A0A9A5A656EBBA",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/7960e0f2-239c-4611-99e6-6b3a8f6f2fc4.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T13:47:33Z",
+      "name": "Techromancy Wrap",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1325ac186e7608830b5721",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/e97c87a4-cd8d-4cac-b000-5bd66759d8c0.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T17:35:15Z",
+      "name": "Rare 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132ac1c9a8398505036cbf",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/c216b8f6-c016-4838-89bb-66dc7a550a9f.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T21:46:43Z",
+      "name": "Legendary 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a13267fcffba96ea401e470",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/02791654-8797-42bf-b10b-fa37004abca7.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T01:48:32Z",
+      "name": "Common 4",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_2026RCTest2hr_CL",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d0371594-75b5-48cd-abec-82126173f2af.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T02:58:14.076Z",
+      "name": "Skin Chest (10 Skins) x1",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a131de7543663116a0eea31",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/23feccf4-f705-483e-9a1e-4176b562d3e0.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-26T21:19:50Z",
+      "name": "Legendary 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1328e0e7bc3fee0a07799e",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/90036576-a1ae-4d95-be58-429a40d897a7.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T02:18:22Z",
+      "name": "Common 4",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_FE43F61E4F382A59E978019FAF352FBC",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/bca82b88-7aab-447f-b292-a2411244c8f0.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T06:50:28Z",
+      "name": "Kings Origins",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "f7a43792-5760-11f1-880c-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/861be991-8f0d-4b35-a675-8ed73987d6fa.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-25T20:20:17Z",
+      "name": "Tactical Nuke (Painted)",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 2
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "32c639e7-5315-11f1-a1bd-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/bb210d93-8a28-4210-9b62-c23e7da9f515.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-24T13:20:35Z",
+      "name": "1V3ING",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_2026RCTest1hr_CL",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/9a16ec82-f9ed-43f6-9177-5852a7c0f9c1.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T01:58:48.64Z",
+      "name": "Odyle Energy x4",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_0CB17342426347BFEBDCE7953C38CD96",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/13796e37-e5c0-4d56-a473-54a671830a8b.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-31T15:23:21Z",
+      "name": "FNCS Attacker Back Bling",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_FCPRO_2653",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/444a41e3-9054-4bc1-8e76-b6bc75875aa6.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T15:52:33Z",
+      "name": "86+ x2 Players Pack",
+      "requiredAccountLink": "https://www.ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_640c48e0-108f-49a8-ab0a-65bc3f88308c",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/03356b32-7006-41a5-983f-a965913c9fc4.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T16:21:06Z",
+      "name": "1x Rider's Trait Cookie",
+      "requiredAccountLink": "https://accounts.palia.com",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_M26-GMM-488",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/f725680d-c22b-4554-a5da-cf77ac663b75.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T23:48:14Z",
+      "name": "Twitch Pack",
+      "requiredAccountLink": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_2026RCTest6hr_CL",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/29eb547f-e5f0-4eec-a677-d85830883a1f.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T14:35:46.062Z",
+      "name": "Soul Codex: Reset x2",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_20BC56564D82884E639269ACB9D20B71",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/e5cbd9f8-f409-4721-ba22-c40cdfef8416.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-17T07:20:35Z",
+      "name": "Kings Elite",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_S3Launch-WTR0079",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/539fcba7-e3b4-40ab-8891-879a050bfd62.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T03:35:17Z",
+      "name": "Searing Smile",
+      "requiredAccountLink": "https://ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_50F0179142BB2DA43B84B28550F5E089",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/e3c5e7bd-2474-421a-a785-0e18f87226e2.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-24T00:20:54Z",
+      "name": "TG | The Ultimate Heist ",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 2
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "9f8615b8-5a09-41eb-aac5-12224258ba68_CUSTOM_ID_lego-batman-gaming-chair",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/38a382eb-11c6-4120-83f7-ba093ba473d8.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-22T09:21:27Z",
+      "name": "Gaming Chair",
+      "requiredAccountLink": "https://account.wbgames.com/connect/twitch?entry=rewards-wbgames-com-lego-batman-twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132838543663116a0eea34",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/b0ed11e5-7bd9-454d-a76c-15365377a179.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T17:18:50Z",
+      "name": "Common 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a131c5ef3c7d835b50d083e",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/7f00c35c-fce4-4cd7-af6f-2666e5a2aaec.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-26T16:19:06Z",
+      "name": "Common 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_M26-GMM-482",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d72a972c-f749-4e92-8d8e-c30380c75004.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-06-03T01:22:38Z",
+      "name": "Twitch Pack",
+      "requiredAccountLink": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "2a24cd2b-cf51-11f0-85c2-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/253fc0f5-4bbb-4bfc-8bcd-1d68be4fa413.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-20T15:40:49Z",
+      "name": "Nemesis (Crimson)",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1324c394834707050e634e",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/11613459-a165-412d-a78e-dd1cbed01537.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-27T19:18:36Z",
+      "name": "Rare 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "e2a2aacb-acce-4761-8960-3c7f814a3f55_CUSTOM_ID_BackpackAttachmentSpinningTop",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/0e753a4e-643a-4145-8840-a2011c14afb7.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-21T12:21:23Z",
+      "name": "Spinning Top",
+      "requiredAccountLink": "https://id.embark.games/",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132693c9a8398505036cbd",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/13525fdf-4a55-4aaa-bb98-7ccd984f0393.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T02:48:40Z",
+      "name": "Legendary 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "9f8615b8-5a09-41eb-aac5-12224258ba68_CUSTOM_ID_lego-batman-comic-book-stand",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/43f7db15-61d3-4ae3-b858-2a86ce31f9a0.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-19T22:19:10Z",
+      "name": "Comic Book Stand",
+      "requiredAccountLink": "https://account.wbgames.com/connect/twitch?entry=rewards-wbgames-com-lego-batman-twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132ab9e7bc3fee0a07799f",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/f2612467-d9e5-428c-99e3-9edf9de753b3.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T20:46:36Z",
+      "name": "Common 3",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a13287ca22c35bdf907c90e",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d64f245d-d9c0-426a-a68d-2bd9e929ac54.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T21:18:29Z",
+      "name": "Common 3",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_777AF4EE42D5340C06A6E19239EA42D4",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/87725f08-ec5d-4dc4-89b8-0ebaec7e1303.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-18T06:16:38Z",
+      "name": "Kings Samba",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3748fd2-8952-11f0-9116-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/3298e213-d323-4594-b95b-2167b372cfa6.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-24T14:20:39Z",
+      "name": "Tactical Nuke (White)",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_AtreiaRCTest4hour_2",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/eea0b36c-3238-4f4c-bd15-e1dd76aaab4e.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T21:35:08.626Z",
+      "name": "Pet: Two x1",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132594cffba96ea401e46f",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/aa92e9be-8cb6-48d1-b394-0c91a97b6bda.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T16:36:02Z",
+      "name": "Common 1",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fe5f2622-36ce-11f1-a181-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/5d7cdaec-decd-42e3-9536-b56680d27c49.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T04:50:12Z",
+      "name": "Pioneer Hull Plate",
+      "requiredAccountLink": "https://unknownworlds.com/en/news/subnautica-2-twitch-drops-guide",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a131e124ca4210c5205e0ee",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/e3f3aab9-1606-4e73-94d4-28d9bfd30c57.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-26T22:19:06Z",
+      "name": "Rare 3",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "6ac9ee7e-5760-11f1-bf28-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/ad38685e-1d39-4dfd-b5ae-243a5ea808cf.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-25T16:50:16Z",
+      "name": "Aero Mage (Painted)",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_S3Launch-30minHWXP",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/0d022596-61cb-4693-aa85-c8fca3512e06.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T04:05:51Z",
+      "name": "30 min Hardware XP Boost",
+      "requiredAccountLink": "https://ea.com/twitchlinking",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "88224c42-5315-11f1-affd-0a58a9feac02",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/57199585-cb9a-43f6-8b6f-1b179dbc6e45.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-24T16:20:50Z",
+      "name": "Brainwash Decal",
+      "requiredAccountLink": "https://www.epicgames.com/id/login",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_M26-GMM-490",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/1ffb6e0a-f69c-4d8a-bb68-52dfb9feaa19.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T22:48:10Z",
+      "name": "Twitch Pack",
+      "requiredAccountLink": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_0597BAEC4C79B3044F7AF19F5ADB59E9",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/d4abc686-a537-4eff-9904-0a511282bdd7.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-16T07:20:44Z",
+      "name": "Kings Rivals",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a131d2fa22c35bdf907c90a",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/b61f2b50-e810-4d9c-aaef-f643334e8031.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-26T19:19:33Z",
+      "name": "Rare 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "e2a2aacb-acce-4761-8960-3c7f814a3f55_CUSTOM_ID_BackpackCharmFloater",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/0ddc4a81-a25a-4b78-ade2-9f6a103f37d5.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T09:20:20Z",
+      "name": "Buoy",
+      "requiredAccountLink": "https://embark-games.embark.net/",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_6A5B24A2413A7E5242C021938661ED26",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/1c3ba0bb-69f5-4dbb-aee5-b472d2339d43.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-17T06:51:02Z",
+      "name": "Kings Legacy",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a132ad6c9a8398505036cc0",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/5eaa5aed-e450-412d-979a-a99930256afc.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-30T23:48:59Z",
+      "name": "Common 4",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_B9626F7B4E7FC7F21189C480581C5BD5",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/21f4e29b-5c17-4f5c-8f51-dd671bf7ab97.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T06:20:53Z",
+      "name": "Kings Legends",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a13252e543663116a0eea33",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/4df35d9a-258a-4b30-b1ff-ca3878a7a5ef.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-27T23:18:16Z",
+      "name": "Common 4",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_M26-GMM-491",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/b4a14cb7-0f92-4f35-83ed-11fed89a2998.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T23:18:43Z",
+      "name": "Twitch Pack",
+      "requiredAccountLink": "https://signin.ea.com/p/thirdparty/login?client_id=twitch_client&platformId=twitch",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_547f5340-5db7-443b-9e2f-8c6eae246a75",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/95c2bcaa-fd31-4ffc-b6d4-3ae2d2179b8f.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T12:21:39Z",
+      "name": "1x Potato Pod Prize Bag",
+      "requiredAccountLink": "https://accounts.palia.com",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_74cd8a08-9233-447f-bd0e-ed8f814fb055",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/25eeb9cc-c458-4b26-b394-5e929f9d7a55.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-15T10:20:30Z",
+      "name": "1x Rider's Reroll Cookie",
+      "requiredAccountLink": "https://accounts.palia.com",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "cb74a9e3-38be-41c8-90c9-a746079ea512_CUSTOM_ID_6a1325594ca4210c5205e0f0",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/c9fdaa69-a6fd-44ed-bd19-fde813ea00b2.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-28T00:18:23Z",
+      "name": "Legendary 2",
+      "requiredAccountLink": "https://www.escapefromtarkov.com/profile",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "053158f5-f0a9-4fd1-8a04-8bb813ce130a_CUSTOM_ID_F0062E044412178DD5C85B84DA02D0C6",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/57b09380-ae49-4534-9b9b-5f82430039f6.jpeg",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-29T16:18:42Z",
+      "name": "Missed The Dub Spray",
+      "requiredAccountLink": "https://www.fortnite.com/twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "ec6bc01f-af8b-4751-aefe-f53814228bb4_CUSTOM_ID_2026RCTest3hr_CL",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/74ca54c5-0ed8-481d-b5e0-38368deabda1.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-10-07T03:58:27.839Z",
+      "name": "Enhance Stone x5000",
+      "requiredAccountLink": "https://id.plaync.com/account/connect/twitch?appGroupCode=aion2global",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "9f8615b8-5a09-41eb-aac5-12224258ba68_CUSTOM_ID_lego-batman-controller-stand",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/99f41b63-2a52-45ec-a12d-97cdd93d3507.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-19T08:16:30Z",
+      "name": "Controller Stand",
+      "requiredAccountLink": "https://account.wbgames.com/connect/twitch?entry=rewards-wbgames-com-lego-batman-twitch-drops",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "a3c13f82-ce43-4f29-88c0-47962f47809d_CUSTOM_ID_171aaca8-675e-4363-84f3-9bb2321a24fc",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/7254b8c3-03a5-4f04-aa5b-320e90f9bba0.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-06-02T20:23:57Z",
+      "name": "3x Rider's Trait Cookie",
+      "requiredAccountLink": "https://accounts.palia.com",
+      "totalCount": 1
+     },
+     {
+      "__typename": "UserDropReward",
+      "game": null,
+      "id": "fa395b5e-cadd-47d9-989d-fe511aa3dbb1_CUSTOM_ID_FCPRO_2655",
+      "imageURL": "https://static-cdn.jtvnw.net/twitch-quests-assets/REWARD/6c9b5ae9-96f1-420d-a178-2e3032952803.png",
+      "isConnected": true,
+      "lastAwardedAt": "2026-05-17T16:47:37Z",
+      "name": "86+ x2 Players Pack",
+      "requiredAccountLink": "https://www.ea.com/twitchlinking",
+      "totalCount": 1
+     }
+    ]
+   }
+  }
+ },
+ "extensions": {
+  "durationMilliseconds": 76,
+  "operationName": "Inventory",
+  "requestID": "01M4FH8HXVD46GM8Z0V08BT986"
+ }
+}

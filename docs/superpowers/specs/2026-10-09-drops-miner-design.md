@@ -48,6 +48,15 @@ DevilXD/TwitchDropsMiner. They were checked on 2026-10-08 and 2026-10-09.
 - **The heartbeat.** Every 59 s (`WATCH_INTERVAL`) it POSTs a `minute-watched` event to the channel's
   "spade" analytics URL, which it scrapes from the channel page (`channel.py`: `send_watch`,
   `spade_payload`). Success is HTTP 204. No video is downloaded.
+- **Simulated playback (added 2026-10-09).** Since about the first week of October 2026,
+  Twitch credits drop minutes only while the account appears to play the stream.
+  Verified live: 40 minutes of spade-only heartbeats on Nick's account earned nothing; see
+  upstream DevilXD#1183. The watcher therefore follows JourneyDocker/TwitchDropsMiner
+  870c8b5 (MIT):
+  - it gets a `PlaybackAccessToken`, then the usher master playlist, and picks the lowest-quality
+    media playlist;
+  - every 10 s it re-reads that playlist and HEADs each new segment, so no video is downloaded;
+  - while playback succeeds, it posts the spade event at most once per 59 s.
 - **Progress stalls.** When progress stops arriving for about a minute, the original asks GQL
   `DropCurrentSessionContext` (`CurrentDrop`) for the true minutes.
 - **Live updates.** Twitch PubSub websockets: up to 8 connections × 50 topics. They carry user drop

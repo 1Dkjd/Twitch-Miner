@@ -1,0 +1,335 @@
+{
+ "data": {
+  "game": {
+   "__typename": "Game",
+   "displayName": "Plants on Fire",
+   "id": "2146281325",
+   "name": "Plants on Fire",
+   "streams": {
+    "__typename": "StreamConnection",
+    "banners": null,
+    "edges": [
+     {
+      "__typename": "StreamEdge",
+      "cursor": "eyJvZmYiOjEsImJsayI6Mywic3ViIjp7IjEiOnsib2ZmIjoxLCJ0b3QiOjJ9LCIyIjp7Im9mZiI6MCwidG90Ijo1fSwiMyI6eyJvZmYiOjAsInRvdCI6MH19fQ==",
+      "node": {
+       "__typename": "Stream",
+       "broadcaster": {
+        "__typename": "User",
+        "displayName": "leafy_tissuepaper",
+        "id": "261557176",
+        "login": "leafy_tissuepaper",
+        "primaryColorHex": null,
+        "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/2a0e2341-6856-48e6-a8f9-1518203bb837-profile_image-50x50.png",
+        "roles": {
+         "__typename": "UserRoles",
+         "isParticipatingDJ": false,
+         "isPartner": false
+        }
+       },
+       "contentClassificationLabels": [],
+       "curatedTags": null,
+       "freeformTags": [
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:261557176:0",
+         "name": "English"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:261557176:1",
+         "name": "DropsEnabled"
+        }
+       ],
+       "game": {
+        "__typename": "Game",
+        "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2146281325_IGDB-40x56.jpg",
+        "displayName": "Plants on Fire",
+        "id": "2146281325",
+        "name": "Plants on Fire",
+        "slug": "plants-on-fire"
+       },
+       "height": 1080,
+       "id": "316332495979",
+       "isDualFormat": false,
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_leafy_tissuepaper-640x360.jpg",
+       "previewThumbnailProperties": {
+        "__typename": "PreviewThumbnailProperties",
+        "blurReason": "BLUR_NOT_REQUIRED"
+       },
+       "title": "\ud83c\udf31\ud83c\udf81[DROPS ON]\ud83c\udf81\ud83c\udf31 PLANTS ON FIRE |MARATHON STREAM !DROPS !CLAIM",
+       "type": "live",
+       "verticalPreviewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_leafy_tissuepaper-360x640.jpg",
+       "viewersCount": 56,
+       "width": 1920
+      },
+      "trackingID": "95587ca3-d7ed-4bb6-95cf-d230e17ba2f7:330a0c28-3dca-496b-b7e2-6b1a0d34a3f1:MF|category:RF|RANKER_DR_MMOE_50_BF_PREROLL:CG|UNK:CR|UNK:BL|UNK:FC|UNK:RK|0:CRK|0"
+     },
+     {
+      "__typename": "StreamEdge",
+      "cursor": "eyJvZmYiOjIsImJsayI6Mywic3ViIjp7IjEiOnsib2ZmIjoyLCJ0b3QiOjJ9LCIyIjp7Im9mZiI6MCwidG90Ijo1fSwiMyI6eyJvZmYiOjAsInRvdCI6MH19fQ==",
+      "node": {
+       "__typename": "Stream",
+       "broadcaster": {
+        "__typename": "User",
+        "displayName": "THeDropRush",
+        "id": "1136228781",
+        "login": "thedroprush",
+        "primaryColorHex": "ED9ED1",
+        "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/51c80108-fcaa-47fd-93e0-ea8f384354b3-profile_image-50x50.png",
+        "roles": {
+         "__typename": "UserRoles",
+         "isParticipatingDJ": false,
+         "isPartner": false
+        }
+       },
+       "contentClassificationLabels": [],
+       "curatedTags": null,
+       "freeformTags": [
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:1136228781:0",
+         "name": "DropEnabled"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:1136228781:1",
+         "name": "English"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:1136228781:2",
+         "name": "plantsonfire"
+        }
+       ],
+       "game": {
+        "__typename": "Game",
+        "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2146281325_IGDB-40x56.jpg",
+        "displayName": "Plants on Fire",
+        "id": "2146281325",
+        "name": "Plants on Fire",
+        "slug": "plants-on-fire"
+       },
+       "height": 1080,
+       "id": "316370046573",
+       "isDualFormat": false,
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_thedroprush-640x360.jpg",
+       "previewThumbnailProperties": {
+        "__typename": "PreviewThumbnailProperties",
+        "blurReason": "BLUR_NOT_REQUIRED"
+       },
+       "title": "Drops ON \ud83c\udf81  | PLANT ON FIRE \ud83c\udf31  | Come Grab Your Drops!",
+       "type": "live",
+       "verticalPreviewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_thedroprush-360x640.jpg",
+       "viewersCount": 9,
+       "width": 1920
+      },
+      "trackingID": "95587ca3-d7ed-4bb6-95cf-d230e17ba2f7:58874391-e9ac-4151-b1b8-be5ec84ec650:MF|category:RF|RANKER_DR_MMOE_50_BF_PREROLL:CG|UNK:CR|UNK:BL|UNK:FC|UNK:RK|1:CRK|1"
+     },
+     {
+      "__typename": "StreamEdge",
+      "cursor": "eyJvZmYiOjMsImJsayI6Mywic3ViIjp7IjEiOnsib2ZmIjoyLCJ0b3QiOjJ9LCIyIjp7Im9mZiI6MywidG90Ijo1LCJjdXIiOiJleUp6SWpvekxqZzRNREEwTkRZek1Ea3pNelUyTXpRc0ltUWlPbVpoYkhObExDSjBJanAwY25WbGZRPT0ifSwiMyI6eyJvZmYiOjAsInRvdCI6MH19fQ==",
+      "node": {
+       "__typename": "Stream",
+       "broadcaster": {
+        "__typename": "User",
+        "displayName": "1hairyviking",
+        "id": "1548674624",
+        "login": "1hairyviking",
+        "primaryColorHex": null,
+        "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/3bce6fdb-6f66-4f16-a8d8-735a64660394-profile_image-50x50.jpeg",
+        "roles": {
+         "__typename": "UserRoles",
+         "isParticipatingDJ": false,
+         "isPartner": false
+        }
+       },
+       "contentClassificationLabels": [],
+       "curatedTags": null,
+       "freeformTags": [
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:1548674624:0",
+         "name": "English"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:1548674624:1",
+         "name": "DropsEnabled"
+        }
+       ],
+       "game": {
+        "__typename": "Game",
+        "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2146281325_IGDB-40x56.jpg",
+        "displayName": "Plants on Fire",
+        "id": "2146281325",
+        "name": "Plants on Fire",
+        "slug": "plants-on-fire"
+       },
+       "height": 854,
+       "id": "317946704354",
+       "isDualFormat": false,
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_1hairyviking-640x360.jpg",
+       "previewThumbnailProperties": {
+        "__typename": "PreviewThumbnailProperties",
+        "blurReason": "BLUR_NOT_REQUIRED"
+       },
+       "title": "MARATHON STREAM new legendary Magus fun new deck built crazy aoe-no p2w \ud83c\udf31drops! \ud83c\udf81 Trying\u2764\ufe0f chess (1.8k)  + ranked (2k) lf active club",
+       "type": "live",
+       "verticalPreviewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_1hairyviking-360x640.jpg",
+       "viewersCount": 3,
+       "width": 480
+      },
+      "trackingID": "400eeeec-2683-47db-ad25-ebda8c7e85c1"
+     },
+     {
+      "__typename": "StreamEdge",
+      "cursor": "eyJvZmYiOjQsImJsayI6Mywic3ViIjp7IjEiOnsib2ZmIjoyLCJ0b3QiOjJ9LCIyIjp7Im9mZiI6NCwidG90Ijo1LCJjdXIiOiJleUp6SWpveUxqTXlOalk0TkRNME1ESXhNakU0T0N3aVpDSTZabUZzYzJVc0luUWlPblJ5ZFdWOSJ9LCIzIjp7Im9mZiI6MCwidG90IjowfX19",
+      "node": {
+       "__typename": "Stream",
+       "broadcaster": {
+        "__typename": "User",
+        "displayName": "pm3dprints",
+        "id": "160147696",
+        "login": "pm3dprints",
+        "primaryColorHex": "8205B3",
+        "profileImageURL": "https://static-cdn.jtvnw.net/jtv_user_pictures/3946b65c-4c4c-4188-ac27-6742b46d69a0-profile_image-50x50.png",
+        "roles": {
+         "__typename": "UserRoles",
+         "isParticipatingDJ": false,
+         "isPartner": false
+        }
+       },
+       "contentClassificationLabels": [],
+       "curatedTags": null,
+       "freeformTags": [
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:160147696:0",
+         "name": "RANKED"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:160147696:1",
+         "name": "PAINTING"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:160147696:2",
+         "name": "FILIPINO"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:160147696:3",
+         "name": "REROLL"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:160147696:4",
+         "name": "plants"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:160147696:5",
+         "name": "English"
+        }
+       ],
+       "game": {
+        "__typename": "Game",
+        "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2146281325_IGDB-40x56.jpg",
+        "displayName": "Plants on Fire",
+        "id": "2146281325",
+        "name": "Plants on Fire",
+        "slug": "plants-on-fire"
+       },
+       "height": 1080,
+       "id": "319507931607",
+       "isDualFormat": false,
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_pm3dprints-640x360.jpg",
+       "previewThumbnailProperties": {
+        "__typename": "PreviewThumbnailProperties",
+        "blurReason": "BLUR_NOT_REQUIRED"
+       },
+       "title": "Adventure mode to complete rookie quests then Ranked (Drops Enabled!)",
+       "type": "live",
+       "verticalPreviewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_pm3dprints-360x640.jpg",
+       "viewersCount": 2,
+       "width": 1920
+      },
+      "trackingID": "7d1b6d8d-43c0-4ecd-8b77-06666c55f4f6"
+     },
+     {
+      "__typename": "StreamEdge",
+      "cursor": "eyJvZmYiOjUsImJsayI6Mywic3ViIjp7IjEiOnsib2ZmIjoyLCJ0b3QiOjJ9LCIyIjp7Im9mZiI6NSwidG90Ijo1LCJjdXIiOiJleUp6SWpveUxqRTVOREkwTURNNE16TTRNelF3T0RNc0ltUWlPbVpoYkhObExDSjBJanAwY25WbGZRPT0ifSwiMyI6eyJvZmYiOjAsInRvdCI6MH19fQ==",
+      "node": {
+       "__typename": "Stream",
+       "broadcaster": {
+        "__typename": "User",
+        "displayName": "SilkSong3",
+        "id": "1529516527",
+        "login": "silksong3",
+        "primaryColorHex": null,
+        "profileImageURL": "https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-50x50.png",
+        "roles": {
+         "__typename": "UserRoles",
+         "isParticipatingDJ": false,
+         "isPartner": false
+        }
+       },
+       "contentClassificationLabels": [],
+       "curatedTags": null,
+       "freeformTags": [
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:1529516527:0",
+         "name": "DropsEnabled"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:1529516527:1",
+         "name": "plantsonfire"
+        },
+        {
+         "__typename": "FreeformTag",
+         "id": "fft:CHANNEL:1529516527:2",
+         "name": "English"
+        }
+       ],
+       "game": {
+        "__typename": "Game",
+        "boxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/2146281325_IGDB-40x56.jpg",
+        "displayName": "Plants on Fire",
+        "id": "2146281325",
+        "name": "Plants on Fire",
+        "slug": "plants-on-fire"
+       },
+       "height": 1080,
+       "id": "316340297580",
+       "isDualFormat": false,
+       "previewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_silksong3-640x360.jpg",
+       "previewThumbnailProperties": {
+        "__typename": "PreviewThumbnailProperties",
+        "blurReason": "BLUR_NOT_REQUIRED"
+       },
+       "title": "LAST FEW HOURS OF DROPS!!",
+       "type": "live",
+       "verticalPreviewImageURL": "https://static-cdn.jtvnw.net/previews-ttv/live_user_silksong3-360x640.jpg",
+       "viewersCount": 2,
+       "width": 1920
+      },
+      "trackingID": "08c1c77f-d66a-49f6-b658-9071ee2a3aee"
+     }
+    ],
+    "pageInfo": {
+     "__typename": "PageInfo",
+     "hasNextPage": true
+    }
+   }
+  }
+ },
+ "extensions": {
+  "durationMilliseconds": 136,
+  "operationName": "DirectoryPage_Game",
+  "requestID": "01M4FH8JHSMQJ13NKAEZ06JV2W"
+ }
+}
