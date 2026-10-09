@@ -8,7 +8,18 @@ from datetime import UTC, datetime, timedelta
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 
 from .auth import private_auth, public, require_session
-from .models import HistoryOut, ListsIn, ListsOut, SettingsIn, SettingsOut, StateOut, SuggestionsOut
+from .models import (
+    ChannelIn,
+    HistoryOut,
+    ListsIn,
+    ListsOut,
+    MineNowIn,
+    PauseIn,
+    SettingsIn,
+    SettingsOut,
+    StateOut,
+    SuggestionsOut,
+)
 from .views import history_view, state_view
 
 api = APIRouter(prefix="/api", dependencies=[Depends(require_session)])
@@ -28,8 +39,7 @@ async def _todo() -> None:
 
 
 for _method, _path in [
-    ("GET", "/events"), ("POST", "/pause"), ("POST", "/resume"), ("POST", "/mine-now"),
-    ("POST", "/channel"), ("POST", "/twitch/signin"), ("DELETE", "/twitch/signin"),
+    ("GET", "/events"), ("POST", "/twitch/signin"), ("DELETE", "/twitch/signin"),
     ("GET", "/twitch/signin"), ("POST", "/twitch/signout"),
 ]:
     api.add_api_route(_path, _todo, methods=[_method])
@@ -90,6 +100,44 @@ async def put_settings(body: SettingsIn, request: Request) -> SettingsOut:
 async def get_history(request: Request, days: int = Query(30, ge=1, le=365)) -> HistoryOut:
     ctx = _c(request)
     return history_view(ctx.store.claims_since(ctx.clock() - timedelta(days=days)))
+
+
+def _runner(ctx):
+    r = ctx.service.runner
+    if r is None:
+        raise HTTPException(status_code=409, detail="Not signed in to Twitch.")
+    return r
+
+
+@api.post("/pause", status_code=204)
+async def pause(body: PauseIn, request: Request) -> None:
+    ctx = _c(request)
+    until = ctx.clock() + timedelta(minutes=body.minutes) if body.minutes else None
+    _runner(ctx).pause(until)
+
+
+@api.post("/resume", status_code=204)
+async def resume(request: Request) -> None:
+    _runner(_c(request)).resume()
+
+
+@api.post("/mine-now", status_code=204)
+async def mine_now(body: MineNowIn, request: Request) -> None:
+    r = _runner(_c(request))
+    if not any(c.id == body.campaign_id for c in r.campaigns):
+        raise HTTPException(status_code=404, detail="No such campaign.")
+    r.mine_now(body.campaign_id)
+    await r.refresh()
+
+
+@api.post("/channel", status_code=204)
+async def channel(body: ChannelIn, request: Request) -> None:
+    r = _runner(_c(request))
+    login = body.login.lower()
+    if not any(ch.login == login for ch in r.live):
+        raise HTTPException(status_code=404, detail="That channel isn't live with drops right now.")
+    r.use_channel(login)
+    await r.refresh()
 
 
 def create_app(ctx: AppContext) -> FastAPI:
