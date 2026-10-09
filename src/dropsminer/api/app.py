@@ -18,6 +18,7 @@ from .models import (
     PauseIn,
     SettingsIn,
     SettingsOut,
+    SignInStatus,
     StateOut,
     SuggestionsOut,
 )
@@ -36,15 +37,6 @@ class AppContext:
     clock: Callable[[], datetime] = lambda: datetime.now(UTC)
 
 
-async def _todo() -> None:
-    raise HTTPException(status_code=501, detail="Not implemented yet")
-
-
-for _method, _path in [
-    ("POST", "/twitch/signin"), ("DELETE", "/twitch/signin"),
-    ("GET", "/twitch/signin"), ("POST", "/twitch/signout"),
-]:
-    api.add_api_route(_path, _todo, methods=[_method])
 
 
 def _c(request: Request) -> AppContext:
@@ -147,6 +139,30 @@ async def events(request: Request) -> StreamingResponse:
     return StreamingResponse(sse_stream(_c(request).bus, request.is_disconnected),
                              media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@api.post("/twitch/signin", status_code=202)
+async def signin_start(request: Request) -> None:
+    if not _c(request).signin.start():
+        raise HTTPException(status_code=409, detail="A sign-in is already running.")
+
+
+@api.get("/twitch/signin", response_model=SignInStatus)
+async def signin_status(request: Request) -> SignInStatus:
+    return SignInStatus(**_c(request).signin.status())
+
+
+@api.delete("/twitch/signin", status_code=204)
+async def signin_cancel(request: Request) -> None:
+    _c(request).signin.cancel()
+
+
+@api.post("/twitch/signout", status_code=204)
+async def signout(request: Request) -> None:
+    ctx = _c(request)
+    await ctx.service.stop()
+    ctx.store.clear_session()
+    ctx.bus.publish("signin", {"status": "signed_out", "message": ""})
 
 
 def create_app(ctx: AppContext) -> FastAPI:
