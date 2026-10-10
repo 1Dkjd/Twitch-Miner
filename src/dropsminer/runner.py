@@ -74,6 +74,12 @@ class Runner:
         self._refresh_backoff = 0.0
         self._retry_refresh_at: datetime | None = None
 
+    @property
+    def catalog_status(self):
+        """(ok|stale|unreachable, since) when campaigns come from the catalogue, else None."""
+        catalog = getattr(self._client, "catalog", None)
+        return catalog.status if catalog is not None else None
+
     # --- commands
     def pause(self, until: datetime | None) -> None:
         self._paused, self.paused_until = True, until

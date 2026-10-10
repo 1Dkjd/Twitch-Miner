@@ -19,8 +19,9 @@ log = logging.getLogger("dropsminer.client")
 
 
 class TwitchClient:
-    def __init__(self, gql, user_id: int):
+    def __init__(self, gql, user_id: int, catalog=None):
         self._gql, self._user_id = gql, user_id
+        self.catalog = catalog  # campaign list when Twitch hides it (TV login, spec §4)
 
     async def campaigns(self) -> list[Campaign]:
         inv = await self._gql.run(op("Inventory"))
@@ -37,6 +38,9 @@ class TwitchClient:
                 if dc:
                     fetched[dc["id"]] = parse.merge(dash.get(dc["id"], {}), dc)
             data = parse.merge(data, fetched)
+        elif self.catalog is not None:
+            # the TV login sees no dashboard: discover from the catalogue, the account's Inventory wins
+            data = parse.merge(data, await self.catalog.campaigns())
         out = []
         for raw in data.values():
             try:
