@@ -1,6 +1,6 @@
 /* The approved mockup's icon sprite (docs/design/approved-mockup-v7.html), plus lock/copy for sign-in. */
 export type IconName =
-  | "pick" | "home" | "list" | "clock" | "gear" | "ext" | "link" | "up" | "down" | "grip" | "pause"
+  | "home" | "list" | "clock" | "gear" | "ext" | "link" | "up" | "down" | "grip" | "pause"
   | "key" | "cloud" | "swap" | "star" | "check" | "alert" | "lock" | "copy" | "dot";
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
@@ -11,12 +11,29 @@ export function Icon({ name, className }: { name: IconName; className?: string }
   );
 }
 
+/** The Dropwatch logo: the cut stone, full colour (brand/mark/dropwatch-mark.svg, path for path). It replaced
+ * the pickaxe glyph in the top bar on 2026-10-10. Decorative: the name always sits beside it. */
+export function Mark({ size = 20 }: { size?: number }) {
+  return (
+    <svg className="mark" width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M50 4L96 35.3L77.6 96L22.4 96L4 35.3Z" fill="#1c1405" stroke="#1c1405" strokeWidth={4.5} strokeLinejoin="round" />
+      <path d="M50 4L4 35.3L31.6 35.3Z" fill="#d4960f" />
+      <path d="M50 4L31.6 35.3L68.4 35.3Z" fill="#ffd978" />
+      <path d="M50 4L68.4 35.3L96 35.3Z" fill="#c98a0b" />
+      <path d="M4 35.3L31.6 35.3L22.4 96Z" fill="#8a5e05" />
+      <path d="M31.6 35.3L68.4 35.3L77.6 96L22.4 96Z" fill="#f2b632" />
+      <path d="M68.4 35.3L96 35.3L77.6 96Z" fill="#a8700a" />
+      <path d="M50 4L31.6 35.3L42 35.3Z" fill="#fff3c4" opacity={0.6} />
+      <path d="M4 35.3L96 35.3" stroke="#ffe9a8" strokeWidth={1.2} opacity={0.6} />
+    </svg>
+  );
+}
+
 const s = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
 export function IconSprite() {
   return (
     <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
-      <symbol id="i-pick" viewBox="0 0 24 24" {...s}><path d="M14.5 3.5c3 .5 5.5 3 6 6" /><path d="M3.5 14.5c.5 3 3 5.5 6 6" /><path d="M5 19 19 5" /><path d="M9 4.5 4.5 9l3 3L12 7.5z" /></symbol>
       <symbol id="i-home" viewBox="0 0 24 24" {...s}><path d="M3 11 12 4l9 7" /><path d="M5 10v10h14V10" /></symbol>
       <symbol id="i-list" viewBox="0 0 24 24" {...s}><path d="M10 6h10M10 12h10M10 18h10" /><path d="M4 6h1M4 12h1M4 18h1" /></symbol>
       <symbol id="i-clock" viewBox="0 0 24 24" {...s}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></symbol>

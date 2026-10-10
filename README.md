@@ -1,4 +1,11 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="brand/lockup/dropwatch-lockup-dark.svg">
+  <img alt="Dropwatch" src="brand/lockup/dropwatch-lockup-light.svg" width="320">
+</picture>
+
 # Dropwatch (private)
+
+The logo and every size of it live in `brand/` (its README says which file goes where).
 
 Phase 1: headless miner. See `docs/superpowers/specs/` for the design.
 
