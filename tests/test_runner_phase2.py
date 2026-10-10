@@ -14,7 +14,7 @@ class RecStore:
     def log_event(self, kind, data):
         self.events.append((kind, data))
 
-    def add_claim(self, at, campaign_id, campaign, game, rewards):
+    def add_claim(self, at, campaign_id, campaign, game, rewards, **detail):
         self.claims.append((campaign_id, campaign, game, rewards))
 
 

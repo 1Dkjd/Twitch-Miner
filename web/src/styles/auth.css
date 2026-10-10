@@ -85,3 +85,31 @@
   .row-acts:has(> .mini) { flex-wrap: wrap; }
   .row-acts > .mini { flex-basis: 100%; }
 }
+/* History: tap a campaign for each reward's watch time and channel (docs/design/history-detail-mockup.html) */
+.hx-item + .hx-item { border-top: 1px solid var(--line); }
+button.row.hx { width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; }
+.hx:hover { background: var(--surface-2); }
+.hx:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.hx-main { display: block; min-width: 0; }
+.hx-main .row-t, .hx-main .row-s { display: block; }
+.hx .end { display: flex; align-items: center; gap: 10px; }
+.hx .chev { width: 18px; height: 18px; }
+.hx-body { padding: 0 16px 14px 74px; }
+.hx-sum { display: flex; flex-wrap: wrap; gap: 4px 0; color: var(--muted); font-size: 13px; }
+.hx-sum .sep { opacity: .55; padding-inline: 6px; }
+.hx-sum b { font-weight: 600; }
+.hx-list { list-style: none; margin: 10px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.hx-list li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; }
+.hx-list li + li { border-top: 1px solid var(--line); }
+.hx-list img { width: 40px; height: 40px; border-radius: 7px; background: var(--art); box-shadow: 0 0 0 1px var(--art-ring); display: block; }
+.hx-list .n { font-weight: 600; font-size: 14px; }
+.hx-list .d { color: var(--muted); font-size: 13px; }
+.hx-list .d .sep { opacity: .55; padding-inline: 4px; }
+.hx-list .ch { color: var(--accent-text); }
+.hx-old { margin-top: 8px; font-size: 12px; color: var(--muted); }
+@media (max-width: 720px) {
+  .hx > .end { grid-column: 2; justify-self: start; }
+  .hx-body { padding-left: 16px; }
+  .hx-sum { flex-direction: column; }
+  .hx-sum .sep { display: none; }
+}

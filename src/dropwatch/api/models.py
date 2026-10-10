@@ -133,6 +133,11 @@ class ClaimOut(BaseModel):
     campaign: str
     game: str
     rewards: list[RewardOut]
+    # None when not recorded (claims from before 2026-10-10, or a claim made right after a restart)
+    minutes: int | None = None  # watch time the drop needed
+    channel: str | None = None  # the channel it was mined on
+    campaign_rewards: int | None = None  # rewards in the whole campaign
+    campaign_ends: datetime | None = None
 
 
 class HistoryOut(BaseModel):

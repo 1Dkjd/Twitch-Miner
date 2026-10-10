@@ -209,13 +209,58 @@
       "title": "Campaign",
       "type": "string"
      },
+     "campaign_ends": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Campaign Ends"
+     },
      "campaign_id": {
       "title": "Campaign Id",
       "type": "string"
      },
+     "campaign_rewards": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Campaign Rewards"
+     },
+     "channel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Channel"
+     },
      "game": {
       "title": "Game",
       "type": "string"
+     },
+     "minutes": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Minutes"
      },
      "rewards": {
       "items": {

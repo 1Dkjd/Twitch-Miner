@@ -79,6 +79,7 @@ class Runner:
         self.last_switch: dict | None = None  # {"from", "to", "at"}
         self._link_probe: dict[str, tuple[int, int]] = {}  # campaign -> (good ticks, minutes at start)
         self.maybe_unlinked: dict[str, datetime] = {}  # campaign -> marked at
+        self._mined_on: dict[str, str] = {}  # campaign -> channel last watched for it (History details)
 
     @property
     def next_check_at(self) -> datetime | None:
@@ -181,6 +182,9 @@ class Runner:
         if self._override_channel and (cur is None or cur.channel_login != self._override_channel):
             self._override_channel = None
         self.watching = next((c for c in usable if cur and c.login == cur.channel_login), None)
+        if self.watching and cur:
+            for cid in (cur.campaign_id, *self.plan.also_credited):
+                self._mined_on[cid] = self.watching.login
         topics = {topic("user_drops", self._user_id), topic("user_notifications", self._user_id)}
         if self.watching:
             topics |= {topic("stream_state", self.watching.id), topic("stream_update", self.watching.id)}
@@ -269,7 +273,11 @@ class Runner:
             self._store.log_event("claimed", info)
             if hasattr(self._store, "add_claim"):
                 self._store.add_claim(self._clock(), c.id, c.name, c.game.name,
-                                      [(r.name, r.image_url) for r in (d.rewards if d else ())])
+                                      [(r.name, r.image_url) for r in (d.rewards if d else ())],
+                                      minutes=d.required_minutes if d else None,
+                                      channel=self._mined_on.get(c.id),
+                                      campaign_rewards=sum(len(x.rewards) for x in c.drops),
+                                      campaign_ends=c.ends_at)
             return True
         self._store.log_event("claim_failed", {"campaign": c.name, "drop": drop_id})
         return False

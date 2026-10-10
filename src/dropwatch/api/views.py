@@ -97,5 +97,7 @@ def _catalog(runner) -> CatalogOut | None:
 def history_view(claims: list[dict]) -> HistoryOut:
     """Flat and newest first. Day grouping is the page's job: only the browser knows the viewer's zone."""
     out = [ClaimOut(at=row["at"], campaign_id=row["campaign_id"], campaign=row["campaign"], game=row["game"],
-                    rewards=[RewardOut(**r) for r in row["rewards"]]) for row in claims]
+                    rewards=[RewardOut(**r) for r in row["rewards"]], minutes=row.get("minutes"),
+                    channel=row.get("channel"), campaign_rewards=row.get("campaign_rewards"),
+                    campaign_ends=row.get("campaign_ends")) for row in claims]
     return HistoryOut(total_rewards=sum(len(c.rewards) for c in out), claims=out)

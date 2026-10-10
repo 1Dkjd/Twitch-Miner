@@ -395,10 +395,18 @@ export interface components {
             at: string;
             /** Campaign */
             campaign: string;
+            /** Campaign Ends */
+            campaign_ends?: string | null;
             /** Campaign Id */
             campaign_id: string;
+            /** Campaign Rewards */
+            campaign_rewards?: number | null;
+            /** Channel */
+            channel?: string | null;
             /** Game */
             game: string;
+            /** Minutes */
+            minutes?: number | null;
             /** Rewards */
             rewards: components["schemas"]["RewardOut"][];
         };
