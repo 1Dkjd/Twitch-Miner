@@ -22,7 +22,15 @@ from .models import Campaign, LiveChannel, campaign_active, campaign_minutes_nee
 from .planner import Plan, plan, qualifies
 from .twitch.constants import PLAY_INTERVAL
 from .twitch.gql import AuthExpired, GqlError
-from .twitch.pubsub import DropClaimable, DropProgress, StreamChanged, StreamDown, StreamUp, topic
+from .twitch.pubsub import (
+    DropClaimable,
+    DropProgress,
+    PointsClaimable,
+    StreamChanged,
+    StreamDown,
+    StreamUp,
+    topic,
+)
 
 log = logging.getLogger("dropwatch.runner")
 FAILS_BEFORE_SWITCH = 9  # ticks are 10 s apart: ~90 s of failed playback before excluding
@@ -160,6 +168,7 @@ class Runner:
         self.last_refresh = now
         self._refresh_backoff, self._retry_refresh_at = 0.0, None
         self._plan(now, prefs)
+        await self._claim_waiting_points()
 
     def _log_campaigns(self, now: datetime, prefs) -> None:
         """Keep History's "Missed" able to say why: the latest view of every active campaign."""
@@ -225,6 +234,8 @@ class Runner:
             for cid in (cur.campaign_id, *self.plan.also_credited):
                 self._mined_on[cid] = self.watching.login
         topics = {topic("user_drops", self._user_id), topic("user_notifications", self._user_id)}
+        if self._points_on():
+            topics.add(topic("user_points", self._user_id))
         if self.watching:
             topics |= {topic("stream_state", self.watching.id), topic("stream_update", self.watching.id)}
         self._pubsub.set_topics(topics)
@@ -386,7 +397,37 @@ class Runner:
         elapsed = (self._clock() - started).total_seconds()
         return max(0.0, PLAY_INTERVAL - elapsed)  # keep a steady 10 s period like the reference
 
+    def _points_on(self) -> bool:
+        """Settings' "Also claim channel points" (claim_points; on by default)."""
+        get = getattr(self._store, "get_settings", None)
+        return bool(get and get().get("claim_points"))
+
+    async def _claim_points(self, channel_id: int, claim_id: str) -> None:
+        try:
+            ok = await self._client.claim_points(channel_id, claim_id)
+        except TWITCH_ERRORS as exc:
+            log.info("Points claim raised %s", type(exc).__name__)
+            ok = False
+        self._store.log_event("points_claimed" if ok else "points_claim_failed", {"channel_id": channel_id})
+
+    async def _claim_waiting_points(self) -> None:
+        """A chest that was already waiting when we started watching never arrives over PubSub: look once
+        per refresh on the channel being watched."""
+        if not self.watching or not self._points_on():
+            return
+        try:
+            waiting = await self._client.waiting_points_claim(self.watching.login)
+        except Exception as exc:  # noqa: BLE001 - points are a bonus: never let them break a refresh
+            log.info("Points check raised %s", type(exc).__name__)
+            return
+        if waiting:
+            await self._claim_points(*waiting)
+
     async def handle(self, event: object) -> None:
+        if isinstance(event, PointsClaimable):
+            if self._points_on():
+                await self._claim_points(event.channel_id, event.claim_id)
+            return
         if isinstance(event, DropProgress):
             self._ticks_since_progress = 0
             for i, c in enumerate(self.campaigns):

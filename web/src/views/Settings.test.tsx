@@ -45,3 +45,12 @@ test("the old single-URL notification design is gone (replaced 2026-10-10)", asy
   await screen.findByRole("heading", { name: "Notifications" });
   expect(screen.queryByText(/An ntfy topic or a Discord webhook URL/)).not.toBeInTheDocument();
 });
+
+test("Also claim channel points is on and saves when switched", async () => {
+  const calls = setup({ "PUT /api/settings": (b: object) => ({ ...SETTINGS, ...b }) });
+  const u = userEvent.setup();
+  const sw = await screen.findByRole("checkbox", { name: "Also claim channel points" });
+  await waitFor(() => expect(sw).toBeChecked());
+  await u.click(sw);
+  await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ claim_points: false }));
+});

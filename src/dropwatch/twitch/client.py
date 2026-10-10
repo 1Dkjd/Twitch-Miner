@@ -88,6 +88,23 @@ class TwitchClient:
         return bool(result) and result.get("status") in (
             "ELIGIBLE_FOR_ALL", "DROP_INSTANCE_ALREADY_CLAIMED")
 
+    async def waiting_points_claim(self, login: str) -> tuple[int, str] | None:
+        """(channel id, claim id) when a channel points bonus chest is waiting for us on that channel."""
+        resp = await self._gql.run(op("ChannelPointsContext", channelLogin=login))
+        ch = ((resp.get("data") or {}).get("community") or {}).get("channel") or {}
+        claim = (((ch.get("self") or {}).get("communityPoints") or {}).get("availableClaim") or {})
+        return (int(ch["id"]), claim["id"]) if claim.get("id") and ch.get("id") else None
+
+    async def claim_points(self, channel_id: int, claim_id: str) -> bool:
+        try:
+            resp = await self._gql.run(op("ClaimCommunityPoints",
+                                          input={"claimID": claim_id, "channelID": str(channel_id)}))
+        except GqlError as exc:
+            log.warning("Points claim failed: %s", exc)
+            return False
+        result = (resp.get("data") or {}).get("claimCommunityPoints") or {}
+        return bool(result.get("claim")) and not result.get("error")
+
     async def current_drop(self, channel_id: int) -> tuple[str, int] | None:
         resp = await self._gql.run(op("CurrentDrop", channelID=str(channel_id)))
         cur = ((resp.get("data") or {}).get("currentUser") or {}).get("dropCurrentSession")

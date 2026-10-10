@@ -37,6 +37,12 @@ class FakeClient:
         self.camps = [camp(cur=60, claimed=True)]
         return True
 
+    async def waiting_points_claim(self, login):
+        return None  # no channel points chest waiting
+
+    async def claim_points(self, channel_id, claim_id):
+        return True
+
     async def current_drop(self, channel_id):
         return ("d1", 30)
 
