@@ -16,6 +16,9 @@ export type Me = S["MeOut"];
 export type SignIn = S["SignInStatus"];
 export type Suggestions = S["SuggestionsOut"];
 export type ChannelSuggestion = S["ChannelSuggestion"];
+export type NotifyChannels = S["NotifyChannelsOut"];
+export type NotifyChannel = S["NotifyChannelOut"];
+export type NotifyTest = S["NotifyTestOut"];
 
 /** An HTTP failure with the server's own message (FastAPI's `detail`) when it gave one. */
 export class ApiError extends Error {
@@ -61,5 +64,5 @@ export const api = {
   get: <T>(path: string) => call<T>("GET", path),
   post: <T = void>(path: string, body?: unknown) => call<T>("POST", path, body),
   put: <T>(path: string, body: unknown) => call<T>("PUT", path, body),
-  del: (path: string) => call<void>("DELETE", path),
+  del: <T = void>(path: string) => call<T>("DELETE", path),
 };

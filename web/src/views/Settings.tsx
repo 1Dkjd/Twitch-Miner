@@ -3,9 +3,10 @@ import { ApiError, api, type Settings } from "../api/client";
 import { go } from "../router";
 import { useApp } from "../store";
 import { applyTheme, savedTheme, type Theme } from "../ui/theme";
+import { Notifications } from "./Notifications";
 
-/** Settings (approved mockup), limited to what works today. Notifications, channel points and the
- * password off-switch arrive with their features (phase 3 plan, decision 3). */
+/** Settings (approved mockup), limited to what works today. Notifications follow their own approved mockup
+ * (docs/design/notifications-mockup.html); channel points and the password off-switch arrive with their features. */
 export function SettingsView() {
   const { state, refreshState, refreshMe, say } = useApp();
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -51,6 +52,7 @@ export function SettingsView() {
           </div>
         )}
       </Set>
+      <Notifications settings={settings} put={put} />
       <Set title="Mining">
         <div className="opt">
           <div><label htmlFor="m-badges">Also mine badge and emote campaigns</label>

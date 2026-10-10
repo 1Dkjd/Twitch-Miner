@@ -158,6 +158,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/notify/channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Channels */
+        get: operations["get_channels_api_notify_channels_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notify/channels/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Channel
+         * @description Adds the channel if new; changes only the fields given ("" clears one).
+         */
+        put: operations["put_channel_api_notify_channels__kind__put"];
+        post?: never;
+        /** Delete Channel */
+        delete: operations["delete_channel_api_notify_channels__kind__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notify/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Notify Test
+         * @description Settings' "Send test notification": every set-up channel, one result each.
+         */
+        post: operations["notify_test_api_notify_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/pause": {
         parameters: {
             query?: never;
@@ -495,6 +553,75 @@ export interface components {
             /** Campaign Id */
             campaign_id: string;
         };
+        /** NotifyChannelIn */
+        NotifyChannelIn: {
+            /** Values */
+            values?: {
+                [key: string]: string;
+            };
+        };
+        /** NotifyChannelOut */
+        NotifyChannelOut: {
+            /** Configured */
+            configured: boolean;
+            /** Fields */
+            fields: components["schemas"]["NotifyFieldOut"][];
+            /** Hint */
+            hint: string;
+            /** Name */
+            name: string;
+            /** Summary */
+            summary: string;
+            /** Type */
+            type: string;
+        };
+        /** NotifyChannelsOut */
+        NotifyChannelsOut: {
+            /** Available */
+            available: components["schemas"]["NotifyKind"][];
+            /** Channels */
+            channels: components["schemas"]["NotifyChannelOut"][];
+        };
+        /** NotifyFieldOut */
+        NotifyFieldOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Secret */
+            secret: boolean;
+            /** Set */
+            set: boolean;
+            /** Value */
+            value: string;
+        };
+        /** NotifyKind */
+        NotifyKind: {
+            /** Name */
+            name: string;
+            /** Type */
+            type: string;
+        };
+        /** NotifyResult */
+        NotifyResult: {
+            /** Message */
+            message: string;
+            /** Name */
+            name: string;
+            /** Ok */
+            ok: boolean;
+            /** Type */
+            type: string;
+        };
+        /** NotifyTestOut */
+        NotifyTestOut: {
+            /** Message */
+            message: string;
+            /** Ok */
+            ok: boolean;
+            /** Results */
+            results: components["schemas"]["NotifyResult"][];
+        };
         /** PasswordIn */
         PasswordIn: {
             /** Password */
@@ -518,14 +645,22 @@ export interface components {
             claim_points?: boolean | null;
             /** Mine Badges */
             mine_badges?: boolean | null;
-            /** Notify Claimed */
-            notify_claimed?: boolean | null;
+            /** Notify Claim Failed */
+            notify_claim_failed?: boolean | null;
             /** Notify Needs You */
             notify_needs_you?: boolean | null;
+            /** Notify Not Earning */
+            notify_not_earning?: boolean | null;
+            /** Notify Not Earning Minutes */
+            notify_not_earning_minutes?: number | null;
             /** Notify Signin */
             notify_signin?: boolean | null;
-            /** Notify Target */
-            notify_target?: string | null;
+            /** Notify Stopped */
+            notify_stopped?: boolean | null;
+            /** Notify Unreachable */
+            notify_unreachable?: boolean | null;
+            /** Notify Unreachable Minutes */
+            notify_unreachable_minutes?: number | null;
         };
         /** SettingsOut */
         SettingsOut: {
@@ -533,14 +668,22 @@ export interface components {
             claim_points: boolean;
             /** Mine Badges */
             mine_badges: boolean;
-            /** Notify Claimed */
-            notify_claimed: boolean;
+            /** Notify Claim Failed */
+            notify_claim_failed: boolean;
             /** Notify Needs You */
             notify_needs_you: boolean;
+            /** Notify Not Earning */
+            notify_not_earning: boolean;
+            /** Notify Not Earning Minutes */
+            notify_not_earning_minutes: number;
             /** Notify Signin */
             notify_signin: boolean;
-            /** Notify Target */
-            notify_target: string;
+            /** Notify Stopped */
+            notify_stopped: boolean;
+            /** Notify Unreachable */
+            notify_unreachable: boolean;
+            /** Notify Unreachable Minutes */
+            notify_unreachable_minutes: number;
         };
         /** SignInStatus */
         SignInStatus: {
@@ -881,6 +1024,112 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_channels_api_notify_channels_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotifyChannelsOut"];
+                };
+            };
+        };
+    };
+    put_channel_api_notify_channels__kind__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotifyChannelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotifyChannelsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_channel_api_notify_channels__kind__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotifyChannelsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    notify_test_api_notify_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotifyTestOut"];
                 };
             };
         };
