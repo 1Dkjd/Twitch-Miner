@@ -3,7 +3,7 @@ import { type View, useView } from "./router";
 import { ConnectScreen } from "./screens/Connect";
 import { LoginScreen, SetupScreen } from "./screens/PagePassword";
 import { AppProvider, useApp } from "./store";
-import { Icon, IconSprite, type IconName } from "./ui/Icons";
+import { Icon, IconSprite, Mark, type IconName } from "./ui/Icons";
 import { HistoryView } from "./views/History";
 import { OverviewView } from "./views/Overview";
 import { PrioritiesView } from "./views/Priorities";
@@ -44,7 +44,7 @@ function TopBar({ view, tabs }: { view: View; tabs: boolean }) {
   return (
     <header className="bar">
       <div className="bar-in">
-        <div className="brand"><svg aria-hidden="true"><use href="#i-pick" /></svg>Dropwatch</div>
+        <div className="brand"><Mark />Dropwatch</div>
         {tabs && (
           <nav className="tabs" aria-label="Views">
             {TABS.map(([v, name, icon]) => (
