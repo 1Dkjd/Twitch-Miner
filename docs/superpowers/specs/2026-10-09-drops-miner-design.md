@@ -82,6 +82,7 @@ Spike results, run on Nick's account on 2026-10-09 (read-only, throwaway code):
 | Device-code login, Android TV client (`ue6666qo…`) | Works. The token validates, and `Inventory` returns the 3 campaigns in progress. |
 | `ViewerDropsDashboard` with the TV token | Returns `dropCampaigns: null`, so there is no discovery. This matches DevilXD's comment on #1165. |
 | Heartbeat and claim with the TV token | Not tested. The spike was read-only. |
+| Our own registered app ("Dropwatch Miner", Public client), device-code login, 2026-10-09 | Login works, and the public API (Helix `users`) accepts it. The drops GQL refuses it: with our Client-ID, HTTP 400 `The "Client-ID" header is invalid`; with the WEB or Android Client-ID, HTTP 401 `The "Authorization" token is invalid`. The same queries with the Android session return 152 campaigns. So "Login with Twitch" (redirect or device code) can't feed a drops miner. The test token was revoked. |
 
 **Chosen method: browser sign-in with Android delegation**, as fireph's `webui/browser_login.py` does it.
 It is proven by Nick's running container, which lists campaigns he never started.
