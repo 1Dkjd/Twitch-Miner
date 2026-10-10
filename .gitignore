@@ -5,3 +5,7 @@ data/
 captures/
 .pytest_cache/
 .ruff_cache/
+web/node_modules/
+web/dist/
+web/test-results/
+web/playwright-report/
