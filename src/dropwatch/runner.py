@@ -252,6 +252,10 @@ class Runner:
         """Lock held by caller. Each claim id is claimed at most once per run."""
         if not claim_id or claim_id in self._claimed:
             return False
+        if c.linked is False and not c.has_badge_or_emote:
+            # Twitch answers ELIGIBLE_FOR_ALL here but awards nothing (ER ESPORTS DROPS, 2026-10-10);
+            # the campaign stays in Needs you, and the claim goes through once Twitch says it's linked
+            return False
         d = c.drop(drop_id)
         try:
             ok = await self._client.claim(claim_id)
