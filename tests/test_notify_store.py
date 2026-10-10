@@ -11,7 +11,8 @@ def test_notification_defaults(tmp_path):
     assert {k: s[k] for k in failures} == dict.fromkeys(failures, True)
     assert s["notify_needs_you"] is False  # Nick: off by default
     assert (s["notify_unreachable_minutes"], s["notify_not_earning_minutes"]) == (15, 30)
-    assert "notify_target" not in s and "notify_claimed" not in s  # the old single-URL design is gone
+    assert "notify_target" not in s  # the old single-URL design is gone
+    assert s["notify_claimed"] is False  # back as an opt-in summary (2026-10-10), off by default
 
 
 def test_minutes_are_numbers(tmp_path):

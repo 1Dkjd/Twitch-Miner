@@ -314,7 +314,9 @@ class Runner:
         if ok:
             self._claimed.add(claim_id)
             info = {"campaign": c.name, "reward": ", ".join(r.name for r in d.rewards) if d else drop_id}
-            self._emit("claimed", info)
+            # game, watch time and channel only for the "a reward is claimed" push
+            self._emit("claimed", {**info, "game": c.game.name, "minutes": d.required_minutes if d else None,
+                                   "channel": self._mined_on.get(c.id)})
             self._store.log_event("claimed", info)
             if hasattr(self._store, "add_claim"):
                 self._store.add_claim(self._clock(), c.id, c.name, c.game.name,

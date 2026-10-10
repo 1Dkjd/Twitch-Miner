@@ -113,6 +113,10 @@ class SettingsIn(BaseModel):
     notify_unreachable_minutes: StrictInt | None = Field(default=None, ge=5, le=240)
     notify_not_earning_minutes: StrictInt | None = Field(default=None, ge=10, le=240)
     arrange_up_next: StrictBool | None = None
+    notify_claimed: StrictBool | None = None
+    notify_weekly: StrictBool | None = None
+    notify_weekly_day: StrictInt | None = Field(default=None, ge=0, le=6)  # 0 = Monday
+    notify_weekly_hour: StrictInt | None = Field(default=None, ge=0, le=23)
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -128,6 +132,10 @@ class SettingsOut(BaseModel):
     notify_unreachable_minutes: int
     notify_not_earning_minutes: int
     arrange_up_next: bool
+    notify_claimed: bool
+    notify_weekly: bool
+    notify_weekly_day: int
+    notify_weekly_hour: int
 
 
 class NotifyFieldOut(BaseModel):

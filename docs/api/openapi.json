@@ -935,6 +935,17 @@
       ],
       "title": "Notify Claim Failed"
      },
+     "notify_claimed": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Claimed"
+     },
      "notify_needs_you": {
       "anyOf": [
        {
@@ -1015,6 +1026,43 @@
        }
       ],
       "title": "Notify Unreachable Minutes"
+     },
+     "notify_weekly": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Weekly"
+     },
+     "notify_weekly_day": {
+      "anyOf": [
+       {
+        "maximum": 6.0,
+        "minimum": 0.0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Weekly Day"
+     },
+     "notify_weekly_hour": {
+      "anyOf": [
+       {
+        "maximum": 23.0,
+        "minimum": 0.0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Weekly Hour"
      }
     },
     "title": "SettingsIn",
@@ -1036,6 +1084,10 @@
      },
      "notify_claim_failed": {
       "title": "Notify Claim Failed",
+      "type": "boolean"
+     },
+     "notify_claimed": {
+      "title": "Notify Claimed",
       "type": "boolean"
      },
      "notify_needs_you": {
@@ -1065,6 +1117,18 @@
      "notify_unreachable_minutes": {
       "title": "Notify Unreachable Minutes",
       "type": "integer"
+     },
+     "notify_weekly": {
+      "title": "Notify Weekly",
+      "type": "boolean"
+     },
+     "notify_weekly_day": {
+      "title": "Notify Weekly Day",
+      "type": "integer"
+     },
+     "notify_weekly_hour": {
+      "title": "Notify Weekly Hour",
+      "type": "integer"
      }
     },
     "required": [
@@ -1078,7 +1142,11 @@
      "notify_needs_you",
      "notify_unreachable_minutes",
      "notify_not_earning_minutes",
-     "arrange_up_next"
+     "arrange_up_next",
+     "notify_claimed",
+     "notify_weekly",
+     "notify_weekly_day",
+     "notify_weekly_hour"
     ],
     "title": "SettingsOut",
     "type": "object"

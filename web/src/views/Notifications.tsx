@@ -18,6 +18,10 @@ const TOGGLES: Toggle[] = [
   { key: "notify_needs_you", label: "A campaign needs you", d: "A campaign's game account isn't linked, so it can't be mined." },
 ];
 
+/** The weekly summary's day (0 = Monday, as the server counts) and hour, in the server's local time. */
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const HOURS = Array.from({ length: 24 }, (_, h) => h);
+
 export function Notifications({ settings, put }: { settings: Settings | null; put: (c: Partial<Settings>) => Promise<void> }) {
   const { say } = useApp();
   const [chans, setChans] = useState<NotifyChannels | null>(null);
@@ -57,6 +61,24 @@ export function Notifications({ settings, put }: { settings: Settings | null; pu
             onChange={(e) => void put({ [t.key]: e.target.checked })} />
         </div>
       ))}
+      <div className="nt-lab">Summaries and rewards</div>
+      <div className="opt">
+        <div><label htmlFor="notify_weekly">Weekly summary</label>
+          <div className="d">Every <select className="inline-sel" aria-label="Day" disabled={!settings} value={settings?.notify_weekly_day ?? 6}
+            onChange={(e) => void put({ notify_weekly_day: Number(e.target.value) })}>
+            {DAYS.map((d, i) => <option key={d} value={i}>{d}</option>)}</select> at <select className="inline-sel" aria-label="Time"
+            disabled={!settings} value={settings?.notify_weekly_hour ?? 18} onChange={(e) => void put({ notify_weekly_hour: Number(e.target.value) })}>
+            {HOURS.map((h) => <option key={h} value={h}>{String(h).padStart(2, "0")}:00</option>)}</select>: what was claimed, what was
+            missed, and anything that needs you.</div></div>
+        <input type="checkbox" className="sw" id="notify_weekly" disabled={!settings} checked={!!settings?.notify_weekly}
+          onChange={(e) => void put({ notify_weekly: e.target.checked })} />
+      </div>
+      <div className="opt">
+        <div><label htmlFor="notify_claimed">A reward is claimed</label>
+          <div className="d">One message per reward; several within a minute arrive as one.</div></div>
+        <input type="checkbox" className="sw" id="notify_claimed" disabled={!settings} checked={!!settings?.notify_claimed}
+          onChange={(e) => void put({ notify_claimed: e.target.checked })} />
+      </div>
       <div className="nt-lab">How you're notified</div>
       <div className="nt-how">
         {chans?.channels.map((c) => (

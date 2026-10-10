@@ -43,6 +43,5 @@ test("the badges switch saves straight away", async () => {
 test("the old single-URL notification design is gone (replaced 2026-10-10)", async () => {
   setup();
   await screen.findByRole("heading", { name: "Notifications" });
-  expect(screen.queryByText(/A reward is claimed/)).not.toBeInTheDocument();
   expect(screen.queryByText(/An ntfy topic or a Discord webhook URL/)).not.toBeInTheDocument();
 });

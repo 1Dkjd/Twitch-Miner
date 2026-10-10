@@ -56,12 +56,15 @@ SETTINGS: dict[str, type] = {
     "notify_claim_failed": bool, "notify_stopped": bool, "notify_needs_you": bool,
     "notify_unreachable_minutes": int, "notify_not_earning_minutes": int,
     "arrange_up_next": bool,  # Up next "Arrange myself": pins count only while this is on
+    # summaries (2026-10-10), off by default: a push per claim, and a weekly summary on a day (0 = Monday)
+    "notify_claimed": bool, "notify_weekly": bool, "notify_weekly_day": int, "notify_weekly_hour": int,
 }
 SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "notify_signin": True, "notify_unreachable": True, "notify_not_earning": True,
                     "notify_claim_failed": True, "notify_stopped": True, "notify_needs_you": False,
                     "notify_unreachable_minutes": 15, "notify_not_earning_minutes": 30,
-                    "arrange_up_next": False}
+                    "arrange_up_next": False, "notify_claimed": False, "notify_weekly": False,
+                    "notify_weekly_day": 6, "notify_weekly_hour": 18}
 _ph = PasswordHasher()
 
 

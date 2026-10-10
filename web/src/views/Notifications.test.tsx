@@ -9,7 +9,8 @@ const ME = { authenticated: true, setup_required: false };
 const SETTINGS = {
   mine_badges: false, claim_points: true, notify_signin: true, notify_unreachable: true, notify_not_earning: true,
   notify_claim_failed: true, notify_stopped: true, notify_needs_you: false,
-  notify_unreachable_minutes: 15, notify_not_earning_minutes: 30,
+  notify_unreachable_minutes: 15, notify_not_earning_minutes: 30, arrange_up_next: false,
+  notify_claimed: false, notify_weekly: false, notify_weekly_day: 6, notify_weekly_hour: 18,
 };
 const ALL = [["ntfy", "ntfy"], ["telegram", "Telegram"], ["discord", "Discord"], ["slack", "Slack"],
   ["pushover", "Pushover"], ["gotify", "Gotify"], ["webhook", "Webhook"]].map(([type, name]) => ({ type, name }));
@@ -98,4 +99,20 @@ test("removing a channel and sending a test", async () => {
   await u.click(screen.getByRole("button", { name: "Remove Discord" }));
   await waitFor(() => expect(calls.some((c) => c.method === "DELETE")).toBe(true));
   await waitFor(() => expect(screen.queryByText("webhook set")).toBeNull());
+});
+
+test("the weekly summary and reward-claimed pushes are off, and the day and time save", async () => {
+  const calls = setup();
+  const u = userEvent.setup();
+  const weekly = await screen.findByRole("checkbox", { name: "Weekly summary" });
+  expect(weekly).not.toBeChecked();
+  expect(screen.getByRole("checkbox", { name: "A reward is claimed" })).not.toBeChecked();
+  expect(screen.getByRole("combobox", { name: "Day" })).toHaveValue("6");
+  expect(screen.getByRole("combobox", { name: "Time" })).toHaveValue("18");
+  await u.click(weekly);
+  await waitFor(() => expect(calls.filter((c) => c.method === "PUT").at(-1)?.body).toEqual({ notify_weekly: true }));
+  await u.selectOptions(screen.getByRole("combobox", { name: "Day" }), "Friday");
+  await waitFor(() => expect(calls.filter((c) => c.method === "PUT").at(-1)?.body).toEqual({ notify_weekly_day: 4 }));
+  await u.selectOptions(screen.getByRole("combobox", { name: "Time" }), "09:00");
+  await waitFor(() => expect(calls.filter((c) => c.method === "PUT").at(-1)?.body).toEqual({ notify_weekly_hour: 9 }));
 });

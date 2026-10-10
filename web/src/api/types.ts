@@ -733,6 +733,8 @@ export interface components {
             mine_badges?: boolean | null;
             /** Notify Claim Failed */
             notify_claim_failed?: boolean | null;
+            /** Notify Claimed */
+            notify_claimed?: boolean | null;
             /** Notify Needs You */
             notify_needs_you?: boolean | null;
             /** Notify Not Earning */
@@ -747,6 +749,12 @@ export interface components {
             notify_unreachable?: boolean | null;
             /** Notify Unreachable Minutes */
             notify_unreachable_minutes?: number | null;
+            /** Notify Weekly */
+            notify_weekly?: boolean | null;
+            /** Notify Weekly Day */
+            notify_weekly_day?: number | null;
+            /** Notify Weekly Hour */
+            notify_weekly_hour?: number | null;
         };
         /** SettingsOut */
         SettingsOut: {
@@ -758,6 +766,8 @@ export interface components {
             mine_badges: boolean;
             /** Notify Claim Failed */
             notify_claim_failed: boolean;
+            /** Notify Claimed */
+            notify_claimed: boolean;
             /** Notify Needs You */
             notify_needs_you: boolean;
             /** Notify Not Earning */
@@ -772,6 +782,12 @@ export interface components {
             notify_unreachable: boolean;
             /** Notify Unreachable Minutes */
             notify_unreachable_minutes: number;
+            /** Notify Weekly */
+            notify_weekly: boolean;
+            /** Notify Weekly Day */
+            notify_weekly_day: number;
+            /** Notify Weekly Hour */
+            notify_weekly_hour: number;
         };
         /** SignInStatus */
         SignInStatus: {

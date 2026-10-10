@@ -9,7 +9,10 @@ actually sent, so a switched-off alert stays silent both ways):
 - A reward couldn't be claimed (runner's claim_failed), once per reward until it is claimed
 - Mining stopped on an error (the service's {"state": "idle", "error": ...} after a crash)
 Plus "a campaign needs you" (account link), off by default: one batched message for campaigns not yet
-reported, remembered across restarts.
+reported, remembered across restarts. And two summaries, both off by default (2026-10-10): "a reward is
+claimed" (claims within a minute of the first arrive as one message) and a weekly summary at a chosen
+day and hour of the server's local time, sent once per week and up to WEEKLY_LATE after if Dropwatch was
+off at that moment.
 
 `handle` takes the miner's own events; `check` runs on a timer for the time-based ones. `run` wires both
 to the event bus and sends through `dispatch`.
@@ -27,6 +30,8 @@ from datetime import UTC, datetime, timedelta
 log = logging.getLogger("dropwatch.alerts")
 PREFIX = "Dropwatch: "
 CHECK_EVERY_S = 30
+CLAIM_BATCH = timedelta(minutes=1)
+WEEKLY_LATE = timedelta(hours=6)
 MINING = {"mining", "switched"}
 
 
@@ -45,8 +50,11 @@ class Snapshot:
 
 
 class Notifier:
-    def __init__(self, store, *, clock: Callable[[], datetime] = lambda: datetime.now(UTC)):
+    def __init__(self, store, *, clock: Callable[[], datetime] = lambda: datetime.now(UTC), tz=None):
         self._store, self._clock = store, clock
+        self._tz = tz or datetime.now().astimezone().tzinfo  # the weekly summary's day and hour are local
+        self._claims: list[dict] = []  # claimed rewards waiting to go out as one message
+        self._claims_since: datetime | None = None
         self._sent: set[str] = set()  # alerts said and not yet cleared
         self._unreachable_since: datetime | None = None
         self._earning_since: datetime | None = None
@@ -120,6 +128,9 @@ class Notifier:
                 self._failed_claims.add(key)
             return alert
         if kind == "claimed":
+            if self._on("notify_claimed"):
+                self._claims.append(data)
+                self._claims_since = self._claims_since or now
             key = (data.get("campaign", ""), data.get("reward", ""))
             if key in self._failed_claims:
                 self._failed_claims.discard(key)
@@ -146,7 +157,62 @@ class Notifier:
                                f"minutes{on}. "
                                "Twitch may have changed something.", track="not_earning")
         out += self._needs_you(snap.needs_you, s)
+        if self._claims and now - self._claims_since >= CLAIM_BATCH:
+            out += self._claimed_alert()
+        if s.get("notify_weekly"):
+            out += self._weekly(now, s, snap)
         return out
+
+    def _claimed_alert(self) -> list[Alert]:
+        claims, self._claims, self._claims_since = self._claims, [], None
+        if len(claims) == 1:
+            c = claims[0]
+            where = f"{c.get('campaign')} ({c.get('game')})" if c.get("game") else str(c.get("campaign"))
+            facts = []
+            if c.get("minutes"):
+                facts.append(f"after {_dur(c['minutes'])} watched")
+            if c.get("channel"):
+                facts.append(f"on {c['channel']}")
+            body = f"{where}, {' '.join(facts)}." if facts else f"{where}."
+            return [Alert("notify_claimed", f"{PREFIX}Claimed {c.get('reward')}", body)]
+        names = _and([str(c.get("reward")) for c in claims])
+        camps = {(c.get("campaign"), c.get("game")) for c in claims}
+        if len(camps) == 1:
+            (camp, game), = camps
+            body = f"{names} from {camp} ({game})." if game else f"{names} from {camp}."
+        else:
+            body = _and([f"{c.get('reward')} ({c.get('campaign')})" for c in claims]) + "."
+        return [Alert("notify_claimed", f"{PREFIX}Claimed {len(claims)} rewards", body)]
+
+    def _weekly(self, now: datetime, s: dict, snap: Snapshot) -> list[Alert]:
+        local = now.astimezone(self._tz)
+        due = local.replace(hour=s["notify_weekly_hour"], minute=0, second=0, microsecond=0)
+        due -= timedelta(days=(local.weekday() - s["notify_weekly_day"]) % 7)
+        if due > local:
+            due -= timedelta(days=7)
+        key = due.date().isoformat()
+        if local - due > WEEKLY_LATE or self._store.get_setting("notify_weekly_sent") == key:
+            return []
+        self._store.set_setting("notify_weekly_sent", key)
+        week = now - timedelta(days=7)
+        claims = self._store.claims_since(week)
+        rewards = sum(len(c["rewards"]) for c in claims)
+        camps = len({c["campaign_id"] for c in claims})
+        missed = sum(1 for m in self._store.missed_between(week, now) if notable(m))
+        games = list(dict.fromkeys(game for _, _, game in snap.needs_you))
+        parts = []
+        if rewards:
+            parts.append(f"{rewards} {_n(rewards, 'reward')} claimed from {camps} {_n(camps, 'campaign')}.")
+        elif missed or games:
+            parts.append("Nothing claimed.")
+        else:
+            parts.append("A quiet week: nothing claimed.")
+        if missed:
+            parts.append(f"{missed} {_n(missed, 'campaign')} missed (History says why).")
+        if games:
+            parts.append(f"{len(games)} {'needs' if len(games) == 1 else 'need'} your account linked: "
+                         f"{', '.join(games)}.")
+        return [Alert("notify_weekly", f"{PREFIX}Your week", " ".join(parts))]
 
     def _needs_you(self, campaigns: list[tuple[str, str, str]], s: dict) -> list[Alert]:
         if not s.get("notify_needs_you"):
@@ -189,6 +255,29 @@ class Notifier:
                     log.info("Notified %r: %s", a.title, got or "no channels set up")
         finally:
             bus.unsubscribe(q)
+
+
+def notable(m: dict) -> bool:
+    """A missed campaign worth naming (the same rule as History's full rows): Dropwatch started it, it is a
+    Priority or pinned game, or it needs an account linked."""
+    return m["reason"] != "never_list" and (m["started"] or m["priority"] or m["pinned"]
+                                             or m["reason"] == "not_linked")
+
+
+def _n(k: int, word: str) -> str:
+    return word if k == 1 else word + "s"
+
+
+def _and(items: list[str]) -> str:
+    return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1]
+
+
+def _dur(minutes: int) -> str:
+    """'45 min', '4 h', '1 h 30 min', joined by non-breaking spaces as the page writes them."""
+    if minutes < 60:
+        return f"{minutes}\u00a0min"
+    h, m = divmod(minutes, 60)
+    return f"{h}\u00a0h" + (f" {m}\u00a0min" if m else "")
 
 
 def snapshot_of(runner) -> Snapshot:
