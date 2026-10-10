@@ -12,4 +12,4 @@ test("src/api/types.ts matches docs/api/openapi.json", () => {
   const fresh = readFileSync(out, "utf8");
   const committed = readFileSync("src/api/types.ts", "utf8");
   expect(committed, "run: npm run gen:api").toBe(fresh);
-});
+}, 30_000); // spawns node: slower than the 5 s default on Windows

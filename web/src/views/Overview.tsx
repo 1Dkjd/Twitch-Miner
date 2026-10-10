@@ -22,9 +22,10 @@ export function OverviewView() {
     );
   }
   const lost = connection === "lost";
-  const priorityOf = (game: string) => {
+  const priorityOf = (game: string, ordinal = false) => {
     const i = lists?.priority.indexOf(game) ?? -1;
-    return i >= 0 ? `Priority ${i + 1}` : null;
+    if (i < 0) return null;
+    return ordinal ? `${nth(i + 1)} in Priority` : `Priority ${i + 1}`;
   };
   async function never(game: string) {
     if (!lists) return;
@@ -116,7 +117,7 @@ function Banner({ state, lost, lostSince }: { state: State; lost: boolean; lostS
 }
 
 /* ---------- Mining now ---------- */
-function NowSlot({ state, lost, lostSince, priorityOf }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string) => string | null }) {
+function NowSlot({ state, lost, lostSince, priorityOf }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string, ordinal?: boolean) => string | null }) {
   const cur = state.current;
   if (state.state === "signed_out") {
     return (
@@ -132,7 +133,7 @@ const VERDICT: Record<string, [string, string]> = {
   plenty: ["green", "Plenty of time"], tight: ["warn", "Tight on time"], wont_finish: ["red", "Won't finish in time"],
 };
 
-function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string) => string | null }) {
+function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string, ordinal?: boolean) => string | null }) {
   const { say, refreshState } = useApp();
   const [allOpen, setAllOpen] = useState(false);
   const [dismissed, setDismissed] = useState<string | null>(null);
@@ -151,7 +152,7 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
   const fit = VERDICT[c.verdict ?? ""] ?? VERDICT.plenty!;
   const sw = state.last_switch;
   const swKey = sw ? `${sw.from}>${sw.to}@${sw.at}` : null;
-  const reason = cur.reason === "you picked it" ? "you picked it" : priorityOf(c.game) ?? cap(cur.reason);
+  const reason = cur.reason === "you picked it" ? "You picked it" : priorityOf(c.game, true) ?? cap(cur.reason);
 
   async function pause(minutes: number | null) {
     try { await api.post("/pause", { minutes }); say("Paused. Progress is kept."); }
@@ -170,18 +171,20 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
       <div className="now-main">
         <div className="now-head">
           <div className="now-title">
-            <div className="now-title-row"><h2 id="h-now"><span className="sr">Mining now: </span>{c.name}</h2>{status}</div>
-            <div className="now-sub">
-              {c.game} · {mining ? "watching" : "last on"} <b>{cur.channel.login}</b>
-              {cur.channel.favourite && <> <span className="fav-mark"><Icon name="star" />favourite</span></>}
-              {mining && cur.channels.length > 0 && (
-                <> · <MenuButton id="ch-menu" label="Watch instead" wrapClass="ch-pick" buttonClass="link" buttonLabel="Change channel"
-                  buttonContent="change" items={cur.channels.map((ch) => ({
-                    key: ch.login, onSelect: () => void useChannel(ch.login),
-                    content: <>{ch.favourite && <Icon name="star" />}{ch.login}<span className="v">{ch.viewers.toLocaleString()} watching</span></>,
-                  }))} /></>
-              )}
-              {" · "}{reason}
+            <div className="now-title-row"><h2 id="h-now"><span className="sr">Mining now: </span>{c.name}</h2>{status}
+              <span className="chip" title="Why this campaign is being mined"><span className="sr">Why: </span>{reason}</span></div>
+            {/* Nick's pick 2026-10-10 (docs/design/now-reason-options.html): reason as a chip (A), facts labelled (C) */}
+            <div className="now-facts">
+              <span><span className="k">Game</span><b>{c.game}</b></span>
+              <span><span className="k">{mining ? "Channel" : "Last on"}</span><b>{cur.channel.login}</b>
+                {cur.channel.favourite && <> <span className="fav-mark"><Icon name="star" />favourite</span></>}
+                {mining && cur.channels.length > 0 && (
+                  <> · <MenuButton id="ch-menu" label="Watch instead" wrapClass="ch-pick" buttonClass="link" buttonLabel="Change channel"
+                    buttonContent="change" items={cur.channels.map((ch) => ({
+                      key: ch.login, onSelect: () => void useChannel(ch.login),
+                      content: <>{ch.favourite && <Icon name="star" />}{ch.login}<span className="v">{ch.viewers.toLocaleString()} watching</span></>,
+                    }))} /></>
+                )}</span>
             </div>
           </div>
           <span className="ends">Ends {day(c.ends_at)}</span>
@@ -309,7 +312,7 @@ function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) =>
   );
 }
 
-function UpNext({ state, priorityOf }: { state: State; priorityOf: (g: string) => string | null }) {
+function UpNext({ state, priorityOf }: { state: State; priorityOf: (g: string, ordinal?: boolean) => string | null }) {
   const { refreshState, say } = useApp();
   const [all, setAll] = useState(false);
   if (!state.up_next.length) return null;
@@ -395,3 +398,9 @@ function Done({ state }: { state: State }) {
 }
 
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+/** 1st, 2nd, 3rd, 4th, ..., 11th, 12th, 13th, 21st */
+export const nth = (n: number) => {
+  const t = n % 100;
+  const suf = t >= 11 && t <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th";
+  return `${n}${suf}`;
+};

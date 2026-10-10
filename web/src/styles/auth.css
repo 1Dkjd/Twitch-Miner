@@ -67,3 +67,8 @@
 .ch-pick { position: relative; display: inline-block; }
 .ch-pick .menu { left: 0; right: auto; min-width: 220px; }
 .ch-pick .menu .v { margin-left: 10px; color: var(--muted); font-family: var(--num); font-variant-numeric: tabular-nums; font-size: 12px; }
+/* Mining-now facts line (Nick's pick 2026-10-10, now-reason-options.html option C) */
+.now-facts { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; color: var(--muted); }
+.now-facts b { color: var(--fg); font-weight: 500; }
+.now-facts .k { font-family: var(--display); font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+:root[data-look="ore"] .now .now-facts { color: var(--muted-art); }

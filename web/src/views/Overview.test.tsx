@@ -24,7 +24,8 @@ test("Mining now shows the campaign, channel, favourite mark, next reward and de
   setup(state());
   const card = await screen.findByRole("article");
   expect(within(card).getByRole("heading", { level: 2 })).toHaveTextContent("Frights & Delights");
-  expect(card).toHaveTextContent("watching example_streamer");
+  expect(card.querySelector(".now-facts")).toHaveTextContent("GamePaliaChannelexample_streamer");
+  expect(within(card).getByText("Most urgent")).toHaveClass("chip");
   expect(within(card).getByText("favourite")).toBeInTheDocument();
   expect(card).toHaveTextContent("Next reward in 38 min"); // jest-dom folds the non-breaking space
   expect(card.textContent).toContain("38 min"); // spec §11: numbers and units never split
@@ -130,4 +131,16 @@ test("catalogue trouble shows the warning banner", async () => {
   setPhone(false);
   setup(state({ catalog: { status: "unreachable", since: new Date().toISOString() } }));
   expect(await screen.findByText(/Can't reach the campaign list since/)).toBeInTheDocument();
+});
+
+test("a Priority game says its place as a chip", async () => {
+  setPhone(false);
+  mockApi({ "GET /api/state": state(), "GET /api/lists": { priority: ["Palia", "AION 2", "Phasmophobia", "X"].reverse(), never: [], favourites: [] } });
+  render(<AppProvider initialMe={ME}><OverviewView /></AppProvider>);
+  expect(await screen.findByText("4th in Priority")).toHaveClass("chip");
+});
+
+test("ordinals", async () => {
+  const { nth } = await import("./Overview");
+  expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 103].map(nth)).toEqual(["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "103rd"]);
 });
