@@ -152,6 +152,13 @@ class MeOut(BaseModel):
     setup_required: bool
 
 
+class ChannelSuggestion(BaseModel):
+    login: str
+    live: bool  # live now with drops on, as of the last refresh
+    game: str | None  # what it is (or was last) streaming
+    last_seen: datetime | None  # last seen live; None if never seen (a favourite added by name)
+
+
 class SuggestionsOut(BaseModel):
     games: list[str]
-    channels: list[str]
+    channels: list[ChannelSuggestion]  # live first, then most recently seen, then never-seen favourites

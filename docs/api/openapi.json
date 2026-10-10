@@ -155,6 +155,49 @@
     "title": "ChannelOut",
     "type": "object"
    },
+   "ChannelSuggestion": {
+    "properties": {
+     "game": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Game"
+     },
+     "last_seen": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Seen"
+     },
+     "live": {
+      "title": "Live",
+      "type": "boolean"
+     },
+     "login": {
+      "title": "Login",
+      "type": "string"
+     }
+    },
+    "required": [
+     "login",
+     "live",
+     "game",
+     "last_seen"
+    ],
+    "title": "ChannelSuggestion",
+    "type": "object"
+   },
    "ClaimOut": {
     "properties": {
      "at": {
@@ -757,7 +800,7 @@
     "properties": {
      "channels": {
       "items": {
-       "type": "string"
+       "$ref": "#/components/schemas/ChannelSuggestion"
       },
       "title": "Channels",
       "type": "array"

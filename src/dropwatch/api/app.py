@@ -14,6 +14,7 @@ from ..runner import State
 from .auth import private_auth, public, require_session
 from .models import (
     ChannelIn,
+    ChannelSuggestion,
     HistoryOut,
     ListsIn,
     ListsOut,
@@ -79,9 +80,18 @@ async def get_suggestions(request: Request) -> SuggestionsOut:
     ctx = _c(request)
     r = ctx.service.runner
     games = sorted({c.game.name for c in r.campaigns}) if r else []
-    chans = {ch.login for ch in r.live} if r else set()
-    chans |= set(ctx.store.get_prefs().favourites)
-    return SuggestionsOut(games=games, channels=sorted(chans))
+    live = {ch.login: ch.game_name or None for ch in r.live} if r else {}
+    seen = {row["login"]: row for row in ctx.store.seen_channels(ctx.clock())}
+    out = [ChannelSuggestion(login=lg, live=True, game=g, last_seen=seen.get(lg, {}).get("last_seen"))
+           for lg, g in sorted(live.items())]
+    favs = ctx.store.get_prefs().favourites
+    offline = [lg for lg in seen if lg not in live]  # newest first
+    keep = set(offline[:SEEN_SUGGESTIONS]) | set(favs)  # a long tail of offline channels isn't useful
+    out += [ChannelSuggestion(login=lg, live=False, game=seen[lg]["game"] or None,
+                              last_seen=seen[lg]["last_seen"]) for lg in offline if lg in keep]
+    known = {c.login for c in out}
+    out += [ChannelSuggestion(login=f, live=False, game=None, last_seen=None) for f in favs if f not in known]
+    return SuggestionsOut(games=games, channels=out)
 
 
 @api.get("/settings", response_model=SettingsOut)
@@ -195,6 +205,7 @@ def create_app(ctx: AppContext, web_dir: Path | None = None) -> FastAPI:
     return app
 
 
+SEEN_SUGGESTIONS = 300  # offline channels offered in the favourites add box (most recent first)
 NO_CACHE = {"Cache-Control": "no-cache"}  # a rebuilt page must not be served from a stale cache
 
 

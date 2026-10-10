@@ -5,7 +5,7 @@ import {
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS as DndCSS } from "@dnd-kit/utilities";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { api, type Campaign, type Lists, type State, type Suggestions } from "../api/client";
+import { api, type Campaign, type ChannelSuggestion, type Lists, type State, type Suggestions } from "../api/client";
 import { useLists } from "../lists";
 import { useApp } from "../store";
 import { boxArt, day, dur } from "../ui/format";
@@ -33,7 +33,8 @@ export function PrioritiesView() {
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }), // a press, so phones can scroll
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
-  useEffect(() => { api.get<Suggestions>("/suggestions").then(setSugg).catch(() => undefined); }, []);
+  // re-read after every miner refresh so "Live now" stays current
+  useEffect(() => { api.get<Suggestions>("/suggestions").then(setSugg).catch(() => undefined); }, [state?.last_refresh]);
   useEffect(() => {
     if (!focus) return;
     const [name, act] = focus;
@@ -135,10 +136,9 @@ export function PrioritiesView() {
   }
 
   const info = gameInfo(state);
-  const liveChannels = new Set([state?.current?.channel.login, ...(state?.current?.channels.map((c) => c.login) ?? [])].filter(Boolean) as string[]);
-  const liveGame = state?.current?.campaign.game;
+  const chan = new Map(sugg.channels.map((c) => [c.login, c]));
   const pool = sugg.games.filter((g) => !lists.priority.includes(g) && !lists.never.includes(g));
-  const knownCh = sugg.channels.filter((c) => !lists.favourites.includes(c));
+  const knownCh = sugg.channels.filter((c) => !lists.favourites.includes(c.login));
 
   const zone = (z: Zone) => {
     const list = shown[KEY[z]];
@@ -146,7 +146,7 @@ export function PrioritiesView() {
       <DropZone id={z}>
         <SortableContext items={list} strategy={verticalListSortingStrategy}>
           {list.length ? list.map((n, i) => (
-            <SortableRow key={n} name={n} zone={z} i={i} n={list.length} info={info} live={liveChannels.has(n) ? liveGame : undefined}
+            <SortableRow key={n} name={n} zone={z} i={i} n={list.length} info={info} ch={chan.get(n)}
               onAct={onAct} />
           )) : <div className="empty">{EMPTY[z]}</div>}
         </SortableContext>
@@ -160,7 +160,7 @@ export function PrioritiesView() {
       <div className="view-h"><h1 id="h-priorities" className="disp" tabIndex={-1}>Priorities</h1></div>
       <p className="lead">Every game with a drop campaign gets mined. Games in Priority go first, in your order. Games not listed here are mined after them, most urgent first. Overview shows the full order under Up next.</p>
       <datalist id="campaign-games">{pool.map((g) => <option key={g} value={g} />)}</datalist>
-      <datalist id="known-channels">{knownCh.map((c) => <option key={c} value={c} />)}</datalist>
+      <datalist id="known-channels">{knownCh.map((c) => <option key={c.login} value={c.login} label={channelNote(c)} />)}</datalist>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragOver={onDragOver}
         onDragEnd={onDragEnd} onDragCancel={() => { setActive(null); setDraft(null); }}>
       <Bucket title="Priority" count={shown.priority.length} help="Mined first, top to bottom.">
@@ -171,7 +171,7 @@ export function PrioritiesView() {
       <Bucket title="Favourite channels" count={shown.favourites.length}
         help="When a campaign can be mined on several live channels, these get watched first, top to bottom. Your game order above still decides which campaign.">
         {zone("fav")}
-        <AddForm to="fav" list="known-channels" placeholder="Add a channel" known={sugg.channels} label="Add a favourite channel"
+        <AddForm to="fav" list="known-channels" placeholder="Add a channel" known={sugg.channels.map((c) => c.login)} label="Add a favourite channel"
           onAdd={(name) => commit(moved(name.toLowerCase(), "fav"), `${name} added to favourite channels`)} />
       </Bucket>
       <Bucket title="Never" count={shown.never.length} help="Never mined, even when nothing else is live.">
@@ -182,7 +182,7 @@ export function PrioritiesView() {
       <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(.2,.8,.2,1)" }}>
         {active && activeZone ? (
           <RowBody name={active} zone={activeZone} i={shown[KEY[activeZone]].indexOf(active)} n={shown[KEY[activeZone]].length}
-            info={info} live={liveChannels.has(active) ? liveGame : undefined} onAct={() => undefined} lifted />
+            info={info} ch={chan.get(active)} onAct={() => undefined} lifted />
         ) : null}
       </DragOverlay>
       </DndContext>
@@ -221,7 +221,15 @@ function DropZone({ id, children }: { id: Zone; children: React.ReactNode }) {
   return <div ref={setNodeRef} className={`zone${isOver ? " over" : ""}`} data-zone={id} id={`z-${id}`}>{children}</div>;
 }
 
-type RowProps = { name: string; zone: Zone; i: number; n: number; info: Info; live?: string; onAct: (name: string, act: string) => void };
+type RowProps = { name: string; zone: Zone; i: number; n: number; info: Info; ch?: ChannelSuggestion; onAct: (name: string, act: string) => void };
+
+/** "Live now · Palia", "Offline · last seen Tue 13 Oct on Palia", or "Not seen live yet". */
+export function channelNote(c: ChannelSuggestion | undefined): string {
+  if (!c) return "Not seen live yet";
+  if (c.live) return `Live now${c.game ? ` · ${c.game}` : ""}`;
+  if (c.last_seen) return `Offline · last seen ${day(c.last_seen)}${c.game ? ` on ${c.game}` : ""}`;
+  return "Not seen live yet";
+}
 
 function SortableRow(props: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: props.name });
@@ -231,7 +239,7 @@ function SortableRow(props: RowProps) {
   );
 }
 
-function RowBody({ name, zone, i, n, info, live, onAct, rootRef, rootProps, placeholder, lifted }: RowProps & {
+function RowBody({ name, zone, i, n, info, ch, onAct, rootRef, rootProps, placeholder, lifted }: RowProps & {
   rootRef?: (el: HTMLElement | null) => void; rootProps?: React.HTMLAttributes<HTMLDivElement>; placeholder?: boolean; lifted?: boolean;
 }) {
   const btn = (act: string, label: string, content: React.ReactNode, cls = "ib", disabled = false) => (
@@ -247,7 +255,7 @@ function RowBody({ name, zone, i, n, info, live, onAct, rootRef, rootProps, plac
         <span className="rank">{i + 1}</span><span className="handle" aria-hidden="true"><Icon name="grip" /></span>
         <span className="avatar" aria-hidden="true">{name.charAt(0)}</span>
         <div style={{ minWidth: 0 }}><div className="g-t">{name}</div>
-          <div className="g-s">{live ? <span className="on">Live now · {live}</span> : "Not live with drops right now"}</div></div>
+          <div className="g-s">{ch?.live ? <span className="on">{channelNote(ch)}</span> : channelNote(ch)}</div></div>
         <div className="g-act">
           {btn("up", `Move ${name} up`, <Icon name="up" />, "ib", i === 0)}
           {btn("down", `Move ${name} down`, <Icon name="down" />, "ib", i === n - 1)}

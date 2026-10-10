@@ -15,6 +15,7 @@ export type Claim = S["ClaimOut"];
 export type Me = S["MeOut"];
 export type SignIn = S["SignInStatus"];
 export type Suggestions = S["SuggestionsOut"];
+export type ChannelSuggestion = S["ChannelSuggestion"];
 
 /** An HTTP failure with the server's own message (FastAPI's `detail`) when it gave one. */
 export class ApiError extends Error {

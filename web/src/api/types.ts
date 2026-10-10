@@ -375,6 +375,17 @@ export interface components {
             /** Viewers */
             viewers: number;
         };
+        /** ChannelSuggestion */
+        ChannelSuggestion: {
+            /** Game */
+            game: string | null;
+            /** Last Seen */
+            last_seen: string | null;
+            /** Live */
+            live: boolean;
+            /** Login */
+            login: string;
+        };
         /** ClaimOut */
         ClaimOut: {
             /**
@@ -564,7 +575,7 @@ export interface components {
         /** SuggestionsOut */
         SuggestionsOut: {
             /** Channels */
-            channels: string[];
+            channels: components["schemas"]["ChannelSuggestion"][];
             /** Games */
             games: string[];
         };

@@ -137,6 +137,8 @@ class Runner:
                     self.campaigns = await self._client.campaigns()
                 self._settle_awaiting(now)
             self.live = await self._client.live_channels(self.campaigns, prefs, now)
+            if (record := getattr(self._store, "record_seen", None)) is not None:
+                record([(c.login, c.game_name) for c in self.live], now)
         except AuthExpired:
             self.watching = None
             self._set_state(State.SIGNED_OUT)

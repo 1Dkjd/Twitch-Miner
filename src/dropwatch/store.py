@@ -31,9 +31,12 @@ CREATE TABLE IF NOT EXISTS events (at TEXT NOT NULL, kind TEXT NOT NULL, data TE
 CREATE TABLE IF NOT EXISTS claims (at TEXT NOT NULL, campaign_id TEXT NOT NULL, campaign TEXT NOT NULL,
   game TEXT NOT NULL, rewards TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS web_sessions (token_hash TEXT PRIMARY KEY, expires_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS seen_channels (login TEXT PRIMARY KEY, game TEXT NOT NULL,
+  last_seen TEXT NOT NULL);
 """
 EVENT_RETENTION = timedelta(days=7)
 SESSION_TTL = timedelta(days=30)
+SEEN_KEEP = timedelta(days=30)  # channels seen live, for the favourites add box
 MIN_PASSWORD = 8
 SETTINGS: dict[str, type] = {
     "mine_badges": bool, "claim_points": bool, "notify_target": str,
@@ -199,6 +202,23 @@ class Store:
         row = self._db.execute("SELECT expires_at FROM web_sessions WHERE token_hash = ?",
                                (self._token_hash(token),)).fetchone()
         return bool(row) and datetime.fromisoformat(row[0]) > now
+
+    # --- channels seen live (favourites suggestions; spec §8 /api/suggestions)
+    def record_seen(self, channels: list[tuple[str, str]], at: datetime) -> None:
+        stamp = at.astimezone(UTC).isoformat()
+        with self._db:
+            self._db.executemany(
+                "INSERT INTO seen_channels VALUES (?, ?, ?) ON CONFLICT(login) DO UPDATE SET "
+                "game = excluded.game, last_seen = excluded.last_seen",
+                [(lg, g, stamp) for lg, g in channels])
+            self._db.execute("DELETE FROM seen_channels WHERE last_seen < ?",
+                             ((at - SEEN_KEEP).astimezone(UTC).isoformat(),))
+
+    def seen_channels(self, now: datetime) -> list[dict]:
+        since = (now - SEEN_KEEP).astimezone(UTC).isoformat()
+        rows = self._db.execute("SELECT login, game, last_seen FROM seen_channels WHERE last_seen >= ? "
+                                "ORDER BY last_seen DESC, login", (since,))
+        return [{"login": lg, "game": g, "last_seen": datetime.fromisoformat(t)} for lg, g, t in rows]
 
     def delete_web_session(self, token: str) -> None:
         with self._db:

@@ -14,7 +14,10 @@ afterEach(() => vi.unstubAllGlobals());
 function setup(lists: { priority: string[]; never: string[]; favourites: string[] }, put?: (b: unknown) => unknown) {
   const calls = mockApi({
     "GET /api/state": state(), "GET /api/lists": lists,
-    "GET /api/suggestions": { games: ["Palia", "Phasmophobia", "007 First Light", "AION 2"], channels: ["example_streamer", "dnd"] },
+    "GET /api/suggestions": { games: ["Palia", "Phasmophobia", "007 First Light", "AION 2"], channels: [
+      { login: "example_streamer", live: true, game: "Palia", last_seen: "2026-10-10T10:00:00Z" },
+      { login: "dnd", live: false, game: "Dungeons & Dragons", last_seen: "2026-10-08T20:00:00Z" },
+      { login: "never_seen", live: false, game: null, last_seen: null }] },
     "PUT /api/lists": put ?? ((b: unknown) => b),
   });
   render(<AppProvider initialMe={ME}><PrioritiesView /><Said /></AppProvider>);
@@ -64,4 +67,20 @@ test("rows say what each game is doing", async () => {
   expect(await screen.findByText(/Mining now · 5 h 38 min to go/)).toBeInTheDocument();
   expect(screen.getByText(/Needs account link/)).toHaveClass("g-s", "warn");
   expect(screen.getByText(/Live now · Palia/)).toBeInTheDocument();
+});
+
+test("favourites say live now, when they were last seen, or not seen yet", async () => {
+  setup({ priority: [], never: [], favourites: ["example_streamer", "dnd", "never_seen"] });
+  expect(await screen.findByText("Live now · Palia")).toHaveClass("on");
+  expect(screen.getByText(/Offline · last seen .* on Dungeons & Dragons/)).toBeInTheDocument();
+  expect(screen.getByText("Not seen live yet")).toBeInTheDocument();
+});
+
+test("the channel add box suggests offline channels too, with a note", async () => {
+  setup({ priority: [], never: [], favourites: [] });
+  await screen.findByRole("combobox", { name: "Add a favourite channel" });
+  const opts = [...document.querySelectorAll("#known-channels option")].map((o) => [o.getAttribute("value"), o.getAttribute("label")]);
+  expect(opts[0]).toEqual(["example_streamer", "Live now · Palia"]);
+  expect(opts[1]![0]).toBe("dnd");
+  expect(opts[1]![1]).toMatch(/^Offline · last seen/);
 });

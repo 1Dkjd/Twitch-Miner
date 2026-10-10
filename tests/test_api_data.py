@@ -45,7 +45,8 @@ async def test_suggestions(tmp_path):
     ctx.store.set_lists([], set(), ["fav_x"])
     c = await logged_in(app)
     s = (await c.get("/api/suggestions")).json()
-    assert s == {"games": ["Palia"], "channels": ["a", "b", "fav_x"]}
+    assert s["games"] == ["Palia"]
+    assert [(c["login"], c["live"]) for c in s["channels"]] == [("a", True), ("b", True), ("fav_x", False)]
     await c.aclose()
 
 
