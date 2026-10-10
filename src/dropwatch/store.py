@@ -257,6 +257,17 @@ class Store:
                         "started": watched > 0, "priority": bool(priority), "pinned": bool(pinned)})
         return out
 
+    def history_image_urls(self, since: datetime) -> list[str]:
+        """Every image History can show for claims since then and campaigns that ended since then (box art
+        as stored, so the caller sizes it), for the image cache."""
+        urls: list[str] = []
+        cut = (since.astimezone(UTC).isoformat(),)
+        for sql in ("SELECT rewards, box_art_url FROM claims WHERE at >= ?",
+                    "SELECT rewards, box_art_url FROM campaign_log WHERE ends_at >= ?"):
+            for rewards, art in self._db.execute(sql, cut):
+                urls += [r["image_url"] for r in json.loads(rewards)] + [art or ""]
+        return [u for u in dict.fromkeys(urls) if u]
+
     # --- claims
     def add_claim(self, at: datetime, campaign_id: str, campaign: str, game: str,
                   rewards: list[tuple[str, str]], *, minutes: int | None = None, channel: str | None = None,

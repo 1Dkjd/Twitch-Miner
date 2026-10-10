@@ -25,4 +25,6 @@ test("box art gets a size", () => {
   expect(boxArt("https://x/ttv-boxart/1-{width}x{height}.jpg")).toBe("https://x/ttv-boxart/1-144x192.jpg");
   expect(boxArt("https://x/ttv-boxart/1-120x160.jpg")).toBe("https://x/ttv-boxart/1-144x192.jpg");
   expect(boxArt("")).toBe("");
+  // History's kept copies are already the right size: left alone
+  expect(boxArt("/api/img/0123456789abcdef01234567.jpg")).toBe("/api/img/0123456789abcdef01234567.jpg");
 });

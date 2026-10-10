@@ -49,6 +49,7 @@ class AppContext:
     signin: object
     clock: Callable[[], datetime] = lambda: datetime.now(UTC)
     post: object = None  # notify's HTTP post; None = a real aiohttp session per send (tests inject a fake)
+    images: object = None  # images.ImageCache: History's kept copies (None: Twitch's links only)
 
 
 
@@ -200,12 +201,25 @@ async def put_pins(body: Pins, request: Request) -> Pins:
     return Pins(pins=ctx.store.get_pins())
 
 
+@api.get("/img/{name}", include_in_schema=False)
+async def kept_image(name: str, request: Request):
+    """A kept copy of a Twitch image (images.py); named by a hash of its URL, so it never changes."""
+    images = _c(request).images
+    f = images.file(name) if images is not None else None
+    if f is None:
+        raise HTTPException(404, "No such image.")
+    from ..images import TYPES
+
+    return FileResponse(f, media_type=TYPES[f.suffix],
+                        headers={"Cache-Control": "private, max-age=31536000, immutable"})
+
+
 @api.get("/history", response_model=HistoryOut)
 async def get_history(request: Request, days: int = Query(30, ge=1, le=365)) -> HistoryOut:
     ctx = _c(request)
     now = ctx.clock()
     since = now - timedelta(days=days)
-    return history_view(ctx.store.claims_since(since), ctx.store.missed_between(since, now))
+    return history_view(ctx.store.claims_since(since), ctx.store.missed_between(since, now), ctx.images)
 
 
 def _runner(ctx):

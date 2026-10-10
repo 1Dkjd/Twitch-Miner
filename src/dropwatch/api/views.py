@@ -104,8 +104,10 @@ def _catalog(runner) -> CatalogOut | None:
     return CatalogOut(status=st[0], since=st[1]) if st else None
 
 
-def history_view(claims: list[dict], missed: list[dict] = ()) -> HistoryOut:
-    """Flat and newest first. Day grouping is the page's job: only the browser knows the viewer's zone."""
+def history_view(claims: list[dict], missed: list[dict] = (), images=None) -> HistoryOut:
+    """Flat and newest first. Day grouping is the page's job: only the browser knows the viewer's zone.
+    Images point at Dropwatch's own copies once they are kept (images.py), else at Twitch."""
+    claims, missed = [_kept(c, images) for c in claims], [_kept(m, images) for m in missed]
     out = [ClaimOut(at=row["at"], campaign_id=row["campaign_id"], campaign=row["campaign"], game=row["game"],
                     rewards=[RewardOut(**r) for r in row["rewards"]], minutes=row.get("minutes"),
                     channel=row.get("channel"), campaign_rewards=row.get("campaign_rewards"),
@@ -113,3 +115,14 @@ def history_view(claims: list[dict], missed: list[dict] = ()) -> HistoryOut:
            for row in claims]
     return HistoryOut(total_rewards=sum(len(c.rewards) for c in out), claims=out,
                       missed=[MissedOut(**m) for m in missed])
+
+
+def _kept(row: dict, images) -> dict:
+    """The row with each image URL swapped for the kept copy where there is one."""
+    if images is None:
+        return row
+    from ..images import box_art_144
+
+    art = row.get("box_art_url") or ""
+    rewards = [{**r, "image_url": images.local_url(r["image_url"]) or r["image_url"]} for r in row["rewards"]]
+    return {**row, "rewards": rewards, "box_art_url": images.local_url(box_art_144(art)) or art}

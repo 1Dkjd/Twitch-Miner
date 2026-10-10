@@ -5,7 +5,7 @@ import asyncio
 import json
 import logging
 import os
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from .redact import RedactFilter
@@ -100,6 +100,28 @@ def server_config(app, host: str, port: int):
     return uvicorn.Config(app, host=host, port=port, log_config=None, access_log=False)
 
 
+KEEP_IMAGES_EVERY_S = 600
+
+
+async def keep_images(store: Store, images) -> None:
+    """Every 10 minutes, download any image History can show that isn't kept yet (images.py)."""
+    import aiohttp
+
+    from .images import aiohttp_get, box_art_144
+
+    while True:
+        try:
+            urls = store.history_image_urls(datetime.now(UTC) - timedelta(days=400))
+            async with aiohttp.ClientSession() as session:
+                added = await images.ensure((box_art_144(u) if "/ttv-boxart/" in u else u for u in urls),
+                                            aiohttp_get(session))
+            if added:
+                logging.getLogger("dropwatch.images").info("Kept %d new images", added)
+        except Exception as exc:  # noqa: BLE001 - try again next round
+            logging.getLogger("dropwatch.images").warning("Keeping images failed: %s", type(exc).__name__)
+        await asyncio.sleep(KEEP_IMAGES_EVERY_S)
+
+
 async def serve(store: Store, host: str, port: int) -> int:
     import uvicorn
 
@@ -107,6 +129,7 @@ async def serve(store: Store, host: str, port: int) -> int:
     from .api.app import AppContext, create_app
     from .api.signin import SignInManager
     from .events import EventBus
+    from .images import ImageCache
     from .notify import send_all
     from .service import MinerService
 
@@ -122,11 +145,14 @@ async def serve(store: Store, host: str, port: int) -> int:
         await service.start()
 
     signin = SignInManager(store, bus, provider, on_signed_in)
-    app = create_app(AppContext(store=store, bus=bus, service=service, signin=signin), web_dir=web_dir())
+    images = ImageCache(store.path.parent / "images")
+    app = create_app(AppContext(store=store, bus=bus, service=service, signin=signin, images=images),
+                     web_dir=web_dir())
     # notifications listen to the same events as the page; started before the miner so none are missed
     notifier = Notifier(store)
     alerts = asyncio.create_task(notifier.run(
         bus, lambda: snapshot_of(service.runner), lambda t, b: send_all(store.get_channels(), t, b)))
+    keeper = asyncio.create_task(keep_images(store, images))
     started = await service.start()
     logging.getLogger("dropwatch").info(
         "Serving on http://%s:%s (%s)", host, port, "mining" if started else "not signed in to Twitch")
@@ -135,6 +161,7 @@ async def serve(store: Store, host: str, port: int) -> int:
         await server.serve()
     finally:
         alerts.cancel()
+        keeper.cancel()
         await service.stop()
     return 0
 
