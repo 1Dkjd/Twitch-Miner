@@ -5,11 +5,13 @@ import asyncio
 import json
 import logging
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .redact import RedactFilter
 from .store import Store
 from .twitch.auth_browser import BrowserSignIn, SignInError
+from .twitch.auth_device import DeviceCodeSignIn
 from .twitch.capture import run_capture
 from .twitch.gql import Gql
 from .twitch.transport import AiohttpTransport
@@ -30,10 +32,19 @@ def setup_logging(store: Store) -> None:
     logging.basicConfig(level=logging.INFO, handlers=[handler])
 
 
-async def cmd_signin(store: Store) -> int:
+async def cmd_signin(store: Store, *, browser: bool = False, provider=None) -> int:
+    """Default: Twitch's TV code sign-in. --browser: the phase-1 browser sign-in (PC fallback)."""
     t = AiohttpTransport()
     try:
-        session = await BrowserSignIn(t).sign_in(asyncio.Event())
+        if browser:
+            session = await BrowserSignIn(t).sign_in(asyncio.Event())
+        else:
+            p = provider or DeviceCodeSignIn(t)
+            code = await p.start()
+            minutes = max(1, round((code.expires_at - datetime.now(UTC)).total_seconds() / 60))
+            print(f"Go to {code.verification_uri} on any device and enter the code {code.user_code}")
+            print(f"(it works for about {minutes} minutes). Waiting for you to click Authorize...")
+            session = await p.wait(code, asyncio.Event())
     except SignInError as exc:
         print(f"Sign-in failed: {exc}")
         return 1
@@ -97,7 +108,7 @@ async def serve(store: Store, host: str, port: int) -> int:
 
     def provider():
         t = AiohttpTransport()
-        return BrowserSignIn(t, report=lambda m: logging.getLogger("dropsminer.signin").info(m)), t.close
+        return DeviceCodeSignIn(t), t.close
 
     async def on_signed_in() -> None:
         await service.stop()
@@ -119,7 +130,8 @@ async def serve(store: Store, host: str, port: int) -> int:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="dropsminer")
     sub = ap.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("signin")
+    si = sub.add_parser("signin")
+    si.add_argument("--browser", action="store_true", help="sign in through a browser window (PC fallback)")
     cap = sub.add_parser("capture")
     cap.add_argument("--out", type=Path, default=Path("tests/fixtures"))
     ls = sub.add_parser("lists")
@@ -137,7 +149,7 @@ def main(argv: list[str] | None = None) -> int:
     store = Store(data_dir() / "drops.db")
     setup_logging(store)
     if args.cmd == "signin":
-        return asyncio.run(cmd_signin(store))
+        return asyncio.run(cmd_signin(store, browser=args.browser))
     if args.cmd == "capture":
         return asyncio.run(cmd_capture(store, args.out))
     if args.cmd == "lists":

@@ -36,12 +36,13 @@ class FakeSignIn:
     def status(self):
         return dict(self.state)
 
-    def start(self):
-        if self.state["status"] == "running":
-            return False
+    async def start(self):
+        if self.state["status"] == "waiting":
+            return None
         self.started += 1
-        self.state = {"status": "running", "message": ""}
-        return True
+        self.state = {"status": "waiting", "message": "", "code": "BKDQMDGP",
+                      "verification_uri": "https://www.twitch.tv/activate", "expires_at": None}
+        return dict(self.state)
 
     def cancel(self):
         self.cancelled += 1

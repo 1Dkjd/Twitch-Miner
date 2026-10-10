@@ -546,6 +546,29 @@
    },
    "SignInStatus": {
     "properties": {
+     "code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Code"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     },
      "message": {
       "default": "",
       "title": "Message",
@@ -554,6 +577,17 @@
      "status": {
       "title": "Status",
       "type": "string"
+     },
+     "verification_uri": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Verification Uri"
      }
     },
     "required": [
@@ -1174,7 +1208,9 @@
      "202": {
       "content": {
        "application/json": {
-        "schema": {}
+        "schema": {
+         "$ref": "#/components/schemas/SignInStatus"
+        }
        }
       },
       "description": "Successful Response"

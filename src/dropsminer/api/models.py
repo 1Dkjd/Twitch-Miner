@@ -124,8 +124,11 @@ class HistoryOut(BaseModel):
 
 
 class SignInStatus(BaseModel):
-    status: str  # idle | running | done | failed
+    status: str  # idle | waiting | done | expired | failed
     message: str = ""
+    code: str | None = None  # the 8 letters to enter at verification_uri
+    verification_uri: str | None = None
+    expires_at: datetime | None = None
 
 
 class MeOut(BaseModel):

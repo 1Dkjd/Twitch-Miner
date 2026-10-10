@@ -147,10 +147,12 @@ async def events(request: Request) -> StreamingResponse:
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
-@api.post("/twitch/signin", status_code=202)
-async def signin_start(request: Request) -> None:
-    if not _c(request).signin.start():
-        raise HTTPException(status_code=409, detail="A sign-in is already running.")
+@api.post("/twitch/signin", status_code=202, response_model=SignInStatus)
+async def signin_start(request: Request) -> SignInStatus:
+    status = await _c(request).signin.start()
+    if status is None:
+        raise HTTPException(status_code=409, detail="A sign-in is already waiting for its code.")
+    return SignInStatus(**status)
 
 
 @api.get("/twitch/signin", response_model=SignInStatus)

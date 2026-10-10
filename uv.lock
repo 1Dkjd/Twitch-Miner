@@ -407,6 +407,10 @@ dependencies = [
     { name = "argon2-cffi" },
     { name = "fastapi" },
     { name = "uvicorn" },
+]
+
+[package.optional-dependencies]
+browser = [
     { name = "zendriver" },
 ]
 
@@ -416,6 +420,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
+    { name = "zendriver" },
 ]
 
 [package.metadata]
@@ -424,8 +429,9 @@ requires-dist = [
     { name = "argon2-cffi", specifier = ">=23.1" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "uvicorn", specifier = ">=0.30" },
-    { name = "zendriver", specifier = "==0.17.0" },
+    { name = "zendriver", marker = "extra == 'browser'", specifier = "==0.17.0" },
 ]
+provides-extras = ["browser"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -433,6 +439,7 @@ dev = [
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-asyncio", specifier = ">=0.24" },
     { name = "ruff", specifier = ">=0.6" },
+    { name = "zendriver", specifier = "==0.17.0" },
 ]
 
 [[package]]
