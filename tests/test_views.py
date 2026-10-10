@@ -64,3 +64,24 @@ def test_history_is_flat_newest_first_with_utc_offsets():
     assert h.total_rewards == 3
     # the page localises times itself, so every timestamp must carry its offset
     assert '"at":"2026-10-09T12:00:00Z"' in h.model_dump_json()
+
+
+async def test_never_games_still_report_their_campaigns():
+    """The Priorities page shows box art and the end date for Never games too (Nick, 2026-10-10)."""
+    from dataclasses import replace as _replace
+
+    from dropwatch.models import Prefs
+
+    class NeverStore(ViewStore):
+        def get_prefs(self):
+            return Prefs(never=frozenset({"Palia"}))
+
+    st = NeverStore()
+    ended = _replace(camp(), id="old", starts_at=NOW - timedelta(days=9), ends_at=NOW - timedelta(days=1))
+    r = Runner(FakeClient([camp(), ended], [chan("a", 7)]), FakeWatcher(), FakePubSub(), st, user_id=42,
+               clock=lambda: NOW)
+    await r.refresh()
+    s = state_view(r, st, NOW)
+    assert s.current is None and s.up_next == []  # still never mined
+    assert [c.id for c in s.never] == ["c1"]  # the running campaign only
+    assert s.never[0].game == "Palia" and s.never[0].ends_at == NOW + timedelta(days=4)

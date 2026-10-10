@@ -130,8 +130,8 @@ whether a game account is linked until the campaign appears in `Inventory`. So:
   it. It shows in Needs you with the catalogue's link URL. The mark clears when `Inventory` reports the
   campaign as linked, when the owner presses **Mine now** on it ("I've linked it"), or after 6 hours.
 
-Spike results for this method are the 2026-10-10 rows in the table above. **Not yet proven here: claiming
-with the TV login** (reported to work by GrubDrops). The first real claim after switching confirms it.
+Spike results for this method are the 2026-10-10 rows in the table above. **Claiming with the TV login is proven** (2026-10-10 02:35: CFB Twitch Pack and EXFIL Brothers
+"Legendary 2" claimed by the live miner on the TV session).
 
 **UI consequence.** The approved mockup's device-code banner flow applies again, redrawn in
 `docs/design/signin-options.html` (option A): Ready → Code → Expired → Connected, the signed-out banner,

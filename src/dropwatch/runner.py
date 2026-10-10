@@ -35,6 +35,9 @@ BACKOFF_START, BACKOFF_MAX = 60.0, 600.0
 # spec §4 (2026-10-10): an unknown account link that earns nothing for 10 minutes of good playback
 LINK_PROBE_TICKS = 60  # ticks are PLAY_INTERVAL (10 s) apart
 MAYBE_UNLINKED_FOR = timedelta(hours=6)
+# earning doesn't prove the link: Twitch's inventory does, once it lists the campaign (ER ESPORTS DROPS,
+# 2026-10-10: an hour of counted minutes, then isAccountConnected false and no reward)
+LINK_RECHECK = timedelta(minutes=10)
 # GqlError covers TwitchUnreachable; the rest are unexpected response shapes from parsing.
 TWITCH_ERRORS = (GqlError, KeyError, TypeError, ValueError)
 
@@ -76,8 +79,17 @@ class Runner:
         self._gave_up_claim: set[str] = set()
         self._refresh_backoff = 0.0
         self._retry_refresh_at: datetime | None = None
+        self.last_switch: dict | None = None  # {"from", "to", "at"}
         self._link_probe: dict[str, tuple[int, int]] = {}  # campaign -> (good ticks, minutes at start)
+        self._link_recheck: dict[str, datetime] = {}  # unknown-link campaign -> campaigns last re-read for it
         self.maybe_unlinked: dict[str, datetime] = {}  # campaign -> marked at
+        self._mined_on: dict[str, str] = {}  # campaign -> channel last watched for it (History details)
+
+    @property
+    def next_check_at(self) -> datetime | None:
+        if self.state == State.TWITCH_UNREACHABLE and self._retry_refresh_at is not None:
+            return self._retry_refresh_at
+        return self.last_refresh + REFRESH_EVERY if self.last_refresh else None
 
     @property
     def catalog_status(self):
@@ -130,6 +142,8 @@ class Runner:
                     self.campaigns = await self._client.campaigns()
                 self._settle_awaiting(now)
             self.live = await self._client.live_channels(self.campaigns, prefs, now)
+            if (record := getattr(self._store, "record_seen", None)) is not None:
+                record([(c.login, c.game_name) for c in self.live], now)
         except AuthExpired:
             self.watching = None
             self._set_state(State.SIGNED_OUT)
@@ -143,6 +157,15 @@ class Runner:
             return
         self.last_refresh = now
         self._refresh_backoff, self._retry_refresh_at = 0.0, None
+        self._plan(now, prefs)
+
+    async def replan(self) -> None:
+        """Re-decide from what is already known (lists or an override changed): no Twitch calls."""
+        async with self._lock:
+            self._plan(self._clock(), self._store.get_prefs())
+
+    def _plan(self, now: datetime, prefs) -> None:
+        """Lock held. Plan from the cached campaigns and live channels, then act on the result."""
         self._excluded = {k: v for k, v in self._excluded.items() if v > now}
         usable = [c for c in self.live if c.login not in self._excluded]
         previous = self.watching
@@ -163,6 +186,9 @@ class Runner:
         if self._override_channel and (cur is None or cur.channel_login != self._override_channel):
             self._override_channel = None
         self.watching = next((c for c in usable if cur and c.login == cur.channel_login), None)
+        if self.watching and cur:
+            for cid in (cur.campaign_id, *self.plan.also_credited):
+                self._mined_on[cid] = self.watching.login
         topics = {topic("user_drops", self._user_id), topic("user_notifications", self._user_id)}
         if self.watching:
             topics |= {topic("stream_state", self.watching.id), topic("stream_update", self.watching.id)}
@@ -173,6 +199,7 @@ class Runner:
             elif previous and previous.login != self.watching.login:
                 self._fails = 0
                 info = {"from": previous.login, "to": self.watching.login}
+                self.last_switch = {**info, "at": now}
                 self._emit("switched", info)
                 self._store.log_event("switched", info)
                 self._set_state(State.SWITCHED, info)
@@ -197,7 +224,13 @@ class Runner:
         total = sum(d.current_minutes for d in c.drops)
         ticks, start = self._link_probe.get(c.id, (0, total))
         if total > start:
-            self._link_probe.pop(c.id, None)  # it earns: whatever the link says, it works
+            # it earns, but that doesn't prove the link: re-read Twitch's campaigns now, then every
+            # LINK_RECHECK while the link is still unknown, rather than waiting for the hourly fetch
+            self._link_probe.pop(c.id, None)
+            last = self._link_recheck.get(c.id)
+            if last is None or now - last >= LINK_RECHECK:
+                self._link_recheck[c.id] = now
+                await self.refresh(force_campaigns=True)
             return
         ticks += 1
         if ticks < LINK_PROBE_TICKS:
@@ -233,6 +266,10 @@ class Runner:
         """Lock held by caller. Each claim id is claimed at most once per run."""
         if not claim_id or claim_id in self._claimed:
             return False
+        if c.linked is False and not c.has_badge_or_emote:
+            # Twitch answers ELIGIBLE_FOR_ALL here but awards nothing (ER ESPORTS DROPS, 2026-10-10);
+            # the campaign stays in Needs you, and the claim goes through once Twitch says it's linked
+            return False
         d = c.drop(drop_id)
         try:
             ok = await self._client.claim(claim_id)
@@ -246,7 +283,11 @@ class Runner:
             self._store.log_event("claimed", info)
             if hasattr(self._store, "add_claim"):
                 self._store.add_claim(self._clock(), c.id, c.name, c.game.name,
-                                      [(r.name, r.image_url) for r in (d.rewards if d else ())])
+                                      [(r.name, r.image_url) for r in (d.rewards if d else ())],
+                                      minutes=d.required_minutes if d else None,
+                                      channel=self._mined_on.get(c.id),
+                                      campaign_rewards=sum(len(x.rewards) for x in c.drops),
+                                      campaign_ends=c.ends_at, box_art_url=c.game.box_art_url)
             return True
         self._store.log_event("claim_failed", {"campaign": c.name, "drop": drop_id})
         return False

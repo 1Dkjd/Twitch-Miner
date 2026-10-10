@@ -31,9 +31,14 @@ CREATE TABLE IF NOT EXISTS events (at TEXT NOT NULL, kind TEXT NOT NULL, data TE
 CREATE TABLE IF NOT EXISTS claims (at TEXT NOT NULL, campaign_id TEXT NOT NULL, campaign TEXT NOT NULL,
   game TEXT NOT NULL, rewards TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS web_sessions (token_hash TEXT PRIMARY KEY, expires_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS seen_channels (login TEXT PRIMARY KEY, game TEXT NOT NULL,
+  last_seen TEXT NOT NULL);
 """
+CLAIM_DETAIL_COLUMNS = (("minutes", "INTEGER"), ("channel", "TEXT"), ("campaign_rewards", "INTEGER"),
+                        ("campaign_ends", "TEXT"), ("box_art_url", "TEXT"))
 EVENT_RETENTION = timedelta(days=7)
 SESSION_TTL = timedelta(days=30)
+SEEN_KEEP = timedelta(days=30)  # channels seen live, for the favourites add box
 MIN_PASSWORD = 8
 SETTINGS: dict[str, type] = {
     "mine_badges": bool, "claim_points": bool, "notify_target": str,
@@ -53,6 +58,11 @@ class Store:
         if new and os.name == "posix":
             os.chmod(path, 0o600)
         self._db.executescript(SCHEMA)
+        # 2026-10-10: claim details for History; rows from before read back as NULL (not recorded)
+        have = {row[1] for row in self._db.execute("PRAGMA table_info(claims)")}
+        for col, kind in CLAIM_DETAIL_COLUMNS:
+            if col not in have:
+                self._db.execute(f"ALTER TABLE claims ADD COLUMN {col} {kind}")
         self._db.commit()
 
     def close(self) -> None:
@@ -149,18 +159,28 @@ class Store:
 
     # --- claims
     def add_claim(self, at: datetime, campaign_id: str, campaign: str, game: str,
-                  rewards: list[tuple[str, str]]) -> None:
+                  rewards: list[tuple[str, str]], *, minutes: int | None = None, channel: str | None = None,
+                  campaign_rewards: int | None = None, campaign_ends: datetime | None = None,
+                  box_art_url: str | None = None) -> None:
+        """minutes: the watch time the drop needed; channel: where it was mined (None when not known)."""
         payload = json.dumps([{"name": n, "image_url": u} for n, u in rewards])
+        ends = campaign_ends.astimezone(UTC).isoformat() if campaign_ends else None
         with self._db:
-            self._db.execute("INSERT INTO claims VALUES (?, ?, ?, ?, ?)",
-                             (at.astimezone(UTC).isoformat(), campaign_id, campaign, game, payload))
+            self._db.execute(
+                "INSERT INTO claims (at, campaign_id, campaign, game, rewards, minutes, channel,"
+                " campaign_rewards, campaign_ends, box_art_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (at.astimezone(UTC).isoformat(), campaign_id, campaign, game, payload, minutes, channel,
+                 campaign_rewards, ends, box_art_url or None))
 
     def claims_since(self, since: datetime) -> list[dict]:
         rows = self._db.execute(
-            "SELECT at, campaign_id, campaign, game, rewards FROM claims WHERE at >= ? ORDER BY at DESC",
+            "SELECT at, campaign_id, campaign, game, rewards, minutes, channel, campaign_rewards,"
+            " campaign_ends, box_art_url FROM claims WHERE at >= ? ORDER BY at DESC",
             (since.astimezone(UTC).isoformat(),))
         return [{"at": datetime.fromisoformat(at), "campaign_id": cid, "campaign": camp, "game": game,
-                 "rewards": json.loads(rw)} for at, cid, camp, game, rw in rows]
+                 "rewards": json.loads(rw), "minutes": mins, "channel": ch, "campaign_rewards": total,
+                 "campaign_ends": datetime.fromisoformat(ends) if ends else None, "box_art_url": art}
+                for at, cid, camp, game, rw, mins, ch, total, ends, art in rows]
 
     # --- page password (argon2) and web sessions (sha256 of the token only)
     def has_password(self) -> bool:
@@ -199,6 +219,23 @@ class Store:
         row = self._db.execute("SELECT expires_at FROM web_sessions WHERE token_hash = ?",
                                (self._token_hash(token),)).fetchone()
         return bool(row) and datetime.fromisoformat(row[0]) > now
+
+    # --- channels seen live (favourites suggestions; spec §8 /api/suggestions)
+    def record_seen(self, channels: list[tuple[str, str]], at: datetime) -> None:
+        stamp = at.astimezone(UTC).isoformat()
+        with self._db:
+            self._db.executemany(
+                "INSERT INTO seen_channels VALUES (?, ?, ?) ON CONFLICT(login) DO UPDATE SET "
+                "game = excluded.game, last_seen = excluded.last_seen",
+                [(lg, g, stamp) for lg, g in channels])
+            self._db.execute("DELETE FROM seen_channels WHERE last_seen < ?",
+                             ((at - SEEN_KEEP).astimezone(UTC).isoformat(),))
+
+    def seen_channels(self, now: datetime) -> list[dict]:
+        since = (now - SEEN_KEEP).astimezone(UTC).isoformat()
+        rows = self._db.execute("SELECT login, game, last_seen FROM seen_channels WHERE last_seen >= ? "
+                                "ORDER BY last_seen DESC, login", (since,))
+        return [{"login": lg, "game": g, "last_seen": datetime.fromisoformat(t)} for lg, g, t in rows]
 
     def delete_web_session(self, token: str) -> None:
         with self._db:

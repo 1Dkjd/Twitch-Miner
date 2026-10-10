@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field, StrictBool
+from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
 
 class RewardOut(BaseModel):
@@ -49,6 +49,14 @@ class CurrentOut(BaseModel):
     reason: str
     channel_reason: str
     also_credited: list[str]
+    channels: list[ChannelOut] = []  # other live channels that qualify (the "change" picker)
+
+
+class SwitchOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    from_: str = Field(alias="from")
+    to: str
+    at: datetime
 
 
 class CatalogOut(BaseModel):
@@ -67,6 +75,9 @@ class StateOut(BaseModel):
     up_next: list[CampaignOut]
     done: list[CampaignOut]
     catalog: CatalogOut | None = None  # set when campaigns come from the public catalogue (TV login)
+    last_switch: SwitchOut | None = None  # for 10 minutes after the channel changed
+    next_check_at: datetime | None = None  # the runner's next Twitch refresh (or retry)
+    never: list[CampaignOut] = []  # running campaigns of Never games: never mined, listed for their art
 
 
 class ListsIn(BaseModel):
@@ -122,6 +133,12 @@ class ClaimOut(BaseModel):
     campaign: str
     game: str
     rewards: list[RewardOut]
+    # None when not recorded (claims from before 2026-10-10, or a claim made right after a restart)
+    minutes: int | None = None  # watch time the drop needed
+    channel: str | None = None  # the channel it was mined on
+    campaign_rewards: int | None = None  # rewards in the whole campaign
+    campaign_ends: datetime | None = None
+    box_art_url: str | None = None  # saved with the claim: History keeps it after the campaign ends
 
 
 class HistoryOut(BaseModel):
@@ -142,6 +159,13 @@ class MeOut(BaseModel):
     setup_required: bool
 
 
+class ChannelSuggestion(BaseModel):
+    login: str
+    live: bool  # live now with drops on, as of the last refresh
+    game: str | None  # what it is (or was last) streaming
+    last_seen: datetime | None  # last seen live; None if never seen (a favourite added by name)
+
+
 class SuggestionsOut(BaseModel):
     games: list[str]
-    channels: list[str]
+    channels: list[ChannelSuggestion]  # live first, then most recently seen, then never-seen favourites

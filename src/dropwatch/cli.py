@@ -17,6 +17,11 @@ from .twitch.gql import Gql
 from .twitch.transport import AiohttpTransport
 
 
+def web_dir() -> Path:
+    """The built page. DROPWATCH_WEB overrides (Docker); the default is the repo's web/dist."""
+    return Path(os.environ.get("DROPWATCH_WEB") or Path(__file__).resolve().parents[2] / "web" / "dist")
+
+
 def data_dir() -> Path:
     return Path(os.environ.get("DROPWATCH_DATA", "data"))
 
@@ -115,7 +120,7 @@ async def serve(store: Store, host: str, port: int) -> int:
         await service.start()
 
     signin = SignInManager(store, bus, provider, on_signed_in)
-    app = create_app(AppContext(store=store, bus=bus, service=service, signin=signin))
+    app = create_app(AppContext(store=store, bus=bus, service=service, signin=signin), web_dir=web_dir())
     started = await service.start()
     logging.getLogger("dropwatch").info(
         "Serving on http://%s:%s (%s)", host, port, "mining" if started else "not signed in to Twitch")
