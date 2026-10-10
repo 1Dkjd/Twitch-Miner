@@ -1,4 +1,4 @@
-Drops Miner ports Twitch protocol logic (client identifiers, GraphQL operation
+Dropwatch ports Twitch protocol logic (client identifiers, GraphQL operation
 names and hashes, the minute-watched heartbeat, PubSub topics, and the browser
 sign-in delegation) from the following MIT-licensed projects:
 

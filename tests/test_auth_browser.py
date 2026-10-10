@@ -2,9 +2,9 @@ import json
 
 import pytest
 
-from dropsminer.twitch.auth_browser import SignInError, delegated_payload, validate_token
-from dropsminer.twitch.constants import ANDROID_APP, WEB
-from dropsminer.twitch.transport import HttpResponse
+from dropwatch.twitch.auth_browser import SignInError, delegated_payload, validate_token
+from dropwatch.twitch.constants import ANDROID_APP, WEB
+from dropwatch.twitch.transport import HttpResponse
 
 LOGIN = "https://passport.twitch.tv/protected_login"
 

@@ -1,8 +1,8 @@
 import asyncio
 import json
 
-from dropsminer.api.sse import sse_stream
-from dropsminer.events import EventBus
+from dropwatch.api.sse import sse_stream
+from dropwatch.events import EventBus
 
 
 async def test_stream_formats_events_and_pings():

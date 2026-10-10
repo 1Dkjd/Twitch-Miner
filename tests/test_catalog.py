@@ -2,8 +2,8 @@
 import json
 from datetime import UTC, datetime, timedelta
 
-from dropsminer.twitch.catalog import CATALOG_URL, Catalog
-from dropsminer.twitch.transport import HttpResponse
+from dropwatch.twitch.catalog import CATALOG_URL, Catalog
+from dropwatch.twitch.transport import HttpResponse
 
 NOW = datetime(2026, 10, 10, 12, tzinfo=UTC)
 

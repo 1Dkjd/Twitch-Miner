@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-from dropsminer.models import Game
-from dropsminer.twitch.parse import (
+from dropwatch.models import Game
+from dropwatch.twitch.parse import (
     claimed_benefits,
     dashboard_campaigns,
     directory_channels,

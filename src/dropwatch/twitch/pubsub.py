@@ -13,7 +13,7 @@ import aiohttp
 
 from .constants import PING_INTERVAL, PONG_TIMEOUT, PUBSUB_URL, TOPICS
 
-log = logging.getLogger("dropsminer.pubsub")
+log = logging.getLogger("dropwatch.pubsub")
 
 
 @dataclass(frozen=True)

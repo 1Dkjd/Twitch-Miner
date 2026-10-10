@@ -2,10 +2,10 @@ import asyncio
 
 from test_runner import NOW, FakeClient, FakePubSub, FakeStore, FakeWatcher, camp, chan
 
-from dropsminer.events import EventBus
-from dropsminer.runner import Runner, State
-from dropsminer.service import MinerService, Parts
-from dropsminer.twitch.session import TwitchSession
+from dropwatch.events import EventBus
+from dropwatch.runner import Runner, State
+from dropwatch.service import MinerService, Parts
+from dropwatch.twitch.session import TwitchSession
 
 S = TwitchSession("tok", 42, "me", "dev", "cid", "sess")
 

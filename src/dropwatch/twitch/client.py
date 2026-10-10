@@ -15,7 +15,7 @@ from ..models import (
 from . import parse
 from .gql import GqlError, op
 
-log = logging.getLogger("dropsminer.client")
+log = logging.getLogger("dropwatch.client")
 
 
 class TwitchClient:

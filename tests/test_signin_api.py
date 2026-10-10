@@ -4,11 +4,11 @@ from datetime import UTC, datetime
 
 from apihelpers import logged_in, make_app
 
-from dropsminer.api.signin import SignInManager
-from dropsminer.events import EventBus
-from dropsminer.twitch.auth_browser import SignInError
-from dropsminer.twitch.auth_device import DeviceCode
-from dropsminer.twitch.session import TwitchSession
+from dropwatch.api.signin import SignInManager
+from dropwatch.events import EventBus
+from dropwatch.twitch.auth_browser import SignInError
+from dropwatch.twitch.auth_device import DeviceCode
+from dropwatch.twitch.session import TwitchSession
 
 S = TwitchSession("tok", 42, "kp", "d", "c", "s")
 CODE = DeviceCode("BKDQMDGP", "https://www.twitch.tv/activate", datetime(2026, 10, 10, 12, 30, tzinfo=UTC),

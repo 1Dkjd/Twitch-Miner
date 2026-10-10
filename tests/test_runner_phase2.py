@@ -1,6 +1,6 @@
 from test_runner import NOW, FakeClient, FakePubSub, FakeWatcher, camp, chan
 
-from dropsminer.runner import Runner
+from dropwatch.runner import Runner
 
 
 class RecStore:
@@ -8,7 +8,7 @@ class RecStore:
         self.events, self.claims = [], []
 
     def get_prefs(self):
-        from dropsminer.models import Prefs
+        from dropwatch.models import Prefs
         return Prefs()
 
     def log_event(self, kind, data):

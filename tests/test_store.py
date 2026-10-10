@@ -2,10 +2,10 @@ import logging
 import os
 import stat
 
-from dropsminer.models import Prefs
-from dropsminer.redact import RedactFilter
-from dropsminer.store import Store
-from dropsminer.twitch.session import TwitchSession
+from dropwatch.models import Prefs
+from dropwatch.redact import RedactFilter
+from dropwatch.store import Store
+from dropwatch.twitch.session import TwitchSession
 
 S = TwitchSession("tok123", 42, "someone", "dev1", "kd1unb4b3q4t58fwlpcbzcbnm76a8fp", "abcd")
 

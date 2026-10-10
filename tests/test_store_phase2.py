@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from dropsminer.store import Store
+from dropwatch.store import Store
 
 NOW = datetime(2026, 10, 9, 12, tzinfo=UTC)
 

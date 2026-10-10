@@ -1,10 +1,10 @@
-"""Phase 2b Task 7: `dropsminer signin` prints the code and saves the TV session."""
+"""Phase 2b Task 7: `dropwatch signin` prints the code and saves the TV session."""
 import asyncio
 
 from test_signin_api import CODE, S
 
-from dropsminer.cli import cmd_signin
-from dropsminer.store import Store
+from dropwatch.cli import cmd_signin
+from dropwatch.store import Store
 
 
 class Provider:

@@ -2,10 +2,10 @@ import json
 
 import pytest
 
-from dropsminer.twitch.constants import ANDROID_APP
-from dropsminer.twitch.gql import AuthExpired, Gql, GqlError, TwitchUnreachable, op
-from dropsminer.twitch.session import TwitchSession, gql_headers
-from dropsminer.twitch.transport import HttpResponse
+from dropwatch.twitch.constants import ANDROID_APP
+from dropwatch.twitch.gql import AuthExpired, Gql, GqlError, TwitchUnreachable, op
+from dropwatch.twitch.session import TwitchSession, gql_headers
+from dropwatch.twitch.transport import HttpResponse
 
 S = TwitchSession("tok", 42, "me", "dev", ANDROID_APP.client_id, "sess")
 

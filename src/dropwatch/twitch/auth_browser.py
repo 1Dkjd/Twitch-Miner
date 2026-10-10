@@ -82,7 +82,7 @@ async def device_id(transport: HttpTransport) -> str:
 def _find_browser(explicit: str | None) -> str | None:
     if explicit:
         return explicit
-    if env := os.environ.get("DROPSMINER_BROWSER"):
+    if env := os.environ.get("DROPWATCH_BROWSER"):
         return env
     for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
         if found := shutil.which(name):

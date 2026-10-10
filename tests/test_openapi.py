@@ -1,16 +1,16 @@
 import json
 from pathlib import Path
 
-from dropsminer.cli import build_app_for_schema
+from dropwatch.cli import build_app_for_schema
 
 COMMITTED = Path(__file__).parent.parent / "docs" / "api" / "openapi.json"
 
 
 def test_committed_openapi_is_fresh():
     current = build_app_for_schema().openapi()
-    assert COMMITTED.exists(), "run: uv run dropsminer openapi --out docs/api/openapi.json"
+    assert COMMITTED.exists(), "run: uv run dropwatch openapi --out docs/api/openapi.json"
     assert json.loads(COMMITTED.read_text(encoding="utf-8")) == current, \
-        "API changed: run `uv run dropsminer openapi --out docs/api/openapi.json` and commit it"
+        "API changed: run `uv run dropwatch openapi --out docs/api/openapi.json` and commit it"
 
 
 def test_schema_has_every_endpoint():

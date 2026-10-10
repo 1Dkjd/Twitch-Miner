@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{margin:0}</style></head><body><title>Drops Miner Mockup</title>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{margin:0}</style></head><body><title>Dropwatch Mockup</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Geist+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap">
@@ -417,7 +417,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
 
 <header class="bar">
   <div class="bar-in">
-    <div class="brand"><svg aria-hidden="true"><use href="#i-pick"/></svg>Drops Miner</div>
+    <div class="brand"><svg aria-hidden="true"><use href="#i-pick"/></svg>Dropwatch</div>
     <nav class="tabs" aria-label="Views">
       <a href="#overview" data-view="overview" aria-current="page"><svg aria-hidden="true"><use href="#i-home"/></svg>Overview</a>
       <a href="#priorities" data-view="priorities"><svg aria-hidden="true"><use href="#i-list"/></svg>Priorities</a>
@@ -740,7 +740,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
     if (!views.includes(v)) v = "overview";
     views.forEach(n => { $("#v-" + n).hidden = n !== v; });
     document.querySelectorAll(".tabs a").forEach(a => a.dataset.view === v ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
-    document.title = titles[v] + " · Drops Miner";
+    document.title = titles[v] + " · Dropwatch";
     if (!first) { const h = $("#h-" + v); if (h) h.focus({ preventScroll: true }); window.scrollTo(0, 0); }
     first = false;
     if (v === "overview") layoutTrack();

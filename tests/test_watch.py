@@ -3,8 +3,8 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from dropsminer.models import LiveChannel
-from dropsminer.twitch.watch import find_settings_js, find_spade_url, watch_payload
+from dropwatch.models import LiveChannel
+from dropwatch.twitch.watch import find_settings_js, find_spade_url, watch_payload
 
 CH = LiveChannel(77, "streamer", 1, 10, True, "b123", "Palia")
 NOW = datetime(2026, 10, 9, 12, tzinfo=UTC)

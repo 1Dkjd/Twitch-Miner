@@ -24,7 +24,7 @@ from .twitch.constants import PLAY_INTERVAL
 from .twitch.gql import AuthExpired, GqlError
 from .twitch.pubsub import DropClaimable, DropProgress, StreamChanged, StreamDown, StreamUp, topic
 
-log = logging.getLogger("dropsminer.runner")
+log = logging.getLogger("dropwatch.runner")
 FAILS_BEFORE_SWITCH = 9  # ticks are 10 s apart: ~90 s of failed playback before excluding
 STALL_TICKS = 18  # ticks are PLAY_INTERVAL (10 s) apart: resync after ~3 min of silence
 EXCLUDE_FOR = timedelta(minutes=10)
@@ -344,17 +344,17 @@ class Runner:
 
 
 async def run_cli(store) -> int:
-    """`dropsminer run`: headless mining until Ctrl+C or the Twitch session expires."""
+    """`dropwatch run`: headless mining until Ctrl+C or the Twitch session expires."""
     from .events import EventBus
     from .service import MinerService
 
     svc = MinerService(store, EventBus())
     if not await svc.start():
-        print("Not signed in. Run: dropsminer signin")
+        print("Not signed in. Run: dropwatch signin")
         return 1
     try:
         await svc.wait_stopped()
     finally:
         await svc.stop()
-    print("Twitch session expired. Run: dropsminer signin")
+    print("Twitch session expired. Run: dropwatch signin")
     return 1

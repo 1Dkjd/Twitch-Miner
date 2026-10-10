@@ -4,10 +4,10 @@ Port of JourneyDocker/TwitchDropsMiner 870c8b5 (MIT), see reference/journeydocke
 """
 from datetime import UTC, datetime
 
-from dropsminer.models import LiveChannel
-from dropsminer.twitch.session import TwitchSession
-from dropsminer.twitch.transport import HttpResponse
-from dropsminer.twitch.watch import Watcher, playlist_urls
+from dropwatch.models import LiveChannel
+from dropwatch.twitch.session import TwitchSession
+from dropwatch.twitch.transport import HttpResponse
+from dropwatch.twitch.watch import Watcher, playlist_urls
 
 CH = LiveChannel(77, "streamer", 1, 10, True, "b123", "Palia")
 S = TwitchSession("tok", 42, "me", "dev", "cid", "sess")

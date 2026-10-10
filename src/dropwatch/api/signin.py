@@ -7,7 +7,7 @@ from collections.abc import Awaitable, Callable
 
 from ..twitch.auth_browser import SignInError
 
-log = logging.getLogger("dropsminer.signin")
+log = logging.getLogger("dropwatch.signin")
 
 
 class SignInManager:

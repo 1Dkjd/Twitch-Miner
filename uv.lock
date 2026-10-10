@@ -399,7 +399,7 @@ wheels = [
 ]
 
 [[package]]
-name = "dropsminer"
+name = "dropwatch"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

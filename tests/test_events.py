@@ -1,6 +1,6 @@
 import asyncio
 
-from dropsminer.events import EventBus
+from dropwatch.events import EventBus
 
 
 async def test_fan_out_to_every_subscriber():

@@ -1,7 +1,7 @@
 from datetime import timedelta
 
-from dropsminer.models import Campaign, Drop, Game, LiveChannel, Prefs, Reward
-from dropsminer.planner import plan
+from dropwatch.models import Campaign, Drop, Game, LiveChannel, Prefs, Reward
+from dropwatch.planner import plan
 
 PALIA = Game(1, "Palia", "palia")
 PHAS = Game(2, "Phasmophobia", "phasmophobia")

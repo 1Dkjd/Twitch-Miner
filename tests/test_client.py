@@ -2,8 +2,8 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from dropsminer.models import Prefs
-from dropsminer.twitch.client import TwitchClient
+from dropwatch.models import Prefs
+from dropwatch.twitch.client import TwitchClient
 
 FX = Path(__file__).parent / "fixtures"
 

@@ -1,10 +1,10 @@
-# Drops Miner: design
+# Dropwatch: design
 
 Date: 2026-10-09 · Status: draft for review
 
 ## 1. Purpose
 
-Drops Miner replaces the `dungfu/twitch-drops-miner` container on Nick's Unraid server. It earns timed
+Dropwatch replaces the `dungfu/twitch-drops-miner` container on Nick's Unraid server. It earns timed
 Twitch drops (in-game rewards) for one Twitch account without anyone watching streams. It tells Twitch
 that the account watched a stream for a minute, once a minute, on one channel at a time. It claims each
 reward when it is earned, and switches channel when a stream ends or a more important campaign comes up.
@@ -27,7 +27,7 @@ its GUI. This project keeps the Twitch knowledge and replaces the rest.
 |---|---|---|
 | Relationship to the original | Port the Twitch logic into a new, cleanly separated Python app | The hard part is Twitch knowledge (query IDs, login, the watch heartbeat), and it is Python. Wrapping upstream would keep its GUI-coupled core. |
 | Language | Python 3.12, asyncio | The port is near line-for-line. The workload is waiting on the network. Nick already maintains Python apps. |
-| Audience | Private GitHub repo `drops-miner`, Nick's Unraid only | It can go public later. |
+| Audience | Private GitHub repo `dropwatch`, Nick's Unraid only | It can go public later. |
 | Frontend | React + Vite + Tailwind, TypeScript | The same stack as homelab-dashboard. TypeScript types are generated from the API's OpenAPI schema. |
 | Twitch sign-in | **TV code login** (twitch.tv/activate + an 8-letter code) plus a **public campaign catalogue** for discovery. *(Changed 2026-10-10; was browser sign-in.)* | See section 4. Nick chose it after both were tested on his account: it signs in from any device and needs no browser in Docker. |
 | Scheduling | Priority games first in list order, then everything else least-spare-time first; Never list excluded; favourite channels break ties | Agreed during the mockup rounds. Priority is not a whitelist. |
@@ -102,7 +102,7 @@ both options with mockups (`docs/design/signin-options.html`, option A) and chos
    still scraped from the normal `www.twitch.tv` channel page.
 
 The browser sign-in with Android delegation (phase 1) stays in the code as a **manual fallback on a
-PC** only: `dropsminer signin --browser`. An existing Android session keeps working; the session's
+PC** only: `dropwatch signin --browser`. An existing Android session keeps working; the session's
 client ID decides which client is used. Docker ships without a browser.
 
 **Discovery (`twitch/catalog`)**

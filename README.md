@@ -1,13 +1,13 @@
-# Drops Miner (private)
+# Dropwatch (private)
 
 Phase 1: headless miner. See `docs/superpowers/specs/` for the design.
 
     uv sync
-    uv run dropsminer signin      # opens a browser; sign in to Twitch
-    uv run dropsminer lists --priority "Palia,Phasmophobia"
-    uv run dropsminer run
+    uv run dropwatch signin      # opens a browser; sign in to Twitch
+    uv run dropwatch lists --priority "Palia,Phasmophobia"
+    uv run dropwatch run
 
-Data (SQLite + session) lives in `./data` unless `DROPSMINER_DATA` is set.
+Data (SQLite + session) lives in `./data` unless `DROPWATCH_DATA` is set.
 Stop any other miner on the same Twitch account first.
 
 ## Phase 1 live run (2026-10-09)
@@ -28,7 +28,7 @@ Twitch never sent the PubSub drop-claim message, so the claim waited 25 minutes 
 
 ## Phase 2 live check (2026-10-09)
 
-`dropsminer serve` (branch `phase2-api`, `58077a7`) took over from the phase-1 `run` process on the saved session at 19:11. Bound to 127.0.0.1:5810.
+`dropwatch serve` (branch `phase2-api`, `58077a7`) took over from the phase-1 `run` process on the saved session at 19:11. Bound to 127.0.0.1:5810.
 
 | Check | Result |
 |---|---|

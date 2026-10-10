@@ -4,7 +4,7 @@ import json
 from aiohttp import WSMsgType, web
 from aiohttp.test_utils import TestServer
 
-from dropsminer.twitch.pubsub import (
+from dropwatch.twitch.pubsub import (
     DropClaimable,
     DropProgress,
     PubSub,

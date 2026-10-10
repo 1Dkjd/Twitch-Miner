@@ -1,12 +1,12 @@
 """Phase 2b Task 1: every Twitch call is sent as the session's own client (TV or Android)."""
 from datetime import UTC, datetime
 
-from dropsminer.models import LiveChannel
-from dropsminer.twitch.constants import ANDROID_APP, SMARTBOX, client_for
-from dropsminer.twitch.gql import Gql, op
-from dropsminer.twitch.session import TwitchSession
-from dropsminer.twitch.transport import HttpResponse
-from dropsminer.twitch.watch import Watcher
+from dropwatch.models import LiveChannel
+from dropwatch.twitch.constants import ANDROID_APP, SMARTBOX, client_for
+from dropwatch.twitch.gql import Gql, op
+from dropwatch.twitch.session import TwitchSession
+from dropwatch.twitch.transport import HttpResponse
+from dropwatch.twitch.watch import Watcher
 
 TV = TwitchSession("tok", 42, "me", "dev", SMARTBOX.client_id, "sess")
 ANDROID = TwitchSession("tok", 42, "me", "dev", ANDROID_APP.client_id, "sess")

@@ -4,13 +4,13 @@ from datetime import UTC, datetime
 from test_client_catalog import FakeCatalog, FakeGql, inventory
 from test_runner import FakePubSub, FakeStore, FakeWatcher
 
-import dropsminer.twitch.transport as transport_mod
-from dropsminer.api.views import state_view
-from dropsminer.runner import Runner
-from dropsminer.service import build_parts
-from dropsminer.store import Store
-from dropsminer.twitch.constants import SMARTBOX
-from dropsminer.twitch.session import TwitchSession
+import dropwatch.twitch.transport as transport_mod
+from dropwatch.api.views import state_view
+from dropwatch.runner import Runner
+from dropwatch.service import build_parts
+from dropwatch.store import Store
+from dropwatch.twitch.constants import SMARTBOX
+from dropwatch.twitch.session import TwitchSession
 
 SINCE = datetime(2026, 10, 10, 14, 5, tzinfo=UTC)
 
@@ -21,7 +21,7 @@ class ViewStore(FakeStore):
 
 
 def test_state_includes_catalog_status():
-    from dropsminer.twitch.client import TwitchClient
+    from dropwatch.twitch.client import TwitchClient
     r = Runner(TwitchClient(FakeGql(inventory(), None), 42, catalog=FakeCatalog({}, ("unreachable", SINCE))),
                FakeWatcher(), FakePubSub(), ViewStore(), user_id=42)
     s = state_view(r, ViewStore(), SINCE)
@@ -56,8 +56,8 @@ async def test_build_parts_gives_client_a_catalog_and_closes_its_transport(tmp_p
 
 
 async def test_unused_catalog_is_not_reported(tmp_path):
-    from dropsminer.twitch.catalog import Catalog
-    from dropsminer.twitch.client import TwitchClient
+    from dropwatch.twitch.catalog import Catalog
+    from dropwatch.twitch.client import TwitchClient
     cat = Catalog(object(), tmp_path / "catalog.json")
     r = Runner(TwitchClient(FakeGql(inventory(), None), 42, catalog=cat), FakeWatcher(), FakePubSub(),
                ViewStore(), user_id=42)

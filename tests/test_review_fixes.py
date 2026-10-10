@@ -7,15 +7,15 @@ from aiohttp import WSMsgType, web
 from aiohttp.test_utils import TestServer
 from test_runner import NOW, FakeClient, FakePubSub, FakeStore, FakeWatcher, camp, chan
 
-from dropsminer.models import Campaign, Drop, Game, LiveChannel, Prefs, Reward, drop_earnable_now
-from dropsminer.planner import plan
-from dropsminer.runner import Runner, State
-from dropsminer.twitch.client import TwitchClient
-from dropsminer.twitch.gql import Gql, GqlError, op
-from dropsminer.twitch.pubsub import PubSub, StreamDown, StreamUp
-from dropsminer.twitch.session import TwitchSession
-from dropsminer.twitch.transport import HttpResponse
-from dropsminer.twitch.watch import Watcher
+from dropwatch.models import Campaign, Drop, Game, LiveChannel, Prefs, Reward, drop_earnable_now
+from dropwatch.planner import plan
+from dropwatch.runner import Runner, State
+from dropwatch.twitch.client import TwitchClient
+from dropwatch.twitch.gql import Gql, GqlError, op
+from dropwatch.twitch.pubsub import PubSub, StreamDown, StreamUp
+from dropwatch.twitch.session import TwitchSession
+from dropwatch.twitch.transport import HttpResponse
+from dropwatch.twitch.watch import Watcher
 
 R = Reward("r", "Reward", "", "DIRECT_ENTITLEMENT")
 S = TwitchSession("tok", 42, "me", "dev", "cid", "sess")
@@ -77,7 +77,7 @@ async def test_c1_current_drop_error_is_swallowed():
             raise GqlError("service error")
     r = runner(C([camp()], [chan("a", 7)]))
     await r.refresh()
-    from dropsminer.runner import STALL_TICKS
+    from dropwatch.runner import STALL_TICKS
     for _ in range(STALL_TICKS + 1):
         await r.tick()
     assert r.state == State.MINING
@@ -104,7 +104,7 @@ async def test_i1_safe_handle_survives_errors():
 async def test_i2_concurrent_claims_happen_once():
     c = FakeClient([camp(cur=60, claim_id="inst")], [chan("a", 7)])
     r = runner(c)
-    from dropsminer.twitch.pubsub import DropClaimable
+    from dropwatch.twitch.pubsub import DropClaimable
     await asyncio.gather(r.refresh(), r.handle(DropClaimable("d1", "inst")))
     assert c.claims == ["inst"]
     assert sum(1 for k, _ in r._store.events if k == "claimed") == 1
