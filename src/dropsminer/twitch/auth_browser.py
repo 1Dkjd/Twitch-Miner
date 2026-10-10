@@ -53,15 +53,16 @@ def delegated_payload(url: str, method: str, body: str | None) -> str | None:
     return json.dumps(payload, separators=(",", ":"))
 
 
-async def validate_token(transport: HttpTransport, token: str) -> tuple[int, str]:
+async def validate_token(transport: HttpTransport, token: str, expect: str = ANDROID_APP.client_id,
+                         expect_name: str = "Android") -> tuple[int, str]:
     r = await transport.request("GET", VALIDATE_URL, headers={"Authorization": f"OAuth {token}"})
     if r.status != 200:
         raise SignInError(f"Twitch rejected token validation (HTTP {r.status}).")
     data = r.json()
     cid = data.get("client_id")
-    if cid != ANDROID_APP.client_id:
+    if cid != expect:
         kind = "WEB" if cid == WEB.client_id else "a different client"
-        raise SignInError(f"Twitch issued a token for {kind}, not Android. It was not saved.")
+        raise SignInError(f"Twitch issued a token for {kind}, not {expect_name}. It was not saved.")
     if not str(data.get("user_id", "")).isdigit():
         raise SignInError("Twitch returned a token without a valid user ID.")
     return int(data["user_id"]), str(data.get("login", ""))
