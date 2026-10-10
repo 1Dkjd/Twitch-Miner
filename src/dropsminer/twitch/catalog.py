@@ -37,7 +37,7 @@ def flatten(body: dict) -> tuple[dict[str, dict], datetime | None]:
                 raw["game"] = g
                 ts(raw["endAt"])
                 out[raw["id"]] = raw
-            except (KeyError, TypeError, ValueError):
+            except (KeyError, TypeError, ValueError, AttributeError):  # e.g. endAt null
                 continue
     updated = body.get("lastUpdatedAt")
     return out, (ts(updated) if updated else None)
@@ -94,7 +94,7 @@ class Catalog:
     def _load(self) -> tuple[dict[str, dict], datetime | None]:
         try:
             return flatten(json.loads(self._cache.read_bytes()))
-        except (OSError, ValueError, KeyError, TypeError):
+        except (OSError, ValueError, KeyError, TypeError, AttributeError):
             return {}, None
 
     def _save(self, body: dict) -> None:

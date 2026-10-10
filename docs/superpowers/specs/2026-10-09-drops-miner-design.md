@@ -121,11 +121,14 @@ client ID decides which client is used. Docker ships without a browser.
 
 **Account links are unknown for campaigns not yet started.** Neither the catalogue nor the TV login says
 whether a game account is linked until the campaign appears in `Inventory`. So:
-- `Campaign.linked` becomes `True`, `False` or **unknown**. The planner treats unknown as eligible.
+- `Campaign.linked` becomes `True`, `False` or **unknown**. The planner treats unknown as eligible, but
+  outside Priority it ranks campaigns known to be linked (or with a linked campaign of the same game)
+  **before** unknown ones, so link tests only use time that would otherwise be idle. *(Added after the
+  phase-2b review: ranking by spare time alone sent most mining time to unlinked games.)*
 - The runner watches the progress of a campaign whose link is unknown. If its minutes don't move for
   **10 minutes** of successful watching, it marks the campaign **may need linking** and stops choosing
   it. It shows in Needs you with the catalogue's link URL. The mark clears when `Inventory` reports the
-  campaign as linked, or after 6 hours.
+  campaign as linked, when the owner presses **Mine now** on it ("I've linked it"), or after 6 hours.
 
 Spike results for this method are the 2026-10-10 rows in the table above. **Not yet proven here: claiming
 with the TV login** (reported to work by GrubDrops). The first real claim after switching confirms it.

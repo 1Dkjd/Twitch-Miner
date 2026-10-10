@@ -91,11 +91,17 @@ def plan(
             qualifying[c.id] = sorted(chans, key=lambda ch: _channel_rank(c, ch, prefs))
 
     eligible = [c for c in considered if c.id in qualifying]
+    # spec §4 (2026-10-10): outside Priority, campaigns known (or very likely) to be linked come
+    # before ones whose link is unknown, so testing unknown links only fills otherwise idle time.
+    linked_games = {c.game.id for c in considered if c.linked is True}
+
+    def link_rank(c: Campaign) -> int:
+        return 0 if c.linked is True or c.has_badge_or_emote or c.game.id in linked_games else 1
 
     def order(c: Campaign) -> tuple:
         if c.game.name in prefs.priority:
-            return (0, prefs.priority.index(c.game.name), 0.0, c.ends_at, c.id)
-        return (1, 0, campaign_ratio(c, now), c.ends_at, c.id)
+            return (0, prefs.priority.index(c.game.name), 0, 0.0, c.ends_at, c.id)
+        return (1, 0, link_rank(c), campaign_ratio(c, now), c.ends_at, c.id)
 
     eligible.sort(key=order)
     if not eligible:
@@ -103,7 +109,7 @@ def plan(
 
     chosen = next((c for c in eligible if c.id == override_campaign), eligible[0])
     if chosen.id != override_campaign:
-        chosen = _hold_current(chosen, eligible, current_campaign, prefs, now)
+        chosen = _hold_current(chosen, eligible, current_campaign, prefs, now, link_rank)
     if chosen.id == override_campaign:
         reason = "you picked it"
     elif chosen.game.name in prefs.priority:
@@ -142,7 +148,8 @@ HYSTERESIS = 0.8  # a challenger must have 20% less spare time to take over
 
 
 def _hold_current(
-    chosen: Campaign, eligible: list[Campaign], current: str | None, prefs: Prefs, now: datetime
+    chosen: Campaign, eligible: list[Campaign], current: str | None, prefs: Prefs, now: datetime,
+    link_rank=lambda c: 0,
 ) -> Campaign:
     """Keep mining the current non-priority campaign unless the challenger is clearly more urgent.
 
@@ -154,6 +161,8 @@ def _hold_current(
         return chosen
     if cur.game.name in prefs.priority or chosen.game.name in prefs.priority:
         return chosen
+    if link_rank(chosen) < link_rank(cur):
+        return chosen  # a known-linked campaign always replaces a link test
     rc, rn = campaign_ratio(cur, now), campaign_ratio(chosen, now)
     if rn < HYSTERESIS * rc or rn < 1 <= rc:
         return chosen

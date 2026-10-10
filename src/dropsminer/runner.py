@@ -98,6 +98,9 @@ class Runner:
 
     def mine_now(self, campaign_id: str) -> None:
         self._override_campaign = campaign_id
+        # "Mine now" on a may-need-linking campaign means "I linked it, try again"
+        self.maybe_unlinked.pop(campaign_id, None)
+        self._link_probe.pop(campaign_id, None)
 
     def use_channel(self, login: str) -> None:
         self._override_channel = login
@@ -152,6 +155,8 @@ class Runner:
                          current_campaign=self.plan.current.campaign_id
                          if self.plan and self.plan.current else None)
         cur = self.plan.current
+        # a link test only counts consecutive time on one campaign: restart it after a break
+        self._link_probe = {k: v for k, v in self._link_probe.items() if cur and k == cur.campaign_id}
         # spec §6: overrides last only while the plan still honours them
         if self._override_campaign and (cur is None or cur.campaign_id != self._override_campaign):
             self._override_campaign = None
