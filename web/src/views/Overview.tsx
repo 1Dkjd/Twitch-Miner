@@ -1,7 +1,373 @@
+import { useEffect, useState, type ReactNode } from "react";
+import { ApiError, api, type Campaign, type State } from "../api/client";
+import { useLists } from "../lists";
+import { go } from "../router";
+import { useApp } from "../store";
+import { NB, boxArt, clock, day, dur, mark, minutesUntil, span } from "../ui/format";
+import { Icon } from "../ui/Icons";
+import { MenuButton } from "./Menu";
+import { Track, milestones } from "./Track";
+
+/** Overview (approved mockup): banner, Mining now (or the idle card), Needs you, Up next, Done.
+ * On phones Needs you comes first in the DOM too, so screen readers get the same order. */
 export function OverviewView() {
+  const { state, connection, lostSince } = useApp();
+  const { lists, save } = useLists();
+  const phone = useNarrow();
+  const { say } = useApp();
+  if (!state) {
+    return <section className="view" aria-labelledby="h-overview"><h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1></section>;
+  }
+  const lost = connection === "lost";
+  const priorityOf = (game: string) => {
+    const i = lists?.priority.indexOf(game) ?? -1;
+    return i >= 0 ? `Priority ${i + 1}` : null;
+  };
+  async function never(game: string) {
+    if (!lists) return;
+    const msg = await save({ ...lists, priority: lists.priority.filter((g) => g !== game), never: [...lists.never, game] });
+    say(msg ?? `${game} moved to Never`);
+  }
+  const needs = <NeedsYou key="needs" state={state} onNever={never} />;
+  const now = <NowSlot key="now" state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf} />;
   return (
-    <section className="view" aria-labelledby="h-overview">
-      <div className="view-h"><h1 id="h-overview" className="disp" tabIndex={-1}>Overview</h1></div>
+    <section className="view" id="v-overview" aria-labelledby="h-overview">
+      <h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1>
+      <Banner state={state} lost={lost} lostSince={lostSince} />
+      {phone ? [needs, now] : [now, needs]}
+      <UpNext state={state} priorityOf={priorityOf} />
+      <Done state={state} />
     </section>
   );
 }
+
+function useNarrow() {
+  const q = "(max-width: 720px)";
+  const [m, setM] = useState(() => typeof matchMedia === "function" && matchMedia(q).matches);
+  useEffect(() => {
+    if (typeof matchMedia !== "function") return;
+    const mq = matchMedia(q);
+    const on = () => setM(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return m;
+}
+
+/* ---------- banner (one at a time, most serious first) ---------- */
+function Banner({ state, lost, lostSince }: { state: State; lost: boolean; lostSince: Date | null }) {
+  const { refreshState, say } = useApp();
+  if (lost) {
+    return (
+      <div className="banner" data-tone="alert" role="alert"><Icon name="cloud" />
+        <div><div className="banner-t">Can't reach the miner</div>
+          <div className="banner-b">No answer since {lostSince ? `${clock(lostSince)}, ${dur(minutesUntil(new Date(), lostSince))} ago` : "a moment ago"}. Everything below is what it was doing then.</div></div>
+        <div className="banner-acts"><button className="btn" type="button" onClick={() => void refreshState()}>Retry now</button></div>
+      </div>
+    );
+  }
+  if (state.state === "signed_out") {
+    return (
+      <div className="banner" data-tone="alert" role="alert"><Icon name="key" />
+        <div><div className="banner-t">Twitch signed you out</div>
+          <div className="banner-b">Mining is stopped until you sign in again. Drop progress is kept.</div></div>
+        <div className="banner-acts"><button className="btn strong" type="button" onClick={() => go("connect")}><Icon name="key" />Get a sign-in code</button></div>
+      </div>
+    );
+  }
+  if (state.state === "paused") {
+    const until = state.paused_until;
+    return (
+      <div className="banner" role="status"><Icon name="pause" />
+        <div><div className="banner-t">{until ? `Paused until ${clock(until)}` : "Paused until you resume"}</div>
+          <div className="banner-b">{until ? `Nothing is being mined for the next ${dur(minutesUntil(until))}. ` : "Nothing is being mined. "}Progress is kept.</div></div>
+        <div className="banner-acts"><button className="btn strong" type="button" onClick={async () => {
+          await api.post("/resume").catch(() => undefined); say("Mining resumed."); void refreshState();
+        }}>Resume now</button></div>
+      </div>
+    );
+  }
+  if (state.state === "twitch_unreachable") {
+    return (
+      <div className="banner" data-tone="alert" role="alert"><Icon name="cloud" />
+        <div><div className="banner-t">Can't reach Twitch</div>
+          <div className="banner-b">The miner keeps retrying{state.next_check_at ? ` (next try at ${clock(state.next_check_at)})` : ""}. Progress so far is kept.</div></div>
+      </div>
+    );
+  }
+  const cat = state.catalog;
+  if (cat && cat.status !== "ok") {
+    return (
+      <div className="banner" data-tone="warn" role="status"><Icon name="cloud" />
+        <div><div className="banner-t">{cat.status === "stale" ? "The campaign list hasn't updated" : "Can't reach the campaign list"}{cat.since ? ` since ${clock(cat.since)}` : ""}</div>
+          <div className="banner-b">Campaigns you've started keep mining. New campaigns show up again once the list is back. Checking every 5 minutes.</div></div>
+      </div>
+    );
+  }
+  return null;
+}
+
+/* ---------- Mining now ---------- */
+function NowSlot({ state, lost, lostSince, priorityOf }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string) => string | null }) {
+  const cur = state.current;
+  if (!cur) return <Idle state={state} />;
+  return <NowCard state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf} />;
+}
+
+const VERDICT: Record<string, [string, string]> = {
+  plenty: ["green", "Plenty of time"], tight: ["warn", "Tight on time"], wont_finish: ["red", "Won't finish in time"],
+};
+
+function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string) => string | null }) {
+  const { say, refreshState } = useApp();
+  const [allOpen, setAllOpen] = useState(false);
+  const [dismissed, setDismissed] = useState<string | null>(null);
+  const cur = state.current!;
+  const c = cur.campaign;
+  const { ms, watched: w, max, nextIdx } = milestones(c.drops);
+  const nx = ms[nextIdx];
+  const mining = !lost && (state.state === "mining" || state.state === "switched");
+  const status = state.state === "paused" ? <span className="chip"><Icon name="pause" />Paused · progress kept</span>
+    : state.state === "signed_out" ? <span className="chip red">Stopped at {dur(w)}</span>
+    : lost ? <span className="chip">Last known · {lostSince ? clock(lostSince) : ""}</span>
+    : <span className="chip gold"><span className="live" aria-hidden="true" />Mining</span>;
+  const leftMin = minutesUntil(c.ends_at);
+  const toGo = c.minutes_needed;
+  const ratio = leftMin > 0 ? toGo / leftMin : 2;
+  const fit = VERDICT[c.verdict ?? ""] ?? VERDICT.plenty!;
+  const sw = state.last_switch;
+  const swKey = sw ? `${sw.from}>${sw.to}@${sw.at}` : null;
+  const reason = cur.reason === "you picked it" ? "you picked it" : priorityOf(c.game) ?? cap(cur.reason);
+
+  async function pause(minutes: number | null) {
+    try { await api.post("/pause", { minutes }); say("Paused. Progress is kept."); }
+    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't pause."); }
+    void refreshState();
+  }
+  async function useChannel(login: string) {
+    try { await api.post("/channel", { login }); say(`Switched to ${login}`); }
+    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't switch channel."); }
+    void refreshState();
+  }
+
+  return (
+    <article className={`now${mining ? "" : " dim"}`} aria-labelledby="h-now" style={{ ["--art-bg" as string]: `url(${boxArt(c.box_art_url)})` }}>
+      <img className="box" src={boxArt(c.box_art_url)} alt="" />
+      <div className="now-main">
+        <div className="now-head">
+          <div className="now-title">
+            <div className="now-title-row"><h2 id="h-now"><span className="sr">Mining now: </span>{c.name}</h2>{status}</div>
+            <div className="now-sub">
+              {c.game} · {mining ? "watching" : "last on"} <b>{cur.channel.login}</b>
+              {cur.channel.favourite && <> <span className="fav-mark"><Icon name="star" />favourite</span></>}
+              {mining && cur.channels.length > 0 && (
+                <> · <MenuButton id="ch-menu" label="Watch instead" wrapClass="ch-pick" buttonClass="link" buttonLabel="Change channel"
+                  buttonContent="change" items={cur.channels.map((ch) => ({
+                    key: ch.login, onSelect: () => void useChannel(ch.login),
+                    content: <>{ch.favourite && <Icon name="star" />}{ch.login}<span className="v">{ch.viewers.toLocaleString()} watching</span></>,
+                  }))} /></>
+              )}
+              {" · "}{reason}
+            </div>
+          </div>
+          <span className="ends">Ends {day(c.ends_at)}</span>
+        </div>
+        {sw && swKey !== dismissed && (
+          <div className="notice" role="status"><Icon name="swap" />
+            <span>Switched from <b>{sw.from}</b> to <b>{sw.to}</b> at {clock(sw.at)}. Progress carried over.</span>
+            <button className="btn quiet" type="button" onClick={() => setDismissed(swKey)}>Dismiss</button></div>
+        )}
+        {max > 0 && <Track ms={ms} watched={w} max={max} nextIdx={nextIdx}
+          label={`${w} of ${max} minutes watched.${nx ? ` ${dur(nx.at - w)} to the next reward.` : ""}`} />}
+        {nx && (
+          <div className="next-card">
+            <div className="arts">{nx.items.map((it, i) => <img key={i} src={it.image} alt="" />)}</div>
+            <div><div className="next-when">{mining ? `Next reward in ${dur(nx.at - w)}` : `${dur(nx.at - w)} of watching to the next reward`}</div>
+              <div className="next-what">{nx.items.map((i) => i.name).join(", ")}</div></div>
+          </div>
+        )}
+        <button className="btn quiet more" type="button" aria-expanded={allOpen} aria-controls="all-ms" onClick={() => setAllOpen(!allOpen)}>
+          {allOpen ? "Hide" : "Show"} all {ms.length} rewards<Icon name="down" className="chev" /></button>
+        <div className="all-ms" id="all-ms" hidden={!allOpen}>
+          {ms.map((m, i) => (
+            <div key={m.at} className={`m ${m.at <= w ? "got" : i === nextIdx ? "next" : ""}`}>
+              <span className="when">{mark(m.at)}</span><span>{m.items.map((x) => x.name).join(", ")}</span>
+              <span className="st">{m.at <= w ? "Claimed" : i === nextIdx ? `Next, ${dur(m.at - w)} to go` : `${dur(m.at - w)} to go`}</span>
+            </div>
+          ))}
+        </div>
+        <div className="now-foot">
+          <div className="watched"><b className="wnum">{w} / {max}{NB}min</b> watched</div>
+          <div className="deadline"><span className={`chip ${fit[0]}`}>{fit[1]}</span>
+            <div className="dl-bar" aria-hidden="true"><span style={{ width: `${Math.max(1.5, Math.min(100, ratio * 100))}%` }} /></div>
+            <span className="dl-lab"><b>{dur(toGo)}</b> of watching needed · <b>{span(leftMin)}</b> left</span></div>
+          {mining && (
+            <MenuButton id="pause-menu" label="Pause for" buttonContent={<><Icon name="pause" />Pause</>}
+              items={[["30 min", 30], ["1 h", 60], ["4 h", 240], ["Until I resume", null]].map(([t, m]) => ({
+                key: String(t), content: String(t).replace(" ", NB), onSelect: () => void pause(m as number | null),
+              }))} />
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function Idle({ state }: { state: State }) {
+  const { refreshState, say } = useApp();
+  const [busy, setBusy] = useState(false);
+  const line = state.up_next.slice(0, 2).map((c) => c.name);
+  const next = state.next_check_at ? minutesUntil(state.next_check_at) : null;
+  return (
+    <section className="idle" aria-labelledby="h-idle">
+      <h2 id="h-idle">Nothing to mine right now</h2>
+      <p>None of your campaigns has a live channel with drops turned on.
+        {line.length ? ` ${line[0]} is first in line${line[1] ? `, then ${line[1]}` : ""}.` : ""}
+        {next !== null ? ` Checking again in ${dur(Math.max(1, next))}.` : ""}</p>
+      <div className="acts"><button className="btn" type="button" aria-disabled={busy} onClick={async () => {
+        if (busy) return;
+        setBusy(true);
+        try { await api.post("/refresh"); say("Checked for live channels."); }
+        catch (e) { say(e instanceof ApiError ? e.message : "Couldn't check."); }
+        finally { setBusy(false); void refreshState(); }
+      }}>Check now</button></div>
+    </section>
+  );
+}
+
+/* ---------- lists ---------- */
+function Sec({ id, title, count, aside, children }: { id: string; title: string; count: number; aside?: string; children: ReactNode }) {
+  return (
+    <section id={`sec-${id}`} aria-labelledby={`h-${id}`}>
+      <div className="sec-h"><h2 id={`h-${id}`}>{title}</h2><span className="count">{count}</span>{aside && <span className="aside">{aside}</span>}</div>
+      {children}
+    </section>
+  );
+}
+
+function firstReward(c: Campaign) {
+  const d = [...c.drops].filter((x) => !x.claimed && x.rewards.length).sort((a, b) => a.required_minutes - b.required_minutes)[0];
+  return d ? { name: d.rewards[0]!.name, img: d.rewards[0]!.image_url, at: d.required_minutes, all: d.rewards } : null;
+}
+
+function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) => void }) {
+  const { refreshState, say } = useApp();
+  if (!state.needs_you.length) return null;
+  return (
+    <Sec id="needs" title="Needs you" count={state.needs_you.length} aside="Can't be mined until you act">
+      <div className="list needs">
+        {state.needs_you.map((c) => {
+          const r = firstReward(c);
+          const only = c.allowed_channels.length === 1 ? c.allowed_channels[0] : null;
+          return (
+            <div className="row" key={c.id}>
+              <img className="box" src={boxArt(c.box_art_url)} alt="" />
+              <div>
+                <div className="row-t">{c.maybe_unlinked ? `${c.game} may need linking` : `Link your ${c.game} account`}</div>
+                <div className="row-s">
+                  {c.name}
+                  {r && <><span className="sep">·</span>“{r.name}” after {dur(r.at)}</>}
+                  {only && <><span className="sep">·</span>only on the <b>{only}</b> channel</>}
+                  {c.maybe_unlinked && <><span className="sep">·</span>no minutes counted in 10{NB}min of watching</>}
+                  <span className="sep">·</span>ends {day(c.ends_at)}
+                </div>
+                {r && <div className="row-art">{r.all.map((x, i) => <img key={i} src={x.image_url} alt={x.name} />)}</div>}
+              </div>
+              <div className="row-acts">
+                {c.link_url && (
+                  <a className="btn strong" href={c.link_url} target="_blank" rel="noopener noreferrer" aria-label={`Link your ${c.game} account (opens the game's site)`}>
+                    <Icon name="link" />Link account<Icon name="ext" /></a>
+                )}
+                {c.maybe_unlinked && (
+                  <button className="btn" type="button" aria-label={`Try ${c.name} again`} onClick={async () => {
+                    try { await api.post("/mine-now", { campaign_id: c.id }); say(`Trying ${c.name} again`); }
+                    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't start it."); }
+                    void refreshState();
+                  }}>Mine now</button>
+                )}
+                <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={() => onNever(c.game)}>Never mine</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Sec>
+  );
+}
+
+function UpNext({ state, priorityOf }: { state: State; priorityOf: (g: string) => string | null }) {
+  const { refreshState, say } = useApp();
+  if (!state.up_next.length) return null;
+  const curGame = state.current?.campaign.game;
+  return (
+    <Sec id="next" title="Up next" count={state.up_next.length}
+      aside={curGame ? `Starts when ${curGame} is done or its streams go offline` : undefined}>
+      <div className="list">
+        {state.up_next.map((c) => {
+          const { watched, max } = milestones(c.drops);
+          const r = firstReward(c);
+          const pr = priorityOf(c.game);
+          return (
+            <div className="row" key={c.id}>
+              <img className="box" src={boxArt(c.box_art_url)} alt="" />
+              <div>
+                <div className="row-t">{c.name}</div>
+                <div className="row-s">{c.game}{pr && <><span className="sep">·</span>{pr}</>}<span className="sep">·</span>ends {day(c.ends_at)}</div>
+                {r && <div className="row-art">{r.all.map((x, i) => <img key={i} src={x.image_url} alt={x.name} />)}</div>}
+              </div>
+              <div className="row-acts">
+                {max > 0 && (
+                  <div className="mini" aria-label={`${watched} of ${max} minutes watched`}>
+                    <div className="rail"><div className="fill" style={{ width: `${(watched / max) * 100}%` }} /></div>
+                    <span className="label">{watched} / {max}{NB}min · {dur(c.minutes_needed)} to go</span>
+                  </div>
+                )}
+                <button className="btn" type="button" aria-label={`Mine ${c.name} now`} onClick={async () => {
+                  try { await api.post("/mine-now", { campaign_id: c.id }); say(`Mining ${c.name} now`); }
+                  catch (e) { say(e instanceof ApiError ? e.message : "Couldn't switch to it."); }
+                  void refreshState();
+                }}>Mine now</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Sec>
+  );
+}
+
+function Done({ state }: { state: State }) {
+  const [open, setOpen] = useState(false);
+  if (!state.done.length) return null;
+  const rewards = state.done.reduce((n, c) => n + c.drops.reduce((k, d) => k + (d.claimed ? d.rewards.length : 0), 0), 0);
+  const games = [...new Set(state.done.map((c) => c.game))];
+  return (
+    <Sec id="done" title="Done" count={state.done.length} aside="Campaigns still open, everything claimed">
+      <div className="list">
+        <button className="done-h" type="button" aria-expanded={open} aria-controls="done-body" onClick={() => setOpen(!open)}>
+          <span className="done-sum"><span className="chip green">{rewards} rewards claimed</span>
+            <span className="hint">{games.join(", ")}</span></span>
+          <Icon name="down" className="chev" />
+        </button>
+        <div className="done-body" id="done-body" hidden={!open}>
+          {state.done.map((c) => {
+            const got = c.drops.filter((d) => d.claimed).flatMap((d) => d.rewards);
+            return (
+              <div className="row" key={c.id}>
+                <img className="box" src={boxArt(c.box_art_url)} alt="" />
+                <div>
+                  <div className="row-t">{c.name}</div>
+                  <div className="row-s">{c.game}<span className="sep">·</span>{got.length} of {got.length} claimed<span className="sep">·</span>open until {day(c.ends_at)}</div>
+                  <div className="row-art">{got.map((x, i) => <span className="claimed" key={i}><img src={x.image_url} alt={`${x.name}, claimed`} /></span>)}</div>
+                  <div className="names" aria-hidden="true">{got.map((x) => x.name).join(", ")}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </Sec>
+  );
+}
+
+const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);

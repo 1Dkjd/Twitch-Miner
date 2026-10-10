@@ -63,3 +63,7 @@
   .code-big { font-size: 28px; }
   .auth-head h1 { font-size: 26px; }
 }
+/* channel picker for the Mining now "change" link: the approved Pause-menu look, opening rightwards */
+.ch-pick { position: relative; display: inline-block; }
+.ch-pick .menu { left: 0; right: auto; min-width: 220px; }
+.ch-pick .menu .v { margin-left: 10px; color: var(--muted); font-family: var(--num); font-variant-numeric: tabular-nums; font-size: 12px; }
