@@ -1,0 +1,161 @@
+import { DndContext, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS as DndCSS } from "@dnd-kit/utilities";
+import { useEffect, useState } from "react";
+import { ApiError, api, type Campaign, type Settings, type State } from "../api/client";
+import { useApp } from "../store";
+import { NB, boxArt, clock, day, dur } from "../ui/format";
+import { Icon } from "../ui/Icons";
+import { milestones } from "./Track";
+
+const SHOWN = 5;
+
+/** Up next (approved mockup docs/design/next-features-mockup.html, 2026-10-10): a filter over every queued
+ * campaign, a red warning on a campaign that would end before its turn, and "Arrange myself" pins that go
+ * first after Priority in Nick's order (drag, or the arrows). The rest stays in the automatic order. */
+export function UpNext({ state, priorityOf, onNever }: {
+  state: State; priorityOf: (g: string, ordinal?: boolean) => string | null; onNever: (game: string) => void;
+}) {
+  const { refreshState, say } = useApp();
+  const [all, setAll] = useState(false);
+  const [filter, setFilter] = useState("");
+  const [arrange, setArrange] = useState<boolean | null>(null);
+  const [pins, setPins] = useState<string[]>([]);
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  useEffect(() => {
+    api.get<Settings>("/settings").then((s) => setArrange(!!s.arrange_up_next)).catch(() => setArrange(false));
+    api.get<{ pins: string[] }>("/pins").then((p) => setPins(p.pins)).catch(() => undefined);
+  }, []);
+  if (!state.up_next.length) return null;
+
+  async function savePins(next: string[], said: string) {
+    try { setPins((await api.put<{ pins: string[] }>("/pins", { pins: next })).pins); say(said); }
+    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't save the order."); }
+    void refreshState();
+  }
+  async function toggle(on: boolean) {
+    setArrange(on);
+    try { await api.put("/settings", { arrange_up_next: on }); say(on ? "Arrange myself is on" : "Back to the automatic order"); }
+    catch (e) { setArrange(!on); say(e instanceof ApiError ? e.message : "Couldn't save."); }
+    void refreshState();
+  }
+  const move = (id: string, by: number) => {
+    const i = pins.indexOf(id), j = i + by;
+    if (i < 0 || j < 0 || j >= pins.length) return;
+    void savePins(arrayMove(pins, i, j), `Moved to pin ${j + 1} of ${pins.length}`);
+  };
+  function onDragEnd(e: DragEndEvent) {
+    const a = String(e.active.id), b = e.over ? String(e.over.id) : null;
+    if (!b || a === b || !pins.includes(b)) return;
+    void savePins(arrayMove(pins, pins.indexOf(a), pins.indexOf(b)), `Moved to pin ${pins.indexOf(b) + 1} of ${pins.length}`);
+  }
+
+  const needle = filter.trim().toLowerCase();
+  const hits = needle ? state.up_next.filter((c) => `${c.name} ${c.game}`.toLowerCase().includes(needle)) : state.up_next;
+  const shown = needle || all ? hits : hits.slice(0, SHOWN);
+  const more = state.up_next.length - SHOWN;
+  const manual = !!arrange && !needle;
+  const pinnedShown = shown.filter((c) => c.pinned).map((c) => c.id);
+  const curGame = state.current?.campaign.game;
+
+  const row = (c: Campaign) => (
+    <UpNextRow key={c.id} c={c} pr={priorityOf(c.game)} arrange={!!arrange} pinned={!!arrange && c.pinned}
+      pinIndex={pins.indexOf(c.id)} pinCount={pins.length}
+      onMineNow={async () => {
+        try { await api.post("/mine-now", { campaign_id: c.id }); say(`Mining ${c.name} now`); }
+        catch (e) { say(e instanceof ApiError ? e.message : "Couldn't switch to it."); }
+        void refreshState();
+      }}
+      onNever={() => onNever(c.game)}
+      onPin={() => savePins([...pins, c.id], `${c.name} pinned`)}
+      onUnpin={() => savePins(pins.filter((p) => p !== c.id), `${c.name} unpinned`)}
+      onMove={(by) => move(c.id, by)} />
+  );
+  const header = (
+    <>
+      {curGame && !arrange && <span className="aside">Starts when {curGame} is done or its streams go offline</span>}
+      <label className="arr"><input type="checkbox" role="switch" className="sw" aria-label="Arrange myself" disabled={arrange === null}
+        checked={!!arrange} onChange={(e) => void toggle(e.target.checked)} /><span aria-hidden="true">Arrange myself</span></label>
+      <label className="filter"><input type="search" aria-label="Filter Up next" placeholder="Filter by game or campaign"
+        value={filter} onChange={(e) => setFilter(e.target.value)} />{needle && <span className="n">{hits.length} of {state.up_next.length}</span>}</label>
+    </>
+  );
+  const pinnedRows = shown.filter((c) => manual && c.pinned);
+  const restRows = shown.filter((c) => !(manual && c.pinned));
+  const body = (
+    <>
+      <div className="list" id="up-next-list">
+        {needle && !hits.length && <div className="row"><span /><div className="row-s">Nothing in Up next matches "{filter.trim()}".</div></div>}
+        {manual && pinnedRows.length > 0 && <div className="pins-h">Pinned · mined first, in your order</div>}
+        {manual && (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <SortableContext items={pinnedShown} strategy={verticalListSortingStrategy}>{pinnedRows.map(row)}</SortableContext>
+          </DndContext>
+        )}
+        {manual && (
+          <div className="auto-h">{pins.length ? "Then automatic · most urgent first" : "Automatic · most urgent first · pin any to put it first"}</div>
+        )}
+        {restRows.map(row)}
+      </div>
+      {!needle && more > 0 && (
+        <button className="btn quiet more" type="button" aria-expanded={all} aria-controls="up-next-list" onClick={() => setAll(!all)}>
+          {all ? "Show only the next " + SHOWN : `Show all ${state.up_next.length}`}<Icon name="down" className="chev" /></button>
+      )}
+    </>
+  );
+  return (
+    <section id="sec-next" aria-labelledby="h-next">
+      <div className="sec-h"><h2 id="h-next">Up next</h2><span className="count">{state.up_next.length}</span>{header}</div>
+      {body}
+    </section>
+  );
+}
+
+function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, onMineNow, onNever, onPin, onUnpin, onMove }: {
+  c: Campaign; pr: string | null; arrange: boolean; pinned: boolean; pinIndex: number; pinCount: number;
+  onMineNow: () => void; onNever: () => void; onPin: () => void; onUnpin: () => void; onMove: (by: number) => void;
+}) {
+  const sortable = useSortable({ id: c.id, disabled: !pinned });
+  const { watched, max } = milestones(c.drops);
+  const firstOpen = [...c.drops].filter((x) => !x.claimed && x.rewards.length).sort((a, b) => a.required_minutes - b.required_minutes)[0];
+  const style = pinned ? { transform: DndCSS.Translate.toString(sortable.transform), transition: sortable.transition } : undefined;
+  return (
+    <div className={`row${pinned ? " pinned" : ""}${sortable.isDragging ? " placeholder" : ""}`} ref={pinned ? sortable.setNodeRef : undefined} style={style}>
+      <img className="box" src={boxArt(c.box_art_url)} alt="" />
+      <div>
+        <div className="row-t">{c.name}</div>
+        <div className="row-s">{c.game}{pr && <><span className="sep">·</span>{pr}</>}<span className="sep">·</span>ends {day(c.ends_at)}</div>
+        {firstOpen && <div className="row-art">{firstOpen.rewards.map((x, i) => <img key={i} src={x.image_url} alt={x.name} />)}</div>}
+        {c.ends_before_turn && (
+          <div className="turn"><span className="chip red">Ends {day(c.ends_at)} {clock(c.ends_at)}, before its turn</span></div>
+        )}
+      </div>
+      <div className="row-acts">
+        {max > 0 && !arrange && (
+          <div className="mini" aria-label={`${watched} of ${max} minutes watched`}>
+            <div className="rail"><div className="fill" style={{ width: `${(watched / max) * 100}%` }} /></div>
+            <span className="label">{watched} / {max}{NB}min · {dur(c.minutes_needed)} to go</span>
+          </div>
+        )}
+        {!arrange && <>
+          <button className="btn" type="button" aria-label={`Mine ${c.name} now`} onClick={onMineNow}>Mine now</button>
+          <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={onNever}>Never mine</button>
+        </>}
+        {arrange && pinned && <>
+          <span className="grip" aria-hidden="true" {...sortable.attributes} {...sortable.listeners}><Icon name="grip" /></span>
+          <button className="btn quiet" type="button" aria-label={`Move ${c.name} up`} disabled={pinIndex <= 0} onClick={() => onMove(-1)}><Icon name="up" /></button>
+          <button className="btn quiet" type="button" aria-label={`Move ${c.name} down`} disabled={pinIndex >= pinCount - 1} onClick={() => onMove(1)}><Icon name="down" /></button>
+          <button className="btn" type="button" aria-label={`Unpin ${c.name}`} onClick={onUnpin}>Unpin</button>
+        </>}
+        {arrange && !pinned && <>
+          <button className="btn" type="button" aria-label={`Pin ${c.name} to the top`} onClick={onPin}>Pin to top</button>
+          <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={onNever}>Never mine</button>
+        </>}
+      </div>
+    </div>
+  );
+}

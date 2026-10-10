@@ -69,13 +69,22 @@ def state_view(runner, store, now: datetime) -> StateOut:
             channels=[ChannelOut(login=ch.login, viewers=ch.viewers, favourite=ch.login in favs)
                       for ch in others])
     keep = lambda ids: [o for i in ids if (o := out(i)) is not None]  # noqa: E731
+    pins = set(store.get_prefs().pins)
+    if current and plan.current.campaign_id in pins:
+        current.campaign.pinned = True
+    # back to back in queue order after what is being mined now: which would end before their turn
+    t = now + timedelta(minutes=current.campaign.minutes_needed if current else 0)
+    up_next = []
+    for o in keep(plan.queue if plan else ()):
+        t += timedelta(minutes=o.minutes_needed)
+        up_next.append(o.model_copy(update={"pinned": o.id in pins, "ends_before_turn": t > o.ends_at}))
     never_games = store.get_prefs().never
     never = sorted((c for c in runner.campaigns if c.game.name in never_games and campaign_active(c, now)),
                    key=lambda c: (c.ends_at, c.id))
     return StateOut(
         state=str(runner.state), signed_in=session is not None, login=session.login if session else None,
         paused_until=runner.paused_until, last_refresh=runner.last_refresh, current=current,
-        needs_you=keep(plan.needs_you if plan else ()), up_next=keep(plan.queue if plan else ()),
+        needs_you=keep(plan.needs_you if plan else ()), up_next=up_next,
         done=keep(plan.done if plan else ()), catalog=_catalog(runner),
         last_switch=_switch(runner, now), next_check_at=runner.next_check_at,
         never=[campaign_out(c, now, None) for c in never],

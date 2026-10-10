@@ -233,6 +233,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/pins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Pins */
+        get: operations["get_pins_api_pins_get"];
+        /**
+         * Put Pins
+         * @description Up next "Arrange myself": the pinned campaigns, in order (they count while the switch is on).
+         */
+        put: operations["put_pins_api_pins_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/refresh": {
         parameters: {
             query?: never;
@@ -392,6 +413,11 @@ export interface components {
              * Format: date-time
              */
             ends_at: string;
+            /**
+             * Ends Before Turn
+             * @default false
+             */
+            ends_before_turn: boolean;
             /** Game */
             game: string;
             /** Id */
@@ -409,6 +435,11 @@ export interface components {
             minutes_needed: number;
             /** Name */
             name: string;
+            /**
+             * Pinned
+             * @default false
+             */
+            pinned: boolean;
             /** Verdict */
             verdict: string | null;
         };
@@ -632,6 +663,11 @@ export interface components {
             /** Minutes */
             minutes?: number | null;
         };
+        /** Pins */
+        Pins: {
+            /** Pins */
+            pins?: string[];
+        };
         /** RewardOut */
         RewardOut: {
             /** Image Url */
@@ -641,6 +677,8 @@ export interface components {
         };
         /** SettingsIn */
         SettingsIn: {
+            /** Arrange Up Next */
+            arrange_up_next?: boolean | null;
             /** Claim Points */
             claim_points?: boolean | null;
             /** Mine Badges */
@@ -664,6 +702,8 @@ export interface components {
         };
         /** SettingsOut */
         SettingsOut: {
+            /** Arrange Up Next */
+            arrange_up_next: boolean;
             /** Claim Points */
             claim_points: boolean;
             /** Mine Badges */
@@ -1153,6 +1193,59 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_pins_api_pins_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pins"];
+                };
+            };
+        };
+    };
+    put_pins_api_pins_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Pins"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pins"];
+                };
             };
             /** @description Validation Error */
             422: {

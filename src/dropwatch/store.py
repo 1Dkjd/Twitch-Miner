@@ -47,11 +47,13 @@ SETTINGS: dict[str, type] = {
     "notify_signin": bool, "notify_unreachable": bool, "notify_not_earning": bool,
     "notify_claim_failed": bool, "notify_stopped": bool, "notify_needs_you": bool,
     "notify_unreachable_minutes": int, "notify_not_earning_minutes": int,
+    "arrange_up_next": bool,  # Up next "Arrange myself": pins count only while this is on
 }
 SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "notify_signin": True, "notify_unreachable": True, "notify_not_earning": True,
                     "notify_claim_failed": True, "notify_stopped": True, "notify_needs_you": False,
-                    "notify_unreachable_minutes": 15, "notify_not_earning_minutes": 30}
+                    "notify_unreachable_minutes": 15, "notify_not_earning_minutes": 30,
+                    "arrange_up_next": False}
 _ph = PasswordHasher()
 
 
@@ -100,7 +102,15 @@ class Store:
         fv = tuple(
             r[0] for r in self._db.execute("SELECT channel_login FROM favourites ORDER BY position")
         )
-        return Prefs(pr, nv, fv, self.get_settings()["mine_badges"])
+        s = self.get_settings()
+        return Prefs(pr, nv, fv, s["mine_badges"], tuple(self.get_pins()) if s["arrange_up_next"] else ())
+
+    # --- Up next pins (campaign ids, in order); kept while "Arrange myself" is off
+    def get_pins(self) -> list[str]:
+        return json.loads(self.get_setting("up_next_pins") or "[]")
+
+    def set_pins(self, ids: Sequence[str]) -> None:
+        self.set_setting("up_next_pins", json.dumps(list(dict.fromkeys(ids))))
 
     def set_lists(
         self, priority: Sequence[str], never: Iterable[str], favourites: Sequence[str]

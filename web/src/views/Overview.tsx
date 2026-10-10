@@ -6,6 +6,7 @@ import { useApp } from "../store";
 import { NB, boxArt, clock, day, dur, mark, minutesUntil, span } from "../ui/format";
 import { Icon } from "../ui/Icons";
 import { MenuButton } from "./Menu";
+import { UpNext } from "./UpNext";
 import { Track, milestones } from "./Track";
 
 /** Overview (approved mockup): banner, Mining now (or the idle card), Needs you, Up next, Done.
@@ -312,59 +313,6 @@ function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) =>
   );
 }
 
-function UpNext({ state, priorityOf, onNever }: {
-  state: State; priorityOf: (g: string, ordinal?: boolean) => string | null; onNever: (game: string) => void;
-}) {
-  const { refreshState, say } = useApp();
-  const [all, setAll] = useState(false);
-  if (!state.up_next.length) return null;
-  const curGame = state.current?.campaign.game;
-  // the catalogue can queue dozens of campaigns: show the next few, the rest on request
-  const shown = all ? state.up_next : state.up_next.slice(0, UP_NEXT_SHOWN);
-  const more = state.up_next.length - UP_NEXT_SHOWN;
-  return (
-    <Sec id="next" title="Up next" count={state.up_next.length}
-      aside={curGame ? `Starts when ${curGame} is done or its streams go offline` : undefined}>
-      <div className="list" id="up-next-list">
-        {shown.map((c) => {
-          const { watched, max } = milestones(c.drops);
-          const r = firstReward(c);
-          const pr = priorityOf(c.game);
-          return (
-            <div className="row" key={c.id}>
-              <img className="box" src={boxArt(c.box_art_url)} alt="" />
-              <div>
-                <div className="row-t">{c.name}</div>
-                <div className="row-s">{c.game}{pr && <><span className="sep">·</span>{pr}</>}<span className="sep">·</span>ends {day(c.ends_at)}</div>
-                {r && <div className="row-art">{r.all.map((x, i) => <img key={i} src={x.image_url} alt={x.name} />)}</div>}
-              </div>
-              <div className="row-acts">
-                {max > 0 && (
-                  <div className="mini" aria-label={`${watched} of ${max} minutes watched`}>
-                    <div className="rail"><div className="fill" style={{ width: `${(watched / max) * 100}%` }} /></div>
-                    <span className="label">{watched} / {max}{NB}min · {dur(c.minutes_needed)} to go</span>
-                  </div>
-                )}
-                <button className="btn" type="button" aria-label={`Mine ${c.name} now`} onClick={async () => {
-                  try { await api.post("/mine-now", { campaign_id: c.id }); say(`Mining ${c.name} now`); }
-                  catch (e) { say(e instanceof ApiError ? e.message : "Couldn't switch to it."); }
-                  void refreshState();
-                }}>Mine now</button>
-                <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={() => onNever(c.game)}>Never mine</button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      {more > 0 && (
-        <button className="btn quiet more" type="button" aria-expanded={all} aria-controls="up-next-list" onClick={() => setAll(!all)}>
-          {all ? "Show only the next " + UP_NEXT_SHOWN : `Show all ${state.up_next.length}`}<Icon name="down" className="chev" /></button>
-      )}
-    </Sec>
-  );
-}
-
-const UP_NEXT_SHOWN = 5;
 
 function Done({ state }: { state: State }) {
   const [open, setOpen] = useState(false);

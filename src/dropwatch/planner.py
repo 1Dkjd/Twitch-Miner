@@ -101,7 +101,9 @@ def plan(
     def order(c: Campaign) -> tuple:
         if c.game.name in prefs.priority:
             return (0, prefs.priority.index(c.game.name), 0, 0.0, c.ends_at, c.id)
-        return (1, 0, link_rank(c), campaign_ratio(c, now), c.ends_at, c.id)
+        if c.id in prefs.pins:  # "Arrange myself": pins next, in the order Nick set
+            return (1, prefs.pins.index(c.id), 0, 0.0, c.ends_at, c.id)
+        return (2, 0, link_rank(c), campaign_ratio(c, now), c.ends_at, c.id)
 
     eligible.sort(key=order)
     if not eligible:
@@ -114,6 +116,8 @@ def plan(
         reason = "you picked it"
     elif chosen.game.name in prefs.priority:
         reason = f"priority {prefs.priority.index(chosen.game.name) + 1}"
+    elif chosen.id in prefs.pins:
+        reason = "you pinned it"
     else:
         reason = "most urgent"
 
@@ -161,6 +165,8 @@ def _hold_current(
         return chosen
     if cur.game.name in prefs.priority or chosen.game.name in prefs.priority:
         return chosen
+    if cur.id in prefs.pins or chosen.id in prefs.pins:
+        return chosen  # pins are an explicit order, like Priority: no hysteresis
     if link_rank(chosen) < link_rank(cur):
         return chosen  # a known-linked campaign always replaces a link test
     rc, rn = campaign_ratio(cur, now), campaign_ratio(chosen, now)

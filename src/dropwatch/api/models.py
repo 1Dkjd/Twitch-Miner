@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 
@@ -35,6 +36,9 @@ class CampaignOut(BaseModel):
     minutes_needed: int
     verdict: str | None
     drops: list[DropOut]
+    pinned: bool = False  # Up next "Arrange myself"
+    # Up next only: at the queue's order, mined back to back, it would end before its turn (an estimate)
+    ends_before_turn: bool = False
 
 
 class ChannelOut(BaseModel):
@@ -86,6 +90,10 @@ class ListsIn(BaseModel):
     favourites: list[str] = Field(default_factory=list, max_length=200)
 
 
+class Pins(BaseModel):
+    pins: list[Annotated[str, Field(max_length=100)]] = Field(default_factory=list, max_length=200)
+
+
 class ListsOut(BaseModel):
     priority: list[str]
     never: list[str]
@@ -104,6 +112,7 @@ class SettingsIn(BaseModel):
     notify_needs_you: StrictBool | None = None
     notify_unreachable_minutes: StrictInt | None = Field(default=None, ge=5, le=240)
     notify_not_earning_minutes: StrictInt | None = Field(default=None, ge=10, le=240)
+    arrange_up_next: StrictBool | None = None
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -118,6 +127,7 @@ class SettingsOut(BaseModel):
     notify_needs_you: bool
     notify_unreachable_minutes: int
     notify_not_earning_minutes: int
+    arrange_up_next: bool
 
 
 class NotifyFieldOut(BaseModel):

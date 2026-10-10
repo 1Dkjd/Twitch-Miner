@@ -97,6 +97,7 @@ class Prefs:
     never: frozenset[str] = frozenset()
     favourites: tuple[str, ...] = ()
     mine_badges: bool = False
+    pins: tuple[str, ...] = ()  # Up next "Arrange myself": campaign ids mined first after Priority
 
 
 def preconditions_met(c: Campaign, d: Drop) -> bool:

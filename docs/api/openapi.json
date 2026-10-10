@@ -26,6 +26,11 @@
       "title": "Ends At",
       "type": "string"
      },
+     "ends_before_turn": {
+      "default": false,
+      "title": "Ends Before Turn",
+      "type": "boolean"
+     },
      "game": {
       "title": "Game",
       "type": "string"
@@ -61,6 +66,11 @@
      "name": {
       "title": "Name",
       "type": "string"
+     },
+     "pinned": {
+      "default": false,
+      "title": "Pinned",
+      "type": "boolean"
      },
      "verdict": {
       "anyOf": [
@@ -732,6 +742,21 @@
     "title": "PauseIn",
     "type": "object"
    },
+   "Pins": {
+    "properties": {
+     "pins": {
+      "items": {
+       "maxLength": 100,
+       "type": "string"
+      },
+      "maxItems": 200,
+      "title": "Pins",
+      "type": "array"
+     }
+    },
+    "title": "Pins",
+    "type": "object"
+   },
    "RewardOut": {
     "properties": {
      "image_url": {
@@ -753,6 +778,17 @@
    "SettingsIn": {
     "additionalProperties": false,
     "properties": {
+     "arrange_up_next": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Arrange Up Next"
+     },
      "claim_points": {
       "anyOf": [
        {
@@ -873,6 +909,10 @@
    },
    "SettingsOut": {
     "properties": {
+     "arrange_up_next": {
+      "title": "Arrange Up Next",
+      "type": "boolean"
+     },
      "claim_points": {
       "title": "Claim Points",
       "type": "boolean"
@@ -924,7 +964,8 @@
      "notify_stopped",
      "notify_needs_you",
      "notify_unreachable_minutes",
-     "notify_not_earning_minutes"
+     "notify_not_earning_minutes",
+     "arrange_up_next"
     ],
     "title": "SettingsOut",
     "type": "object"
@@ -1615,6 +1656,61 @@
      }
     },
     "summary": "Pause"
+   }
+  },
+  "/api/pins": {
+   "get": {
+    "operationId": "get_pins_api_pins_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Pins"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Pins"
+   },
+   "put": {
+    "description": "Up next \"Arrange myself\": the pinned campaigns, in order (they count while the switch is on).",
+    "operationId": "put_pins_api_pins_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Pins"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Pins"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Put Pins"
    }
   },
   "/api/refresh": {

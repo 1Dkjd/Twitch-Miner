@@ -28,6 +28,7 @@ from .models import (
     NotifyResult,
     NotifyTestOut,
     PauseIn,
+    Pins,
     SettingsIn,
     SettingsOut,
     SignInStatus,
@@ -111,7 +112,12 @@ async def get_settings(request: Request) -> SettingsOut:
 @api.put("/settings", response_model=SettingsOut)
 async def put_settings(body: SettingsIn, request: Request) -> SettingsOut:
     values = body.model_dump(exclude_none=True)
-    return SettingsOut(**_c(request).store.put_settings(values))
+    ctx = _c(request)
+    out = SettingsOut(**ctx.store.put_settings(values))
+    # settings the planner reads take effect now, not at the next 5-minute refresh
+    if values.keys() & {"arrange_up_next", "mine_badges"} and ctx.service.runner is not None:
+        await ctx.service.runner.replan()
+    return out
 
 
 def _channels(ctx) -> NotifyChannelsOut:
@@ -177,6 +183,21 @@ async def notify_test(request: Request) -> NotifyTestOut:
     if failed:
         parts.append("Failed: " + "; ".join(failed) + ".")
     return NotifyTestOut(ok=not failed, message=" ".join(parts), results=[NotifyResult(**r) for r in results])
+
+
+@api.get("/pins", response_model=Pins)
+async def get_pins(request: Request) -> Pins:
+    return Pins(pins=_c(request).store.get_pins())
+
+
+@api.put("/pins", response_model=Pins)
+async def put_pins(body: Pins, request: Request) -> Pins:
+    """Up next "Arrange myself": the pinned campaigns, in order (they count while the switch is on)."""
+    ctx = _c(request)
+    ctx.store.set_pins(body.pins)
+    if ctx.service.runner is not None:
+        await ctx.service.runner.replan()
+    return Pins(pins=ctx.store.get_pins())
 
 
 @api.get("/history", response_model=HistoryOut)

@@ -134,3 +134,20 @@ button.row.hx { width: 100%; text-align: left; background: none; border: 0; colo
 .nt-test .ok { color: var(--ok-text); }
 .nt-test .bad { color: var(--alert-text); }
 .opt .d .mins { width: 4.5em; margin-inline: 2px; padding: 1px 6px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; color: var(--fg); font: inherit; font-family: var(--num); font-variant-numeric: tabular-nums; }
+/* Up next: filter, "Arrange myself" pins, the before-its-turn warning (docs/design/next-features-mockup.html) */
+.filter { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.filter input { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; width: 220px; max-width: 100%; color: var(--fg); font: inherit; font-size: 13px; }
+.filter input::placeholder { color: var(--muted); }
+.filter .n { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.arr { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.arr .sw { width: 34px; height: 20px; }
+.arr .sw::after { width: 12px; height: 12px; }
+.arr .sw:checked::after { left: 17px; }
+.sec-h .aside + .arr { margin-left: 12px; }
+.pins-h { padding: 8px 16px; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--accent-text); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.auto-h { padding: 8px 16px; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); }
+.pins-h + .row, .auto-h + .row { border-top: 0; }
+.row.pinned { background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
+.row .grip { color: var(--muted); cursor: grab; display: inline-flex; padding: 6px 2px; touch-action: none; }
+.row .turn { margin-top: 6px; }
+@media (max-width: 720px) { .filter { margin-left: 0; width: 100%; } .filter input { flex: 1; width: auto; } .sec-h .aside + .arr { margin-left: 0; } }

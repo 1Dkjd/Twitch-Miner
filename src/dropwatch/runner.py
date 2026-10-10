@@ -18,7 +18,7 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
-from .models import Campaign, LiveChannel, claimable, with_drop
+from .models import Campaign, LiveChannel, campaign_active, claimable, with_drop
 from .planner import Plan, plan
 from .twitch.constants import PLAY_INTERVAL
 from .twitch.gql import AuthExpired, GqlError
@@ -138,6 +138,7 @@ class Runner:
             if force_campaigns or due:
                 self.campaigns = await self._client.campaigns()
                 self._campaigns_at = now
+                self._forget_ended_pins(now)
                 if await self._catch_up_claims(now):
                     self.campaigns = await self._client.campaigns()
                 self._settle_awaiting(now)
@@ -158,6 +159,16 @@ class Runner:
         self.last_refresh = now
         self._refresh_backoff, self._retry_refresh_at = 0.0, None
         self._plan(now, prefs)
+
+    def _forget_ended_pins(self, now: datetime) -> None:
+        """A pin lasts as long as its campaign: drop the ones that ended or left the list."""
+        get = getattr(self._store, "get_pins", None)
+        if get is None:
+            return
+        pins = get()
+        live = {c.id for c in self.campaigns if campaign_active(c, now)}
+        if (kept := [p for p in pins if p in live]) != pins:
+            self._store.set_pins(kept)
 
     async def replan(self) -> None:
         """Re-decide from what is already known (lists or an override changed): no Twitch calls."""
