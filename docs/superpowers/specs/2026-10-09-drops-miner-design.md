@@ -196,10 +196,17 @@ Inputs:
    Campaigns that fail only on the linked flag become **Needs you** items.
 2. **Order of eligible campaigns.**
    1. Games on Priority, in list order.
+   1b. **Pinned campaigns** (added 2026-10-10), in pinned order, while Up next's "Arrange myself" is on.
+       A pin lasts until its campaign ends; a pin is never held back by the current campaign.
    2. Then all others, by **spare-time ratio** ascending:
       `ratio = minutes_until_end / minutes_still_needed`. The upstream code calls this "low availability
       first".
    3. Ties break on end time, then campaign id, so the order is deterministic.
+
+   **Decided 2026-10-10:** this automatic order stays as it is, including the 2b rule that known-linked and
+   badge campaigns come before unknown-link ones, and that campaigns which can no longer finish still rank
+   by their (low) ratio. Nick corrects it by hand: Up next marks a campaign that would end before its turn,
+   and pins put chosen ones first.
 
    One stream can serve several campaigns of the same game, so the chosen campaign's game also credits
    its sibling campaigns. The planner records them in the Plan for display.
@@ -395,7 +402,8 @@ Each phase ends tested and reviewed before the next one starts.
    sign-in API for codes. Gate: the live miner switches to a TV login on Nick's code, keeps earning, and
    claims a reward.
 3. **UI.** Build the web app against the API, from the reviewed mockups.
-4. **History, missed reasons, notifications, channel points.**
+4. **History, missed reasons, notifications, channel points.** All built by 2026-10-10, plus Up next pins,
+   filters, the weekly summary and kept image copies (docs/design/next-features-mockup.html).
 5. **Docker image and Unraid.** Image, container, live acceptance, then retire dungfu with Nick's say-so.
 
 ## 15. Not in v1
