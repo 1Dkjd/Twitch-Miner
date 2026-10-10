@@ -320,7 +320,8 @@ svg.i { width: 16px; height: 16px; flex: none; }
 
 /* ---------- ore look: campaign art backdrop, gem milestones, display numerals ---------- */
 :root[data-look="ore"] .now { position: relative; overflow: hidden; isolation: isolate; }
-:root[data-look="ore"] .now::before { content: ""; position: absolute; inset: -40px; z-index: -2; background: var(--art-bg) center 30% / cover no-repeat; filter: blur(30px) saturate(1.3); }
+/* Changed from the mockup at Nick's request (2026-10-10): blur 30px -> 16px so the game art reads more clearly */
+:root[data-look="ore"] .now::before { content: ""; position: absolute; inset: -40px; z-index: -2; background: var(--art-bg) center 30% / cover no-repeat; filter: blur(16px) saturate(1.3); }
 :root[data-look="ore"] .now::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(100deg, color-mix(in srgb, var(--surface) calc(var(--veil) - 18%), transparent) 0, color-mix(in srgb, var(--surface) calc(var(--veil) + 4%), transparent) 120px, color-mix(in srgb, var(--surface) var(--veil), transparent) 70%, color-mix(in srgb, var(--surface) calc(var(--veil) - 6%), transparent) 100%); }
 :root[data-look="ore"] .now .now-sub, :root[data-look="ore"] .now .ends, :root[data-look="ore"] .now .more, :root[data-look="ore"] .now .ms-lab:not(.next), :root[data-look="ore"] .now .watched, :root[data-look="ore"] .now .dl-lab, :root[data-look="ore"] .now .all-ms .m .when, :root[data-look="ore"] .now .all-ms .m .st { color: var(--muted-art); }
 :root[data-look="ore"] .now .chip { background: color-mix(in srgb, var(--fg) 8%, var(--surface)); }
