@@ -71,3 +71,13 @@ test("while Twitch is unreachable the card is not 'Mining'", async () => {
   await waitFor(() => expect(card.querySelector(".chip.gold")).toBeNull());
   expect(card).toHaveTextContent("Retrying Twitch");
 });
+
+// found at the live gate: first run on a miner that already has a Twitch login (CLI sign-in)
+test("the Twitch step says 'already connected' when the miner is signed in", async () => {
+  sessionStorage.setItem("dw-first-run", "1");
+  mockApi({ "GET /api/twitch/signin": { status: "idle", message: "" }, "GET /api/state": state() });
+  render(<AppProvider initialMe={ME}><ConnectScreen /></AppProvider>);
+  expect(await screen.findByText("Already connected")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Get a sign-in code" })).not.toBeInTheDocument();
+  sessionStorage.clear();
+});

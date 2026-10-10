@@ -15,8 +15,10 @@ test("getting a code shows it, then Connected once Twitch confirms", async () =>
   mockApi({
     "GET /api/twitch/signin": () => (reads++ < 1 ? { status: "idle", message: "" } : { status: "done", message: "Signed in as kp." }),
     "POST /api/twitch/signin": WAITING,
-    "GET /api/state": { state: "mining", signed_in: true, login: "kernelpanicattack", paused_until: null, last_refresh: null,
-      current: null, needs_you: [], up_next: [], done: [] },
+    // signed out until Twitch confirms the code, then signed in
+    "GET /api/state": () => ({ state: reads > 1 ? "mining" : "signed_out", signed_in: reads > 1,
+      login: reads > 1 ? "kernelpanicattack" : null, paused_until: null, last_refresh: null,
+      current: null, needs_you: [], up_next: [], done: [] }),
   });
   render(<AppProvider initialMe={ME}><ConnectScreen pollMs={30} /></AppProvider>);
   expect(screen.getByRole("list", { name: "Setup steps" })).toBeInTheDocument();

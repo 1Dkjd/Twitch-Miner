@@ -67,11 +67,13 @@ export function ConnectScreen({ pollMs = 3000 }: { pollMs?: number }) {
         <p>{again ? (s === "done" ? "Mining picks up where it stopped." : "Twitch ended the session, so mining stopped. Drop progress is kept on Twitch and carries on once you're back.") : "Use the account that should earn the drops."}</p>
       </div>
       {s === "waiting" && status ? <CodeCard status={status} onCancel={cancel} />
-        : s === "done" ? (
+        : s === "done" || (s === "idle" && state?.signed_in) ? (
           <div className="auth-card">
             <div className="auth-status" data-tone="ok"><Icon name="check" /><div>
-              <div className="auth-status-t">Connected</div>
-              <div className="auth-status-b">Mining starts now. Your campaigns appear on Overview within a minute.</div></div></div>
+              <div className="auth-status-t">{s === "done" ? "Connected" : "Already connected"}</div>
+              <div className="auth-status-b">{s === "done"
+                ? "Mining starts now. Your campaigns appear on Overview within a minute."
+                : "Dropwatch is already signed in to Twitch, so there's nothing to do here."}</div></div></div>
             {state?.login && <span className="auth-who"><span className="av">{state.login.charAt(0).toUpperCase()}</span>{state.login}</span>}
             <button className="btn strong wide" type="button" onClick={finish}>Go to Overview</button>
           </div>)
