@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
+from ..notify import CHANNELS, configured, send_all, summary
 from ..runner import State
 from .auth import private_auth, public, require_session
 from .models import (
@@ -19,6 +20,13 @@ from .models import (
     ListsIn,
     ListsOut,
     MineNowIn,
+    NotifyChannelIn,
+    NotifyChannelOut,
+    NotifyChannelsOut,
+    NotifyFieldOut,
+    NotifyKind,
+    NotifyResult,
+    NotifyTestOut,
     PauseIn,
     SettingsIn,
     SettingsOut,
@@ -39,6 +47,7 @@ class AppContext:
     service: object
     signin: object
     clock: Callable[[], datetime] = lambda: datetime.now(UTC)
+    post: object = None  # notify's HTTP post; None = a real aiohttp session per send (tests inject a fake)
 
 
 
@@ -103,6 +112,71 @@ async def get_settings(request: Request) -> SettingsOut:
 async def put_settings(body: SettingsIn, request: Request) -> SettingsOut:
     values = body.model_dump(exclude_none=True)
     return SettingsOut(**_c(request).store.put_settings(values))
+
+
+def _channels(ctx) -> NotifyChannelsOut:
+    added = ctx.store.get_channels()
+    out = []
+    for kind, values in added.items():
+        spec = CHANNELS.get(kind)
+        if spec is None:
+            continue
+        out.append(NotifyChannelOut(
+            type=kind, name=spec.name, configured=configured(kind, values), summary=summary(kind, values),
+            hint=spec.hint,
+            fields=[NotifyFieldOut(key=f.key, label=f.label, secret=f.secret,
+                                    value="" if f.secret else values.get(f.key, ""),
+                                    set=bool((values.get(f.key) or "").strip())) for f in spec.fields]))
+    return NotifyChannelsOut(channels=out, available=[NotifyKind(type=k, name=c.name)
+                                                for k, c in CHANNELS.items() if k not in added])
+
+
+@api.get("/notify/channels", response_model=NotifyChannelsOut)
+async def get_channels(request: Request) -> NotifyChannelsOut:
+    return _channels(_c(request))
+
+
+@api.put("/notify/channels/{kind}", response_model=NotifyChannelsOut)
+async def put_channel(kind: str, body: NotifyChannelIn, request: Request) -> NotifyChannelsOut:
+    """Adds the channel if new; changes only the fields given ("" clears one)."""
+    spec = CHANNELS.get(kind)
+    if spec is None:
+        raise HTTPException(404, f"No channel called {kind}.")
+    keys = {f.key for f in spec.fields}
+    for k, v in body.values.items():
+        if k not in keys:
+            raise HTTPException(422, f"{spec.name} has no field {k}.")
+        if len(v) > 500:
+            raise HTTPException(422, "That value is too long.")
+    ctx = _c(request)
+    ctx.store.put_channel(kind, {k: v.strip() for k, v in body.values.items()})
+    return _channels(ctx)
+
+
+@api.delete("/notify/channels/{kind}", response_model=NotifyChannelsOut)
+async def delete_channel(kind: str, request: Request) -> NotifyChannelsOut:
+    ctx = _c(request)
+    ctx.store.delete_channel(kind)
+    return _channels(ctx)
+
+
+@api.post("/notify/test", response_model=NotifyTestOut)
+async def notify_test(request: Request) -> NotifyTestOut:
+    """Settings' "Send test notification": every set-up channel, one result each."""
+    ctx = _c(request)
+    results = await send_all(ctx.store.get_channels(), "Dropwatch: Test notification",
+                             "If you can read this, Dropwatch can reach you.", ctx.post)
+    if not results:
+        return NotifyTestOut(ok=False, message="Add a channel first.", results=[])
+    sent = [r["name"] for r in results if r["ok"]]
+    failed = [r["message"] for r in results if not r["ok"]]
+    parts = []
+    if sent:
+        names = " and ".join(sent) if len(sent) < 3 else ", ".join(sent[:-1]) + " and " + sent[-1]
+        parts.append(f"Sent to {names}.")
+    if failed:
+        parts.append("Failed: " + "; ".join(failed) + ".")
+    return NotifyTestOut(ok=not failed, message=" ".join(parts), results=[NotifyResult(**r) for r in results])
 
 
 @api.get("/history", response_model=HistoryOut)

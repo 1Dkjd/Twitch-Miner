@@ -22,11 +22,11 @@ test("Twitch sign-out asks first; Stay signed in returns focus and does nothing"
   const stay = screen.getByRole("button", { name: "Stay signed in" });
   expect(stay).toHaveFocus();
   await u.click(stay);
-  expect(screen.queryByText(/Mining stops until/)).not.toBeInTheDocument();
+  expect(document.querySelector(".confirm")).toBeNull(); // the sign-in alert shares this wording, so look at the box
   expect(calls.some((c) => c.path === "/api/twitch/signout")).toBe(false);
   expect(btn).toBeInTheDocument();
   await u.click(screen.getAllByRole("button", { name: "Sign out" })[0]!);
-  const confirmBox = screen.getByText(/Mining stops until/).closest(".confirm")!;
+  const confirmBox = document.querySelector(".confirm")!;
   await u.click(confirmBox.querySelector("button.btn:not(.quiet)")!);
   await waitFor(() => expect(calls.some((c) => c.path === "/api/twitch/signout")).toBe(true));
 });
@@ -40,9 +40,9 @@ test("the badges switch saves straight away", async () => {
   expect(sw).toBeChecked();
 });
 
-test("no notification controls until notifications exist", async () => {
+test("the old single-URL notification design is gone (replaced 2026-10-10)", async () => {
   setup();
-  await screen.findByRole("heading", { name: "Mining" });
-  expect(screen.queryByText(/Send test/)).not.toBeInTheDocument();
+  await screen.findByRole("heading", { name: "Notifications" });
   expect(screen.queryByText(/A reward is claimed/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/An ntfy topic or a Discord webhook URL/)).not.toBeInTheDocument();
 });

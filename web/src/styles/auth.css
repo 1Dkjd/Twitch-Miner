@@ -113,3 +113,24 @@ button.row.hx { width: 100%; text-align: left; background: none; border: 0; colo
   .hx-sum { flex-direction: column; }
   .hx-sum .sep { display: none; }
 }
+/* Settings → Notifications (docs/design/notifications-mockup.html) */
+.nt-hint { padding: 0 16px 6px; color: var(--muted); font-size: 13px; margin: 0; }
+.nt-lab { padding: 14px 16px 2px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--line); }
+.nt-how { padding: 8px 16px 16px; display: grid; gap: 8px; }
+.ch { border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.ch-head { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; }
+.ch-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+.ch-dot.off { background: transparent; border: 1.5px solid var(--muted); }
+.ch-name { font-weight: 600; font-size: 14px; }
+.ch-sum { color: var(--muted); font-size: 13px; font-family: var(--mono); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ch-acts { margin-left: auto; display: flex; gap: 2px; flex: none; }
+.ch-acts .btn { padding-inline: 10px; }
+.ch-ed { padding: 2px 12px 12px; display: grid; gap: 6px; }
+.ch-ed .field { width: 100%; }
+.ch-ed .d { color: var(--muted); font-size: 12px; }
+.nt-add { position: relative; justify-self: start; }
+.nt-add .menu { left: 0; right: auto; }
+.nt-test { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; font-size: 13px; }
+.nt-test .ok { color: var(--ok-text); }
+.nt-test .bad { color: var(--alert-text); }
+.opt .d .mins { width: 4.5em; margin-inline: 2px; padding: 1px 6px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; color: var(--fg); font: inherit; font-family: var(--num); font-variant-numeric: tabular-nums; }

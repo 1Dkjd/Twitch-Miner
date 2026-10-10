@@ -103,9 +103,11 @@ def server_config(app, host: str, port: int):
 async def serve(store: Store, host: str, port: int) -> int:
     import uvicorn
 
+    from .alerts import Notifier, snapshot_of
     from .api.app import AppContext, create_app
     from .api.signin import SignInManager
     from .events import EventBus
+    from .notify import send_all
     from .service import MinerService
 
     bus = EventBus()
@@ -121,6 +123,10 @@ async def serve(store: Store, host: str, port: int) -> int:
 
     signin = SignInManager(store, bus, provider, on_signed_in)
     app = create_app(AppContext(store=store, bus=bus, service=service, signin=signin), web_dir=web_dir())
+    # notifications listen to the same events as the page; started before the miner so none are missed
+    notifier = Notifier(store)
+    alerts = asyncio.create_task(notifier.run(
+        bus, lambda: snapshot_of(service.runner), lambda t, b: send_all(store.get_channels(), t, b)))
     started = await service.start()
     logging.getLogger("dropwatch").info(
         "Serving on http://%s:%s (%s)", host, port, "mining" if started else "not signed in to Twitch")
@@ -128,6 +134,7 @@ async def serve(store: Store, host: str, port: int) -> int:
     try:
         await server.serve()
     finally:
+        alerts.cancel()
         await service.stop()
     return 0
 

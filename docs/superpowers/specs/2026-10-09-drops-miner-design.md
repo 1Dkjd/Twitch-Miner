@@ -271,6 +271,7 @@ All endpoints require the page session cookie, except login and first-run setup.
 | `GET /api/suggestions` | Games with campaigns and channels seen, for the add boxes |
 | `GET /api/history?days=30` | Claims grouped by day and campaign; ended campaigns with missed reasons |
 | `GET/PUT /api/settings` · `POST /api/notify/test` | Settings and the "Send test" button |
+| `GET /api/notify/channels` · `PUT/DELETE /api/notify/channels/{kind}` | Notification channels (secrets write-only) |
 | `POST /api/twitch/signin` · `GET /api/twitch/signin` · `DELETE /api/twitch/signin` | Get a sign-in code, read its status (code, link, expiry, waiting/done/expired/failed), cancel |
 | `POST /api/twitch/signout` | Forget the Twitch session |
 | `POST /api/login` · `POST /api/logout` · `POST /api/setup` | Page password: first-run setup, sign-in, sign-out |
@@ -306,12 +307,26 @@ Error handling:
 
 ## 10. Notifications
 
-The target is one URL: an ntfy topic or a Discord webhook, recognised by host. Three toggles, matching the
-mockup's Settings:
-- **A reward is claimed:** one message per claim. Several claims within 60 s are batched.
-- **A campaign needs you:** sent once per campaign when it becomes unlinked-but-wanted, and once when its
-  deadline verdict becomes "won't finish".
-- **Twitch sign-in expires:** sent once per expiry.
+**Amended 2026-10-10** (Nick: the main purpose is failures; use Clawdmeter's notification options).
+Approved mockup: `docs/design/notifications-mockup.html`. This replaces the earlier single ntfy-or-Discord
+URL with three toggles ("a reward is claimed" is dropped; more alerts may be added later).
+
+**What** (Settings → Notifications, each switchable; `alerts.py`). Each failure is sent once when it starts
+and once when it clears; a recovery only follows an alert that was actually sent.
+- Twitch sign-in stops working.
+- Twitch can't be reached, after a configurable wait (default 15 min, 5–240).
+- Mining isn't earning: mining with no new minutes for a configurable time (default 30 min, 10–240), counted
+  from when mining began or the last progress; paused and idle time don't count.
+- A reward couldn't be claimed: once per reward until it is claimed.
+- Mining stopped on an error (the mining loop crashed).
+- A campaign needs you (game account not linked): **off by default**; one batched message for campaigns not
+  yet reported, remembered across restarts.
+
+**Where** (`notify.py`): Clawdmeter's seven services with its request shapes, labels and setup hints: ntfy,
+Telegram, Discord, Slack, Pushover, Gotify and a generic JSON webhook. Several channels at once; "Send test
+notification" fires every set-up channel and reports each. Secret fields are never sent back to the page.
+No desktop toast, sound or pop-up: Dropwatch runs as a server. It cannot report that the whole app is down;
+that needs an outside check.
 
 ## 11. Frontend
 

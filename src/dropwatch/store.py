@@ -41,11 +41,17 @@ SESSION_TTL = timedelta(days=30)
 SEEN_KEEP = timedelta(days=30)  # channels seen live, for the favourites add box
 MIN_PASSWORD = 8
 SETTINGS: dict[str, type] = {
-    "mine_badges": bool, "claim_points": bool, "notify_target": str,
-    "notify_claimed": bool, "notify_needs_you": bool, "notify_signin": bool,
+    "mine_badges": bool, "claim_points": bool,
+    # notifications (2026-10-10): failures on by default, "a campaign needs you" off; where they go is
+    # the separate notify_channels JSON (get_channels)
+    "notify_signin": bool, "notify_unreachable": bool, "notify_not_earning": bool,
+    "notify_claim_failed": bool, "notify_stopped": bool, "notify_needs_you": bool,
+    "notify_unreachable_minutes": int, "notify_not_earning_minutes": int,
 }
-SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True, "notify_target": "",
-                    "notify_claimed": True, "notify_needs_you": True, "notify_signin": True}
+SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
+                    "notify_signin": True, "notify_unreachable": True, "notify_not_earning": True,
+                    "notify_claim_failed": True, "notify_stopped": True, "notify_needs_you": False,
+                    "notify_unreachable_minutes": 15, "notify_not_earning_minutes": 30}
 _ph = PasswordHasher()
 
 
@@ -143,7 +149,7 @@ class Store:
         for key, kind in SETTINGS.items():
             raw = self.get_setting(key)
             if raw is not None:
-                out[key] = (raw == "1") if kind is bool else raw
+                out[key] = (raw == "1") if kind is bool else int(raw) if kind is int else raw
         return out
 
     def put_settings(self, values: dict) -> dict:
@@ -151,11 +157,27 @@ class Store:
             kind = SETTINGS.get(key)
             if kind is None:
                 raise ValueError(f"unknown setting {key!r}")
-            if type(value) is not kind:
+            if type(value) is not kind:  # exact type: True is an int too, and must not pass as minutes
                 raise ValueError(f"{key} must be {kind.__name__}")
         for key, value in values.items():
-            self.set_setting(key, ("1" if value else "0") if SETTINGS[key] is bool else value)
+            self.set_setting(key, ("1" if value else "0") if SETTINGS[key] is bool else str(value))
         return self.get_settings()
+
+    # --- notification channels: {type: {field: value}} in the order they were added (secrets included:
+    # the API never sends them back to the page)
+    def get_channels(self) -> dict[str, dict[str, str]]:
+        return json.loads(self.get_setting("notify_channels") or "{}")
+
+    def put_channel(self, kind: str, values: dict[str, str]) -> None:
+        """Adds the channel if new; sets only the fields given ("" clears one)."""
+        channels = self.get_channels()
+        channels.setdefault(kind, {}).update(values)
+        self.set_setting("notify_channels", json.dumps(channels))
+
+    def delete_channel(self, kind: str) -> None:
+        channels = self.get_channels()
+        channels.pop(kind, None)
+        self.set_setting("notify_channels", json.dumps(channels))
 
     # --- claims
     def add_claim(self, at: datetime, campaign_id: str, campaign: str, game: str,

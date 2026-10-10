@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 
 
 class RewardOut(BaseModel):
@@ -96,19 +96,72 @@ class SettingsIn(BaseModel):
     # StrictBool: pydantic's lax mode would turn "yes" or 1 into True
     mine_badges: StrictBool | None = None
     claim_points: StrictBool | None = None
-    notify_target: str | None = Field(default=None, max_length=500)
-    notify_claimed: StrictBool | None = None
-    notify_needs_you: StrictBool | None = None
     notify_signin: StrictBool | None = None
+    notify_unreachable: StrictBool | None = None
+    notify_not_earning: StrictBool | None = None
+    notify_claim_failed: StrictBool | None = None
+    notify_stopped: StrictBool | None = None
+    notify_needs_you: StrictBool | None = None
+    notify_unreachable_minutes: StrictInt | None = Field(default=None, ge=5, le=240)
+    notify_not_earning_minutes: StrictInt | None = Field(default=None, ge=10, le=240)
+    model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
 class SettingsOut(BaseModel):
     mine_badges: bool
     claim_points: bool
-    notify_target: str
-    notify_claimed: bool
-    notify_needs_you: bool
     notify_signin: bool
+    notify_unreachable: bool
+    notify_not_earning: bool
+    notify_claim_failed: bool
+    notify_stopped: bool
+    notify_needs_you: bool
+    notify_unreachable_minutes: int
+    notify_not_earning_minutes: int
+
+
+class NotifyFieldOut(BaseModel):
+    key: str
+    label: str
+    secret: bool
+    value: str  # always "" for a secret: the page only learns whether it is set
+    set: bool
+
+
+class NotifyChannelOut(BaseModel):
+    type: str
+    name: str
+    configured: bool
+    summary: str
+    hint: str
+    fields: list[NotifyFieldOut]
+
+
+class NotifyKind(BaseModel):
+    type: str
+    name: str
+
+
+class NotifyChannelsOut(BaseModel):
+    channels: list[NotifyChannelOut]  # added ones, in the order they were added
+    available: list[NotifyKind]  # the "Add a channel" menu: the rest
+
+
+class NotifyChannelIn(BaseModel):
+    values: dict[str, str] = Field(default_factory=dict, max_length=5)  # only the fields given change
+
+
+class NotifyResult(BaseModel):
+    type: str
+    name: str
+    ok: bool
+    message: str
+
+
+class NotifyTestOut(BaseModel):
+    ok: bool
+    message: str
+    results: list[NotifyResult]
 
 
 class PasswordIn(BaseModel):
