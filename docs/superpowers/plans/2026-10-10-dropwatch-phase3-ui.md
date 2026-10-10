@@ -26,6 +26,7 @@
    - "Also claim channel points" (phase 4);
    - "Require a password" off-switch (no backend; the page password is always on);
    - History's missed-reward section (phase 4).
+   - **The whole Notifications section** (added while building Task 8). The settings are stored, but nothing sends a notification until phase 4, so the switches would be a false promise.
 4. **Added control:** Settings → Mining → **"Also mine badge and emote campaigns"** (`mine_badges`). The planner already uses it, but the mockup had no toggle for it.
 5. **Reward and box art** load straight from Twitch's CDN. Box art gets the `-144x192` size inserted (both forms return 200). Spec §7's disk cache moves to phase 4.
 6. **Live updates:**
