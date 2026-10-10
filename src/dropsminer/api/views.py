@@ -6,6 +6,7 @@ from datetime import datetime
 from ..models import Campaign, campaign_minutes_needed, campaign_ratio, deadline_verdict
 from .models import (
     CampaignOut,
+    CatalogOut,
     ChannelOut,
     ClaimOut,
     CurrentOut,
@@ -16,10 +17,12 @@ from .models import (
 )
 
 
-def campaign_out(c: Campaign, now: datetime, verdict: str | None) -> CampaignOut:
+def campaign_out(c: Campaign, now: datetime, verdict: str | None,
+                 maybe_unlinked: bool = False) -> CampaignOut:
     return CampaignOut(
         id=c.id, name=c.name, game=c.game.name, box_art_url=c.game.box_art_url, ends_at=c.ends_at,
-        linked=c.linked, link_url=c.link_url, allowed_channels=list(c.allowed_logins),
+        linked=c.linked, maybe_unlinked=maybe_unlinked, link_url=c.link_url,
+        allowed_channels=list(c.allowed_logins),
         minutes_needed=campaign_minutes_needed(c, now), verdict=verdict,
         drops=[DropOut(id=d.id, name=d.name, required_minutes=d.required_minutes,
                        current_minutes=d.current_minutes, claimed=d.claimed, starts_at=d.starts_at,
@@ -34,7 +37,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
     if runner is None:
         return StateOut(state="signed_out" if session is None else "idle", signed_in=session is not None,
                         login=session.login if session else None, paused_until=None, last_refresh=None,
-                        current=None, needs_you=[], up_next=[], done=[])
+                        current=None, needs_you=[], up_next=[], done=[], catalog=None)
     by_id = {c.id: c for c in runner.campaigns}
     plan = runner.plan
     verdicts = plan.verdicts if plan else {}
@@ -46,7 +49,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
         v = verdicts.get(cid)
         if v is None and campaign_minutes_needed(c, now) > 0:
             v = deadline_verdict(campaign_ratio(c, now))
-        return campaign_out(c, now, v)
+        return campaign_out(c, now, v, maybe_unlinked=cid in getattr(runner, "maybe_unlinked", {}))
 
     current = None
     if plan and plan.current and runner.watching and (camp := out(plan.current.campaign_id)):
@@ -61,8 +64,13 @@ def state_view(runner, store, now: datetime) -> StateOut:
         state=str(runner.state), signed_in=session is not None, login=session.login if session else None,
         paused_until=runner.paused_until, last_refresh=runner.last_refresh, current=current,
         needs_you=keep(plan.needs_you if plan else ()), up_next=keep(plan.queue if plan else ()),
-        done=keep(plan.done if plan else ()),
+        done=keep(plan.done if plan else ()), catalog=_catalog(runner),
     )
+
+
+def _catalog(runner) -> CatalogOut | None:
+    st = getattr(runner, "catalog_status", None)
+    return CatalogOut(status=st[0], since=st[1]) if st else None
 
 
 def history_view(claims: list[dict]) -> HistoryOut:

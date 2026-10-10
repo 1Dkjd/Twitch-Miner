@@ -23,7 +23,7 @@ from typing import Any
 
 import aiohttp
 
-from .constants import ANDROID_APP, GQL_BATCH, GQL_OPS, GQL_URL, ClientInfo
+from .constants import GQL_BATCH, GQL_OPS, GQL_URL, ClientInfo, client_for
 from .session import TwitchSession, gql_headers
 from .transport import HttpTransport
 
@@ -69,7 +69,7 @@ class Gql:
         self,
         transport: HttpTransport,
         session: Callable[[], TwitchSession],
-        client: ClientInfo = ANDROID_APP,
+        client: ClientInfo | None = None,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
         clock: Callable[[], float] = time.monotonic,
     ):
@@ -97,6 +97,10 @@ class Gql:
                     return
                 await self._sleep(RATE_WINDOW - (now - self._stamps[0]))
 
+    def _headers(self) -> dict[str, str]:
+        s = self._session()
+        return gql_headers(s, self._client or client_for(s.client_id))  # None: the session's own client
+
     async def _post(self, body: dict | list) -> Any:
         delay = 1.0
         failures = 0
@@ -105,7 +109,7 @@ class Gql:
             await self._throttle()
             try:
                 r = await self._t.request(
-                    "POST", GQL_URL, headers=gql_headers(self._session(), self._client), json=body
+                    "POST", GQL_URL, headers=self._headers(), json=body
                 )
             except (OSError, TimeoutError, aiohttp.ClientError) as exc:
                 failures += 1

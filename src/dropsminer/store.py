@@ -46,6 +46,7 @@ _ph = PasswordHasher()
 
 class Store:
     def __init__(self, path: Path):
+        self.path = path
         path.parent.mkdir(parents=True, exist_ok=True)
         new = not path.exists()
         self._db = sqlite3.connect(path)

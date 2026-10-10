@@ -32,6 +32,9 @@ REFRESH_EVERY = timedelta(minutes=5)
 CAMPAIGNS_EVERY = timedelta(hours=1)
 CLAIM_WAIT = timedelta(hours=1)  # force campaign re-fetches this long; the hourly fetch covers the rest
 BACKOFF_START, BACKOFF_MAX = 60.0, 600.0
+# spec §4 (2026-10-10): an unknown account link that earns nothing for 10 minutes of good playback
+LINK_PROBE_TICKS = 60  # ticks are PLAY_INTERVAL (10 s) apart
+MAYBE_UNLINKED_FOR = timedelta(hours=6)
 # GqlError covers TwitchUnreachable; the rest are unexpected response shapes from parsing.
 TWITCH_ERRORS = (GqlError, KeyError, TypeError, ValueError)
 
@@ -73,6 +76,16 @@ class Runner:
         self._gave_up_claim: set[str] = set()
         self._refresh_backoff = 0.0
         self._retry_refresh_at: datetime | None = None
+        self._link_probe: dict[str, tuple[int, int]] = {}  # campaign -> (good ticks, minutes at start)
+        self.maybe_unlinked: dict[str, datetime] = {}  # campaign -> marked at
+
+    @property
+    def catalog_status(self):
+        """(ok|stale|unreachable, since) when campaigns come from the catalogue, else None."""
+        catalog = getattr(self._client, "catalog", None)
+        if catalog is None or not getattr(catalog, "used", True):
+            return None
+        return catalog.status
 
     # --- commands
     def pause(self, until: datetime | None) -> None:
@@ -85,6 +98,9 @@ class Runner:
 
     def mine_now(self, campaign_id: str) -> None:
         self._override_campaign = campaign_id
+        # "Mine now" on a may-need-linking campaign means "I linked it, try again"
+        self.maybe_unlinked.pop(campaign_id, None)
+        self._link_probe.pop(campaign_id, None)
 
     def use_channel(self, login: str) -> None:
         self._override_channel = login
@@ -130,13 +146,17 @@ class Runner:
         self._excluded = {k: v for k, v in self._excluded.items() if v > now}
         usable = [c for c in self.live if c.login not in self._excluded]
         previous = self.watching
-        self.plan = plan(self.campaigns, usable, prefs, now,
+        self._settle_link_marks(now)
+        planned = [replace(c, linked=False) if c.id in self.maybe_unlinked else c for c in self.campaigns]
+        self.plan = plan(planned, usable, prefs, now,
                          watching=previous.login if previous else None,
                          override_campaign=self._override_campaign,
                          override_channel=self._override_channel,
                          current_campaign=self.plan.current.campaign_id
                          if self.plan and self.plan.current else None)
         cur = self.plan.current
+        # a link test only counts consecutive time on one campaign: restart it after a break
+        self._link_probe = {k: v for k, v in self._link_probe.items() if cur and k == cur.campaign_id}
         # spec §6: overrides last only while the plan still honours them
         if self._override_campaign and (cur is None or cur.campaign_id != self._override_campaign):
             self._override_campaign = None
@@ -159,6 +179,36 @@ class Runner:
             else:
                 self._set_state(State.MINING)
         self._emit("refreshed", {"at": now.isoformat()})
+
+    def _settle_link_marks(self, now: datetime) -> None:
+        """A "may need linking" mark ends once Twitch reports the link either way, or after 6 h."""
+        by_id = {c.id: c for c in self.campaigns}
+        for cid, at in list(self.maybe_unlinked.items()):
+            c = by_id.get(cid)
+            if c is None or c.linked is not None or now - at >= MAYBE_UNLINKED_FOR:
+                del self.maybe_unlinked[cid]
+
+    async def _probe_link(self, now: datetime) -> None:
+        """Called after each good playback tick. Unknown link + no new minutes for 10 min -> Needs you."""
+        cur = self.plan.current if self.plan else None
+        c = next((x for x in self.campaigns if cur and x.id == cur.campaign_id), None)
+        if c is None or c.linked is not None or c.has_badge_or_emote:
+            return
+        total = sum(d.current_minutes for d in c.drops)
+        ticks, start = self._link_probe.get(c.id, (0, total))
+        if total > start:
+            self._link_probe.pop(c.id, None)  # it earns: whatever the link says, it works
+            return
+        ticks += 1
+        if ticks < LINK_PROBE_TICKS:
+            self._link_probe[c.id] = (ticks, start)
+            return
+        self._link_probe.pop(c.id, None)
+        self.maybe_unlinked[c.id] = now
+        info = {"campaign": c.name, "reason": "may need linking"}
+        self._emit("needs_you", info)
+        self._store.log_event("needs_you", info)
+        await self.refresh()
 
     def _settle_awaiting(self, now: datetime) -> None:
         """Stop forcing campaign fetches for drops that are claimed, gone, or waited on for 1 h."""
@@ -218,6 +268,7 @@ class Runner:
             return
         if await self._watcher.send(self.watching, now):
             self._fails = 0
+            await self._probe_link(now)
         else:
             self._fails += 1
             if self._fails >= FAILS_BEFORE_SWITCH:

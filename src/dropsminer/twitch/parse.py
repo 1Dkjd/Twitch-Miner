@@ -76,7 +76,9 @@ def to_campaign(raw: dict, claimed: dict[str, datetime]) -> Campaign | None:
     ) if allow.get("isEnabled", True) else ()
     return Campaign(
         raw["id"], raw["name"], _game(raw["game"]), ts(raw["startAt"]), ts(raw["endAt"]),
-        bool((raw.get("self") or {}).get("isAccountConnected")), raw.get("accountLinkURL") or "",
+        # no "self" (catalogue records): Twitch hasn't told us whether the account is linked
+        bool(raw["self"].get("isAccountConnected")) if isinstance(raw.get("self"), dict) else None,
+        raw.get("accountLinkURL") or "",
         allowed, tuple(_drop(d, claimed) for d in raw["timeBasedDrops"]),
     )
 

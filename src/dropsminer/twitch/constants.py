@@ -24,6 +24,21 @@ WEB = ClientInfo(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
 )
+# Twitch's own TV app. Its device-code login still works (2026-10-10) and earns watch minutes, but
+# Twitch hides the campaign list from it, so discovery comes from the catalogue (twitch/catalog.py).
+SMARTBOX = ClientInfo(
+    "https://android.tv.twitch.tv",
+    "ue6666qo983tsx6so1t0vnawi233wa",
+    "Mozilla/5.0 (Linux; Android 7.1; Smart Box C1) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+)
+_CLIENTS = {c.client_id: c for c in (ANDROID_APP, SMARTBOX)}
+
+
+def client_for(client_id: str) -> ClientInfo:
+    """The client a session's token belongs to. Sending under another Client-Id earns no watch time."""
+    return _CLIENTS.get(client_id, ANDROID_APP)
+
 
 GQL_URL = "https://gql.twitch.tv/gql"
 PUBSUB_URL = "wss://pubsub-edge.twitch.tv/v1"

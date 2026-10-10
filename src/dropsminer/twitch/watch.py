@@ -19,7 +19,7 @@ from urllib.parse import urlencode, urljoin, urlsplit
 import aiohttp
 
 from ..models import LiveChannel
-from .constants import ANDROID_APP, WATCH_INTERVAL
+from .constants import ANDROID_APP, WATCH_INTERVAL, client_for
 from .gql import GqlError, op
 from .session import TwitchSession, base_headers
 from .transport import HttpTransport
@@ -201,7 +201,8 @@ class Watcher:
             log.warning("No spade URL for %s", channel.login)
             return
         s = self._session()
-        r = await self._t.request("POST", url, headers=base_headers(s, ANDROID_APP),
+        # the page and playlists stay Android (proven 2026-10-10); the event goes as the token's own client
+        r = await self._t.request("POST", url, headers=base_headers(s, client_for(s.client_id)),
                                   data=watch_payload(channel, s.user_id, now))
         if r.status != 204:
             log.info("Heartbeat to %s returned HTTP %s", channel.login, r.status)

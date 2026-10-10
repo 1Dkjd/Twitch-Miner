@@ -39,7 +39,19 @@
       "type": "string"
      },
      "linked": {
-      "title": "Linked",
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Linked"
+     },
+     "maybe_unlinked": {
+      "default": false,
+      "title": "Maybe Unlinked",
       "type": "boolean"
      },
      "minutes_needed": {
@@ -76,6 +88,32 @@
      "drops"
     ],
     "title": "CampaignOut",
+    "type": "object"
+   },
+   "CatalogOut": {
+    "properties": {
+     "since": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Since"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "status",
+     "since"
+    ],
+    "title": "CatalogOut",
     "type": "object"
    },
    "ChannelIn": {
@@ -534,6 +572,29 @@
    },
    "SignInStatus": {
     "properties": {
+     "code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Code"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     },
      "message": {
       "default": "",
       "title": "Message",
@@ -542,6 +603,17 @@
      "status": {
       "title": "Status",
       "type": "string"
+     },
+     "verification_uri": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Verification Uri"
      }
     },
     "required": [
@@ -552,6 +624,16 @@
    },
    "StateOut": {
     "properties": {
+     "catalog": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/CatalogOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
      "current": {
       "anyOf": [
        {
@@ -1162,7 +1244,9 @@
      "202": {
       "content": {
        "application/json": {
-        "schema": {}
+        "schema": {
+         "$ref": "#/components/schemas/SignInStatus"
+        }
        }
       },
       "description": "Successful Response"
