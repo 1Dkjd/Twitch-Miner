@@ -39,7 +39,19 @@
       "type": "string"
      },
      "linked": {
-      "title": "Linked",
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Linked"
+     },
+     "maybe_unlinked": {
+      "default": false,
+      "title": "Maybe Unlinked",
       "type": "boolean"
      },
      "minutes_needed": {

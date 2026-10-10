@@ -28,7 +28,8 @@ class CampaignOut(BaseModel):
     game: str
     box_art_url: str
     ends_at: datetime
-    linked: bool
+    linked: bool | None
+    maybe_unlinked: bool = False
     link_url: str
     allowed_channels: list[str]
     minutes_needed: int

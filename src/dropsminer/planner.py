@@ -69,7 +69,7 @@ def plan(
     considered = [c for c in campaigns if campaign_active(c, now) and c.game.name not in prefs.never]
     needs_you = tuple(
         c.id for c in sorted(considered, key=lambda c: (c.ends_at, c.id))
-        if not c.linked and not c.has_badge_or_emote and campaign_minutes_needed(c, now) > 0
+        if c.linked is False and not c.has_badge_or_emote and campaign_minutes_needed(c, now) > 0
     )
     done = tuple(
         c.id for c in sorted(considered, key=lambda c: (c.ends_at, c.id))

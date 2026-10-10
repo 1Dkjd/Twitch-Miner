@@ -64,7 +64,7 @@ class Campaign:
     game: Game
     starts_at: datetime
     ends_at: datetime
-    linked: bool
+    linked: bool | None  # None: unknown (catalogue campaign not started yet; spec §4)
     link_url: str
     allowed_logins: tuple[str, ...]
     drops: tuple[Drop, ...]
@@ -132,7 +132,7 @@ def drop_earnable_now(c: Campaign, d: Drop, now: datetime) -> bool:
 
 def account_eligible(c: Campaign, prefs: Prefs) -> bool:
     """Badge/emote campaigns need no account link but are opt-in (reference enable_badges_emotes)."""
-    return prefs.mine_badges if c.has_badge_or_emote else c.linked
+    return prefs.mine_badges if c.has_badge_or_emote else c.linked is not False  # unknown counts
 
 
 def total_remaining(c: Campaign, d: Drop) -> int:

@@ -16,10 +16,12 @@ from .models import (
 )
 
 
-def campaign_out(c: Campaign, now: datetime, verdict: str | None) -> CampaignOut:
+def campaign_out(c: Campaign, now: datetime, verdict: str | None,
+                 maybe_unlinked: bool = False) -> CampaignOut:
     return CampaignOut(
         id=c.id, name=c.name, game=c.game.name, box_art_url=c.game.box_art_url, ends_at=c.ends_at,
-        linked=c.linked, link_url=c.link_url, allowed_channels=list(c.allowed_logins),
+        linked=c.linked, maybe_unlinked=maybe_unlinked, link_url=c.link_url,
+        allowed_channels=list(c.allowed_logins),
         minutes_needed=campaign_minutes_needed(c, now), verdict=verdict,
         drops=[DropOut(id=d.id, name=d.name, required_minutes=d.required_minutes,
                        current_minutes=d.current_minutes, claimed=d.claimed, starts_at=d.starts_at,
