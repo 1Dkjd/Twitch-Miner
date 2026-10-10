@@ -39,6 +39,16 @@ test("Priority games say so in Up next", async () => {
   expect(await screen.findByText(/Priority 1/)).toBeInTheDocument();
 });
 
+test("Never mine on an Up next row moves its game from Priority to Never", async () => {
+  setPhone(false);
+  const calls = setup(state(), { "PUT /api/lists": (b: unknown) => b });
+  const u = userEvent.setup();
+  const row = (await screen.findByText("Crimson Eye 2026")).closest(".row") as HTMLElement;
+  await u.click(within(row).getByRole("button", { name: "Never mine Phasmophobia" }));
+  expect(calls.find((c) => c.path === "/api/lists" && c.method === "PUT")?.body)
+    .toEqual({ priority: [], never: ["Phasmophobia"], favourites: ["example_streamer"] });
+});
+
 test("the pause menu works from the keyboard and pauses for the chosen time", async () => {
   setPhone(false);
   const calls = setup(state(), { "POST /api/pause": undefined });

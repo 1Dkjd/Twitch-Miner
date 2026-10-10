@@ -39,7 +39,7 @@ export function OverviewView() {
       <h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1>
       <Banner state={state} lost={lost} lostSince={lostSince} />
       {phone ? [needs, now] : [now, needs]}
-      <UpNext state={state} priorityOf={priorityOf} />
+      <UpNext state={state} priorityOf={priorityOf} onNever={never} />
       <Done state={state} />
     </section>
   );
@@ -312,7 +312,9 @@ function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) =>
   );
 }
 
-function UpNext({ state, priorityOf }: { state: State; priorityOf: (g: string, ordinal?: boolean) => string | null }) {
+function UpNext({ state, priorityOf, onNever }: {
+  state: State; priorityOf: (g: string, ordinal?: boolean) => string | null; onNever: (game: string) => void;
+}) {
   const { refreshState, say } = useApp();
   const [all, setAll] = useState(false);
   if (!state.up_next.length) return null;
@@ -348,6 +350,7 @@ function UpNext({ state, priorityOf }: { state: State; priorityOf: (g: string, o
                   catch (e) { say(e instanceof ApiError ? e.message : "Couldn't switch to it."); }
                   void refreshState();
                 }}>Mine now</button>
+                <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={() => onNever(c.game)}>Never mine</button>
               </div>
             </div>
           );
