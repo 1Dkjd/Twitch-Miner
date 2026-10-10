@@ -48,7 +48,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
         v = verdicts.get(cid)
         if v is None and campaign_minutes_needed(c, now) > 0:
             v = deadline_verdict(campaign_ratio(c, now))
-        return campaign_out(c, now, v)
+        return campaign_out(c, now, v, maybe_unlinked=cid in getattr(runner, "maybe_unlinked", {}))
 
     current = None
     if plan and plan.current and runner.watching and (camp := out(plan.current.campaign_id)):
