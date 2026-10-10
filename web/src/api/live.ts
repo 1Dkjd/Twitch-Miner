@@ -24,6 +24,7 @@ export function connectLive(o: LiveOptions): () => void {
   let lostTimer: ReturnType<typeof setTimeout> | undefined;
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
   let lost = false;
+  let hadError = false;
   let stopped = false;
 
   const refetchSoon = () => {
@@ -40,10 +41,14 @@ export function connectLive(o: LiveOptions): () => void {
       if (lost) {
         lost = false;
         o.onConnection(true);
-        refetchSoon(); // catch up on whatever happened while we were cut off
+      }
+      if (hadError) {
+        hadError = false;
+        refetchSoon(); // catch up on whatever happened while we were cut off (even a short blip)
       }
     };
     es.onerror = () => {
+      hadError = true;
       if (lostTimer === undefined && !lost) {
         lostTimer = setTimeout(() => {
           lostTimer = undefined;

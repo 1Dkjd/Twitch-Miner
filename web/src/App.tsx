@@ -8,12 +8,13 @@ import { HistoryView } from "./views/History";
 import { OverviewView } from "./views/Overview";
 import { PrioritiesView } from "./views/Priorities";
 import { SettingsView } from "./views/Settings";
+import { clock } from "./ui/format";
 import { applyTheme, savedTheme } from "./ui/theme";
 
-export function App() {
+export function App({ retryMs }: { retryMs?: number } = {}) {
   useEffect(() => applyTheme(savedTheme()), []);
   return (
-    <AppProvider>
+    <AppProvider retryMs={retryMs}>
       <IconSprite />
       <Shell />
     </AppProvider>
@@ -57,12 +58,26 @@ function TopBar({ view, tabs }: { view: View; tabs: boolean }) {
   );
 }
 
+/** Shown when the page can't reach the miner at all (it retries every few seconds by itself). */
+function MinerDown() {
+  const { lostSince, refreshMe } = useApp();
+  return (
+    <div className="view">
+      <div className="banner" data-tone="alert" role="alert"><Icon name="cloud" />
+        <div><div className="banner-t">Can't reach the miner</div>
+          <div className="banner-b">No answer{lostSince ? ` since ${clock(lostSince)}` : ""}. This page keeps trying by itself. If it stays like this, check that Dropwatch is running.</div></div>
+        <div className="banner-acts"><button className="btn" type="button" onClick={() => void refreshMe().catch(() => undefined)}>Retry now</button></div>
+      </div>
+    </div>
+  );
+}
+
 function Shell() {
-  const { me, announcement } = useApp();
+  const { me, announcement, connection } = useApp();
   const view = useView();
   let body: ReactNode;
   let tabs = false;
-  if (!me) body = null;
+  if (!me) body = connection === "lost" ? <MinerDown /> : null;
   else if (me.setup_required) body = <SetupScreen />;
   else if (!me.authenticated) body = <LoginScreen />;
   else if (view === "connect") body = <ConnectScreen />;

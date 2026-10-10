@@ -47,6 +47,9 @@ class FakeSignIn:
     def cancel(self):
         self.cancelled += 1
 
+    def reset(self):
+        self.state = {"status": "idle", "message": ""}
+
 
 async def runner_with_plan(store):
     r = Runner(FakeClient([camp()], [chan("a", 7), chan("b", 8)]), FakeWatcher(), FakePubSub(), store,

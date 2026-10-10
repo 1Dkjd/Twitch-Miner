@@ -32,7 +32,11 @@
 6. **Live updates:**
    - One store, holding `GET /api/state`. The SSE events `state`, `refreshed`, `claimed`, `switched`, `needs_you`, `signin` and `progress` trigger a re-fetch; the re-fetch is debounced to 500 ms.
    - If the SSE stream fails for more than 15 s, the page shows **"Can't reach the miner"** with the last-known data, as in the mockup.
-7. **Tests:**
+7. **Also declared after the review (2026-10-10):**
+   - Tailwind is loaded **without its preflight reset**, because the mockup was tuned on browser defaults. Decision 1 said Tailwind provides the reset; it doesn't.
+   - While a sign-in code is waiting, the Connect screen also polls `GET /api/twitch/signin` every 3 s as a fallback to SSE. Spec §11 says "no polling except the SSE reconnect"; this is a deliberate exception, and it is limited to that one screen.
+   - Playwright is replaced by a live end-to-end check in the browser pane against the real server.
+8. **Tests:**
    - Vitest and Testing Library cover components and logic.
    - One Playwright smoke run uses mocked `/api` routes (`page.route`) instead of the spec's "API fake mode", so it needs no second server.
 

@@ -150,6 +150,15 @@ class Runner:
             return
         self.last_refresh = now
         self._refresh_backoff, self._retry_refresh_at = 0.0, None
+        self._plan(now, prefs)
+
+    async def replan(self) -> None:
+        """Re-decide from what is already known (lists or an override changed): no Twitch calls."""
+        async with self._lock:
+            self._plan(self._clock(), self._store.get_prefs())
+
+    def _plan(self, now: datetime, prefs) -> None:
+        """Lock held. Plan from the cached campaigns and live channels, then act on the result."""
         self._excluded = {k: v for k, v in self._excluded.items() if v > now}
         usable = [c for c in self.live if c.login not in self._excluded]
         previous = self.watching

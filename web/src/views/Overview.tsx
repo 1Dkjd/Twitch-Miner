@@ -16,7 +16,10 @@ export function OverviewView() {
   const phone = useNarrow();
   const { say } = useApp();
   if (!state) {
-    return <section className="view" aria-labelledby="h-overview"><h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1></section>;
+    return (
+      <section className="view" aria-labelledby="h-overview"><h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1>
+        {connection === "lost" && <LostBanner lostSince={lostSince} />}</section>
+    );
   }
   const lost = connection === "lost";
   const priorityOf = (game: string) => {
@@ -55,17 +58,20 @@ function useNarrow() {
 }
 
 /* ---------- banner (one at a time, most serious first) ---------- */
+function LostBanner({ lostSince }: { lostSince: Date | null }) {
+  const { refreshState } = useApp();
+  return (
+    <div className="banner" data-tone="alert" role="alert"><Icon name="cloud" />
+      <div><div className="banner-t">Can't reach the miner</div>
+        <div className="banner-b">No answer{lostSince ? ` since ${clock(lostSince)}` : ""}. Anything below is what it was doing then. This page keeps trying by itself.</div></div>
+      <div className="banner-acts"><button className="btn" type="button" onClick={() => void refreshState()}>Retry now</button></div>
+    </div>
+  );
+}
+
 function Banner({ state, lost, lostSince }: { state: State; lost: boolean; lostSince: Date | null }) {
   const { refreshState, say } = useApp();
-  if (lost) {
-    return (
-      <div className="banner" data-tone="alert" role="alert"><Icon name="cloud" />
-        <div><div className="banner-t">Can't reach the miner</div>
-          <div className="banner-b">No answer since {lostSince ? `${clock(lostSince)}, ${dur(minutesUntil(new Date(), lostSince))} ago` : "a moment ago"}. Everything below is what it was doing then.</div></div>
-        <div className="banner-acts"><button className="btn" type="button" onClick={() => void refreshState()}>Retry now</button></div>
-      </div>
-    );
-  }
+  if (lost) return <LostBanner lostSince={lostSince} />;
   if (state.state === "signed_out") {
     return (
       <div className="banner" data-tone="alert" role="alert"><Icon name="key" />
@@ -82,7 +88,9 @@ function Banner({ state, lost, lostSince }: { state: State; lost: boolean; lostS
         <div><div className="banner-t">{until ? `Paused until ${clock(until)}` : "Paused until you resume"}</div>
           <div className="banner-b">{until ? `Nothing is being mined for the next ${dur(minutesUntil(until))}. ` : "Nothing is being mined. "}Progress is kept.</div></div>
         <div className="banner-acts"><button className="btn strong" type="button" onClick={async () => {
-          await api.post("/resume").catch(() => undefined); say("Mining resumed."); void refreshState();
+          try { await api.post("/resume"); say("Mining resumed."); }
+          catch (e) { say(e instanceof ApiError ? e.message : "Couldn't resume."); }
+          void refreshState();
         }}>Resume now</button></div>
       </div>
     );
@@ -110,6 +118,12 @@ function Banner({ state, lost, lostSince }: { state: State; lost: boolean; lostS
 /* ---------- Mining now ---------- */
 function NowSlot({ state, lost, lostSince, priorityOf }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string) => string | null }) {
   const cur = state.current;
+  if (state.state === "signed_out") {
+    return (
+      <section aria-labelledby="h-now-out"><h2 className="sec-h" id="h-now-out">Mining now</h2>
+        <div className="empty">Nothing is being mined while you're signed out of Twitch.</div></section>
+    );
+  }
   if (!cur) return <Idle state={state} />;
   return <NowCard state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf} />;
 }
@@ -128,8 +142,8 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
   const nx = ms[nextIdx];
   const mining = !lost && (state.state === "mining" || state.state === "switched");
   const status = state.state === "paused" ? <span className="chip"><Icon name="pause" />Paused · progress kept</span>
-    : state.state === "signed_out" ? <span className="chip red">Stopped at {dur(w)}</span>
     : lost ? <span className="chip">Last known · {lostSince ? clock(lostSince) : ""}</span>
+    : state.state === "twitch_unreachable" ? <span className="chip">Retrying Twitch · progress kept</span>
     : <span className="chip gold"><span className="live" aria-hidden="true" />Mining</span>;
   const leftMin = minutesUntil(c.ends_at);
   const toGo = c.minutes_needed;
@@ -345,7 +359,7 @@ function Done({ state }: { state: State }) {
     <Sec id="done" title="Done" count={state.done.length} aside="Campaigns still open, everything claimed">
       <div className="list">
         <button className="done-h" type="button" aria-expanded={open} aria-controls="done-body" onClick={() => setOpen(!open)}>
-          <span className="done-sum"><span className="chip green">{rewards} rewards claimed</span>
+          <span className="done-sum"><span className="chip green">{rewards} {rewards === 1 ? "reward" : "rewards"} claimed</span>
             <span className="hint">{games.join(", ")}</span></span>
           <Icon name="down" className="chev" />
         </button>
@@ -357,7 +371,7 @@ function Done({ state }: { state: State }) {
                 <img className="box" src={boxArt(c.box_art_url)} alt="" />
                 <div>
                   <div className="row-t">{c.name}</div>
-                  <div className="row-s">{c.game}<span className="sep">·</span>{got.length} of {got.length} claimed<span className="sep">·</span>open until {day(c.ends_at)}</div>
+                  <div className="row-s">{c.game}<span className="sep">·</span>all {got.length} claimed<span className="sep">·</span>open until {day(c.ends_at)}</div>
                   <div className="row-art">{got.map((x, i) => <span className="claimed" key={i}><img src={x.image_url} alt={`${x.name}, claimed`} /></span>)}</div>
                   <div className="names" aria-hidden="true">{got.map((x) => x.name).join(", ")}</div>
                 </div>

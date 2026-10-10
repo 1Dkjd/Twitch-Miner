@@ -74,9 +74,9 @@ class StateOut(BaseModel):
     needs_you: list[CampaignOut]
     up_next: list[CampaignOut]
     done: list[CampaignOut]
-    catalog: CatalogOut | None = None
+    catalog: CatalogOut | None = None  # set when campaigns come from the public catalogue (TV login)
     last_switch: SwitchOut | None = None  # for 10 minutes after the channel changed
-    next_check_at: datetime | None = None  # set when campaigns come from the public catalogue (TV login)
+    next_check_at: datetime | None = None  # the runner's next Twitch refresh (or retry)
 
 
 class ListsIn(BaseModel):

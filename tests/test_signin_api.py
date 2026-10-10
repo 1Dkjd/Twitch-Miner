@@ -105,7 +105,7 @@ async def test_cancel_and_no_double_start():
     assert await m.start() is None
     m.cancel()
     await m.wait()
-    assert m.status()["status"] == "failed" and "cancelled" in m.status()["message"]
+    assert m.status()["status"] == "idle"  # cancelling is not a failure (phase-3 review)
 
 
 async def test_endpoints(tmp_path):

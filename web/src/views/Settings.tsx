@@ -22,8 +22,8 @@ export function SettingsView() {
   }
   async function twitchSignOut() {
     setConfirm(false);
-    await api.post("/twitch/signout").catch(() => undefined);
-    say("Signed out of Twitch");
+    try { await api.post("/twitch/signout"); say("Signed out of Twitch"); }
+    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't sign out."); }
     void refreshState();
   }
 
@@ -69,7 +69,10 @@ export function SettingsView() {
           </div></div>
         <div className="opt">
           <div><div>Sign out of this page</div><div className="d">This browser will ask for the page password again. Mining carries on.</div></div>
-          <button className="btn" type="button" onClick={async () => { await api.post("/logout").catch(() => undefined); await refreshMe(); }}>Sign out</button>
+          <button className="btn" type="button" onClick={async () => {
+            try { await api.post("/logout"); } catch (e) { say(e instanceof ApiError ? e.message : "Couldn't sign out."); }
+            await refreshMe().catch(() => undefined);
+          }}>Sign out</button>
         </div>
       </Set>
     </section>

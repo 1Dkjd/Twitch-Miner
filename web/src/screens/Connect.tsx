@@ -10,7 +10,7 @@ import { Steps } from "./PagePassword";
  * with Expired / Failed. The miner polls Twitch; this page just shows the code and follows the
  * status (SSE `signin` events, with a slow poll as a fallback). */
 export function ConnectScreen({ pollMs = 3000 }: { pollMs?: number }) {
-  const { state, signin: pushed, refreshState, say } = useApp();
+  const { state, signin: pushed, clearSignin, refreshState, say } = useApp();
   const [status, setStatus] = useState<SignIn | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -21,16 +21,22 @@ export function ConnectScreen({ pollMs = 3000 }: { pollMs?: number }) {
   const read = useCallback(async () => {
     try { setStatus(await api.get<SignIn>("/twitch/signin")); } catch { /* keep the last status */ }
   }, []);
-  useEffect(() => { void read(); }, [read]);
+  useEffect(() => { clearSignin(); void read(); }, [read, clearSignin]); // pushes from before now are stale
   useEffect(() => { if (pushed) setStatus(pushed); }, [pushed]);
   useEffect(() => {
     if (status?.status !== "waiting") return;
     const t = setInterval(read, pollMs);
     return () => clearInterval(t);
   }, [status?.status, read, pollMs]);
+  // "done" is only believed if this screen saw the wait, or Twitch is actually signed in: the server
+  // keeps the last outcome, so a done from an earlier sign-in must not hide the code button
+  const sawWaiting = useRef(false);
+  if (status?.status === "waiting") sawWaiting.current = true;
+  const raw = status?.status ?? "idle";
+  const s = raw === "done" && !(sawWaiting.current || state?.signed_in) ? "idle" : raw;
   useEffect(() => {
-    if (status?.status === "done") { void refreshState(); say("Connected to Twitch"); }
-  }, [status?.status, refreshState, say]);
+    if (s === "done") { void refreshState(); say("Connected to Twitch"); }
+  }, [s, refreshState, say]);
 
   async function start() {
     setBusy(true);
@@ -53,7 +59,6 @@ export function ConnectScreen({ pollMs = 3000 }: { pollMs?: number }) {
     go("overview");
   }
 
-  const s = status?.status ?? "idle";
   return (
     <div className="auth-stage"><div className="auth-col">
       {!again && <Steps now={2} />}

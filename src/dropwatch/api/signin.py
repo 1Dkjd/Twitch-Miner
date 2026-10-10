@@ -57,6 +57,11 @@ class SignInManager:
         if self._cancel is not None:
             self._cancel.set()
 
+    def reset(self) -> None:
+        """Start over (after a Twitch sign-out): stop any wait and forget the last outcome."""
+        self.cancel()
+        self._set("idle")
+
     async def wait(self) -> None:
         if self._task is not None:
             await self._task
@@ -71,7 +76,10 @@ class SignInManager:
             await self._on()
             self._set("done", f"Signed in as {session.login}.")
         except SignInError as exc:
-            self._set("expired" if "expired" in str(exc) else "failed", str(exc))
+            if cancel.is_set():
+                self._set("idle")  # the owner cancelled (or signed out): not a failure
+            else:
+                self._set("expired" if "expired" in str(exc) else "failed", str(exc))
         except Exception as exc:  # noqa: BLE001  the status must never stay "waiting"
             log.exception("Sign-in crashed")
             self._set("failed", f"Sign-in could not finish ({type(exc).__name__}).")

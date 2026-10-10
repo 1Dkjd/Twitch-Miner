@@ -10,6 +10,7 @@ interface Store {
   connection: "live" | "lost";
   lostSince: Date | null;
   signin: SignIn | null;
+  clearSignin: () => void;
   refreshMe: () => Promise<void>;
   refreshState: () => Promise<void>;
   say: (text: string) => void;
@@ -24,7 +25,7 @@ export function useApp(): Store {
   return s;
 }
 
-export function AppProvider({ children, initialMe = null }: { children: ReactNode; initialMe?: Me | null }) {
+export function AppProvider({ children, initialMe = null, retryMs = 5000 }: { children: ReactNode; initialMe?: Me | null; retryMs?: number }) {
   const [me, setMe] = useState<Me | null>(initialMe);
   const [state, setState] = useState<State | null>(null);
   const [connection, setConnection] = useState<"live" | "lost">("live");
@@ -52,8 +53,18 @@ export function AppProvider({ children, initialMe = null }: { children: ReactNod
 
   useEffect(() => {
     setUnauthorizedHandler(() => setMe((m) => (m ? { ...m, authenticated: false } : m)));
-    if (!initialMe) refreshMe().catch(() => setConnection("lost"));
+    if (!initialMe) refreshMe().catch(() => { setConnection("lost"); setLostSince(new Date()); });
   }, [initialMe, refreshMe]);
+
+  // the miner was unreachable when the page loaded: keep asking until it answers (spec §9)
+  useEffect(() => {
+    if (me) return;
+    const t = setInterval(() => {
+      refreshMe().then(() => { setConnection("live"); setLostSince(null); }).catch(() => undefined);
+    }, retryMs);
+    return () => clearInterval(t);
+  }, [me, refreshMe, retryMs]);
+  const clearSignin = useCallback(() => setSignin(null), []);
 
   const authed = !!me?.authenticated;
   useEffect(() => {
@@ -72,8 +83,8 @@ export function AppProvider({ children, initialMe = null }: { children: ReactNod
   }, [authed, refreshState]);
 
   const value = useMemo(
-    () => ({ me, state, connection, lostSince, signin, refreshMe, refreshState, say, announcement }),
-    [me, state, connection, lostSince, signin, refreshMe, refreshState, say, announcement],
+    () => ({ me, state, connection, lostSince, signin, clearSignin, refreshMe, refreshState, say, announcement }),
+    [me, state, connection, lostSince, signin, clearSignin, refreshMe, refreshState, say, announcement],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
