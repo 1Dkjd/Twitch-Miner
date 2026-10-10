@@ -5,9 +5,9 @@ from datetime import timedelta
 
 from test_runner import NOW, FakeClient, FakePubSub, FakeStore, FakeWatcher, camp, chan
 
-from dropsminer.api.views import state_view
-from dropsminer.runner import LINK_PROBE_TICKS, Runner
-from dropsminer.twitch.pubsub import DropProgress
+from dropwatch.api.views import state_view
+from dropwatch.runner import LINK_PROBE_TICKS, Runner
+from dropwatch.twitch.pubsub import DropProgress
 
 
 def unknown():

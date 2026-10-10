@@ -1,4 +1,4 @@
-<title>Drops Miner Sign-in Screens</title>
+<title>Dropwatch Sign-in Screens</title>
 <meta name="color-scheme" content="dark light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -191,7 +191,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
 
 <header class="bar">
   <div class="bar-in">
-    <div class="brand"><svg aria-hidden="true"><use href="#i-pick"/></svg>Drops Miner</div>
+    <div class="brand"><svg aria-hidden="true"><use href="#i-pick"/></svg>Dropwatch</div>
     <nav class="tabs" id="tabs" aria-label="Views" hidden>
       <a href="#overview" aria-current="page">Overview</a><a href="#priorities">Priorities</a><a href="#history">History</a><a href="#settings">Settings</a>
     </nav>
@@ -230,7 +230,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
         <li>Order is fixed: the page password first, then Twitch, so nobody else on the network can reach the Twitch step.</li>
         <li>Sign-in happens on Twitch's real page, shown live. This mockup draws a placeholder there and copies none of Twitch's look.</li>
         <li>The paste box is there because a password manager can't fill a streamed browser. It sends text to that browser's clipboard, and you press Ctrl+V inside. It's unproven until phase 5 (Docker), so treat it as a proposal.</li>
-        <li>Until Docker (phases 3–4) the browser opens as a window on the PC running Drops Miner. That is the "on the PC" state.</li>
+        <li>Until Docker (phases 3–4) the browser opens as a window on the PC running Dropwatch. That is the "on the PC" state.</li>
         <li>Copy only promises what the code does. Only the Twitch token is saved; the page password is stored as a hash, and Twitch never sees it.</li>
         <li>On a phone, tapping a streamed browser doesn't open the keyboard, so phones get a "Show keyboard" button (resize to phone width to see it). Unproven until phase 5.</li>
         <li>Primary buttons use the approved strong style; amber stays reserved for progress and "what's next", as on Overview.</li>
@@ -279,7 +279,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
     const bad = $("m-err").value === "yes";
     return `<div class="stage"><div class="col">
       <div class="head"><h1>Enter the page password</h1>
-        <p>This is the password chosen when Drops Miner was set up, not your Twitch password.</p></div>
+        <p>This is the password chosen when Dropwatch was set up, not your Twitch password.</p></div>
       <form class="card" novalidate>
         <div><label class="lab" for="pw">Page password</label>
           <div class="inp"><input id="pw" type="password" autocomplete="current-password" value="${bad ? "ore-cart-lanten" : ""}" aria-invalid="${bad}" ${bad ? 'aria-describedby="pw-err"' : ""}>
@@ -307,7 +307,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
         <ol class="how">
           <li><div><b>Twitch's own sign-in page opens.</b> <span>Right here, inside this page.</span></div></li>
           <li><div><b>Sign in as you normally would.</b> <span>Including the code from your authenticator or email.</span></div></li>
-          <li><div><b>Drops Miner keeps the sign-in, then closes the browser.</b> <span>It saves the token Twitch issues, never your password.</span></div></li>
+          <li><div><b>Dropwatch keeps the sign-in, then closes the browser.</b> <span>It saves the token Twitch issues, never your password.</span></div></li>
         </ol>
         <button class="btn strong wide" type="button">${ico("key")}Open Twitch sign-in</button>
       </div>`;
@@ -333,7 +333,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
     } else if (st === "local") {
       body = `<div class="card">
         <div class="status">${ico("ext")}
-          <div><div class="status-t">A browser window opened on the PC running Drops Miner</div>
+          <div><div class="status-t">A browser window opened on the PC running Dropwatch</div>
             <div class="status-b">Finish signing in to Twitch in that window. This page moves on by itself when you're done.</div></div></div>
         <div class="acts"><span class="waiting"><span class="spin" aria-hidden="true"></span>Waiting for you to sign in</span>
           <button class="btn quiet foot-r" type="button">Cancel sign-in</button></div>
@@ -350,7 +350,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
       body = `<div class="card">
         <div class="status" data-tone="alert">${ico("alert")}
           <div><div class="status-t">Twitch issued the wrong kind of sign-in</div>
-            <div class="status-b">Drops Miner needs the sign-in Twitch gives its mobile app, and got the website one. Try again. If it keeps happening, Twitch has probably changed its sign-in, and Drops Miner needs an update.</div></div></div>
+            <div class="status-b">Dropwatch needs the sign-in Twitch gives its mobile app, and got the website one. Try again. If it keeps happening, Twitch has probably changed its sign-in, and Dropwatch needs an update.</div></div></div>
         <div class="acts"><button class="btn strong" type="button">Try again</button></div>
       </div>`;
     }

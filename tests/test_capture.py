@@ -1,4 +1,4 @@
-from dropsminer.twitch.capture import scrub
+from dropwatch.twitch.capture import scrub
 
 
 def test_scrub_replaces_secrets_everywhere():

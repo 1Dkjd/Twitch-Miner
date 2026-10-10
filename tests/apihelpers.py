@@ -3,10 +3,10 @@ from datetime import UTC, datetime
 import httpx
 from test_runner import FakeClient, FakePubSub, FakeWatcher, camp, chan
 
-from dropsminer.api.app import AppContext, create_app
-from dropsminer.events import EventBus
-from dropsminer.runner import Runner
-from dropsminer.store import Store
+from dropwatch.api.app import AppContext, create_app
+from dropwatch.events import EventBus
+from dropwatch.runner import Runner
+from dropwatch.store import Store
 
 NOW = datetime(2026, 10, 9, 12, tzinfo=UTC)
 

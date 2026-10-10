@@ -5,14 +5,14 @@ from datetime import timedelta
 from test_playback import CH, NOW, FakeGql, Net, S, media
 from test_runner import FakeClient, FakePubSub, FakeStore, FakeWatcher, camp, chan
 
-import dropsminer.twitch.watch as watch_mod
-from dropsminer.models import LiveChannel
-from dropsminer.runner import FAILS_BEFORE_SWITCH, STALL_TICKS, Runner, State
-from dropsminer.twitch.constants import PLAY_INTERVAL
-from dropsminer.twitch.gql import GqlError
-from dropsminer.twitch.pubsub import DropProgress
-from dropsminer.twitch.transport import HttpResponse
-from dropsminer.twitch.watch import Watcher, playlist_urls
+import dropwatch.twitch.watch as watch_mod
+from dropwatch.models import LiveChannel
+from dropwatch.runner import FAILS_BEFORE_SWITCH, STALL_TICKS, Runner, State
+from dropwatch.twitch.constants import PLAY_INTERVAL
+from dropwatch.twitch.gql import GqlError
+from dropwatch.twitch.pubsub import DropProgress
+from dropwatch.twitch.transport import HttpResponse
+from dropwatch.twitch.watch import Watcher, playlist_urls
 
 
 # R1: a new broadcast on the same login must get a new playback token / media URL

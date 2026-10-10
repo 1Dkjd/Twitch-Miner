@@ -5,10 +5,10 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from dropsminer.twitch.auth_browser import SignInError
-from dropsminer.twitch.auth_device import DeviceCodeSignIn
-from dropsminer.twitch.constants import ANDROID_APP, SMARTBOX
-from dropsminer.twitch.transport import HttpResponse
+from dropwatch.twitch.auth_browser import SignInError
+from dropwatch.twitch.auth_device import DeviceCodeSignIn
+from dropwatch.twitch.constants import ANDROID_APP, SMARTBOX
+from dropwatch.twitch.transport import HttpResponse
 
 NOW = datetime(2026, 10, 10, 12, tzinfo=UTC)
 DEVICE = {"device_code": "dc", "user_code": "BKDQMDGP", "verification_uri": "https://www.twitch.tv/activate",

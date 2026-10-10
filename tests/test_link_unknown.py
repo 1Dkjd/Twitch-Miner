@@ -4,10 +4,10 @@ from datetime import timedelta
 
 from test_review_fixes import G1, NOW, live, mk
 
-from dropsminer.api.views import campaign_out
-from dropsminer.models import Prefs, account_eligible
-from dropsminer.planner import plan
-from dropsminer.twitch import parse
+from dropwatch.api.views import campaign_out
+from dropwatch.models import Prefs, account_eligible
+from dropwatch.planner import plan
+from dropwatch.twitch import parse
 
 RAW = {
     "id": "c9", "name": "Catalogue camp", "accountLinkURL": "https://link.example",

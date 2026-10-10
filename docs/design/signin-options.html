@@ -255,7 +255,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
     </article>
     <article class="opt">
       <div class="opt-h"><span class="tag">Option B</span><h2>Browser sign-in inside the page</h2>
-        <p>Twitch's real login page runs in the container and shows live inside Drops Miner.</p></div>
+        <p>Twitch's real login page runs in the container and shows live inside Dropwatch.</p></div>
       <div class="pc pro"><h3>Pros</h3><ul>
         <li><svg class="i"><use href="#i-check"/></svg><div><b>Everything comes from Twitch.</b> <span>Full campaign list (152 for you today) and account links, with no third party.</span></div></li>
         <li><svg class="i"><use href="#i-check"/></svg><div><b>Proven end to end.</b> <span>It's what is mining for you now, claims included.</span></div></li>
@@ -320,7 +320,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
   let opt = "A", dev = "desktop", step = 0;
 
   const bar = (tabs, pill) => `<div class="bar"><div class="bar-in">
-    <div class="brand"><svg aria-hidden="true"><use href="#i-pick"/></svg>Drops Miner</div>
+    <div class="brand"><svg aria-hidden="true"><use href="#i-pick"/></svg>Dropwatch</div>
     ${tabs ? `<nav class="tabs"><span class="on">Overview</span><span>Priorities</span><span>History</span><span>Settings</span></nav>` : ""}
     ${pill ? `<span class="pill" data-tone="${pill[0]}"><span class="dot"></span>${pill[1]}</span>` : ""}
   </div></div>`;
@@ -340,7 +340,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
       <section><h2 class="sec-h">Mining now</h2><div class="empty">Nothing is being mined while you're signed out of Twitch.</div></section></div>`;
 
   const A = [
-    { k: "Ready", url: "/setup/twitch", cap: "First run, step 2. One button. Nothing about passwords: you never type one into Drops Miner.",
+    { k: "Ready", url: "/setup/twitch", cap: "First run, step 2. One button. Nothing about passwords: you never type one into Dropwatch.",
       html: () => bar(false) + center(`${headA}<div class="card"><ol class="how">
         <li><div><b>Get a code here.</b> <span>Eight letters, valid for 30 minutes.</span></div></li>
         <li><div><b>Enter it at twitch.tv/activate.</b> <span>On this device or any other, phone included. You sign in to Twitch there as usual.</span></div></li>
@@ -373,7 +373,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
       html: () => bar(false) + center(`${headA}<div class="card"><ol class="how">
         <li><div><b>Twitch's own sign-in page opens.</b> <span>Right here, inside this page.</span></div></li>
         <li><div><b>Sign in as you normally would.</b> <span>Including the code from your authenticator or email.</span></div></li>
-        <li><div><b>Drops Miner keeps the sign-in, then closes the browser.</b> <span>It saves the token Twitch issues, never your password.</span></div></li></ol>
+        <li><div><b>Dropwatch keeps the sign-in, then closes the browser.</b> <span>It saves the token Twitch issues, never your password.</span></div></li></ol>
         <button class="btn strong wide" type="button">${ico("key")}Open Twitch sign-in</button></div>`) },
     { k: "Browser open", url: "/setup/twitch", cap: "The live view. Twitch's real page streams into the hatched area (placeholder here). The paste box exists because password managers can't fill a streamed browser.",
       html: () => bar(false) + center(`${headA}<div class="remote"><div class="remote-bar"><span class="addr">${ico("lock")}<span class="mono">twitch.tv/login</span></span>
@@ -384,13 +384,13 @@ svg.i { width: 16px; height: 16px; flex: none; }
           ${dev === "phone" ? `<button class="btn sm" type="button">Show keyboard</button>` : ""}
           <button class="btn quiet sm ml" type="button">Cancel sign-in</button></div></div>
         <p class="fine">If this page is closed for 10 minutes, the sign-in browser shuts down by itself.</p>`, true) },
-    { k: "Checking", url: "/setup/twitch", cap: "A second or two while Drops Miner confirms Twitch issued the right kind of login.",
+    { k: "Checking", url: "/setup/twitch", cap: "A second or two while Dropwatch confirms Twitch issued the right kind of login.",
       html: () => bar(false) + center(`${headA}<div class="remote"><div class="remote-bar"><span class="addr">${ico("lock")}<span class="mono">twitch.tv/login</span></span></div>
         <div class="screen"><div class="veil"><span class="waiting"><span class="spin" aria-hidden="true"></span>Checking the sign-in with Twitch…</span></div></div></div>`, true) },
     { k: "Connected", url: "/setup/twitch", cap: "Same success screen for both options.", html: () => bar(false) + center(`${headA}${done}`) },
     { k: "Failed", url: "/setup/twitch", cap: "B's own failure: Twitch hands back the website login instead of the app one, usually because its login page changed.",
       html: () => bar(false) + center(`${headA}<div class="card"><div class="status alert">${ico("alert")}<div><div class="status-t">Twitch issued the wrong kind of sign-in</div>
-        <div class="status-b">Drops Miner needs the sign-in Twitch gives its mobile app, and got the website one. Try again. If it keeps happening, Twitch has probably changed its sign-in, and Drops Miner needs an update.</div></div></div>
+        <div class="status-b">Dropwatch needs the sign-in Twitch gives its mobile app, and got the website one. Try again. If it keeps happening, Twitch has probably changed its sign-in, and Dropwatch needs an update.</div></div></div>
         <button class="btn strong" type="button" style="justify-self:start">Try again</button></div>`) },
     { k: "Signed out", url: "/", cap: "Later, if Twitch ends the login, Overview says so. The button reopens the live browser.", html: () => signedOut("Sign in to Twitch") },
   ];

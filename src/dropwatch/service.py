@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from .events import EventBus
 from .runner import Runner, State
 
-log = logging.getLogger("dropsminer.service")
+log = logging.getLogger("dropwatch.service")
 
 
 @dataclass

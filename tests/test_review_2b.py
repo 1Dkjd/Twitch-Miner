@@ -6,10 +6,10 @@ from test_link_probe import NoProgressClient, ticks, unknown
 from test_review_fixes import G1, G2, NOW, live, mk
 from test_runner import FakePubSub, FakeStore, FakeWatcher, chan
 
-from dropsminer.models import Game, Prefs
-from dropsminer.planner import plan
-from dropsminer.runner import LINK_PROBE_TICKS, Runner
-from dropsminer.twitch.catalog import flatten
+from dropwatch.models import Game, Prefs
+from dropwatch.planner import plan
+from dropwatch.runner import LINK_PROBE_TICKS, Runner
+from dropwatch.twitch.catalog import flatten
 
 G3 = Game(3, "Other", "other")
 

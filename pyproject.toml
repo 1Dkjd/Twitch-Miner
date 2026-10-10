@@ -1,5 +1,5 @@
 [project]
-name = "dropsminer"
+name = "dropwatch"
 version = "0.1.0"
 description = "Headless Twitch drops miner (private)"
 requires-python = ">=3.12"
@@ -11,11 +11,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# the phase-1 browser sign-in, kept as a PC-only fallback (`dropsminer signin --browser`); Docker skips it
+# the phase-1 browser sign-in, kept as a PC-only fallback (`dropwatch signin --browser`); Docker skips it
 browser = ["zendriver==0.17.0"]
 
 [project.scripts]
-dropsminer = "dropsminer.cli:main"
+dropwatch = "dropwatch.cli:main"
 
 [dependency-groups]
 dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.6", "httpx>=0.27", "zendriver==0.17.0"]
@@ -25,7 +25,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/dropsminer"]
+packages = ["src/dropwatch"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -39,4 +39,4 @@ extend-exclude = ["reference"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "ASYNC"]
 # capture.py is a dev tool that writes fixture files synchronously by design
-per-file-ignores = { "src/dropsminer/twitch/capture.py" = ["ASYNC240"] }
+per-file-ignores = { "src/dropwatch/twitch/capture.py" = ["ASYNC240"] }

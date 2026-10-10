@@ -9,13 +9,13 @@ import uvicorn
 from apihelpers import NOW, logged_in, make_app
 from test_runner import FakeClient, FakePubSub, FakeStore, FakeWatcher, camp, chan
 
-from dropsminer.cli import server_config
-from dropsminer.events import EventBus
-from dropsminer.models import Campaign, Game, LiveChannel
-from dropsminer.runner import Runner, State
-from dropsminer.service import MinerService, Parts
-from dropsminer.twitch.gql import AuthExpired
-from dropsminer.twitch.session import TwitchSession
+from dropwatch.cli import server_config
+from dropwatch.events import EventBus
+from dropwatch.models import Campaign, Game, LiveChannel
+from dropwatch.runner import Runner, State
+from dropwatch.service import MinerService, Parts
+from dropwatch.twitch.gql import AuthExpired
+from dropwatch.twitch.session import TwitchSession
 
 S = TwitchSession("tok", 42, "me", "dev", "cid", "sess")
 
@@ -114,7 +114,7 @@ async def test_i2_crashed_loop_is_logged_and_stops_the_service(caplog):
         return Parts(r, FakePubSub(), close)
 
     svc = MinerService(SessionStore(S), EventBus(), build=build)
-    with caplog.at_level(logging.ERROR, logger="dropsminer.service"):
+    with caplog.at_level(logging.ERROR, logger="dropwatch.service"):
         await svc.start()
         assert await until(lambda: not svc.running), "a crashed loop left the service 'running'"
     assert any("Mining loop crashed" in r.getMessage() for r in caplog.records)

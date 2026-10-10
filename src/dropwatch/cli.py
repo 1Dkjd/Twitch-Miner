@@ -18,7 +18,7 @@ from .twitch.transport import AiohttpTransport
 
 
 def data_dir() -> Path:
-    return Path(os.environ.get("DROPSMINER_DATA", "data"))
+    return Path(os.environ.get("DROPWATCH_DATA", "data"))
 
 
 def _csv(v: str | None) -> list[str]:
@@ -58,7 +58,7 @@ async def cmd_signin(store: Store, *, browser: bool = False, provider=None) -> i
 async def cmd_capture(store: Store, out: Path) -> int:
     s = store.get_session()
     if s is None:
-        print("Not signed in. Run: dropsminer signin")
+        print("Not signed in. Run: dropwatch signin")
         return 1
     t = AiohttpTransport()
     try:
@@ -117,7 +117,7 @@ async def serve(store: Store, host: str, port: int) -> int:
     signin = SignInManager(store, bus, provider, on_signed_in)
     app = create_app(AppContext(store=store, bus=bus, service=service, signin=signin))
     started = await service.start()
-    logging.getLogger("dropsminer").info(
+    logging.getLogger("dropwatch").info(
         "Serving on http://%s:%s (%s)", host, port, "mining" if started else "not signed in to Twitch")
     server = uvicorn.Server(server_config(app, host, port))
     try:
@@ -128,7 +128,7 @@ async def serve(store: Store, host: str, port: int) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="dropsminer")
+    ap = argparse.ArgumentParser(prog="dropwatch")
     sub = ap.add_subparsers(dest="cmd", required=True)
     si = sub.add_parser("signin")
     si.add_argument("--browser", action="store_true", help="sign in through a browser window (PC fallback)")

@@ -3,8 +3,8 @@ import copy
 
 from test_runner import FakePubSub, FakeStore, FakeWatcher
 
-from dropsminer.runner import Runner
-from dropsminer.twitch.client import TwitchClient
+from dropwatch.runner import Runner
+from dropwatch.twitch.client import TwitchClient
 
 DROP = {"id": "d1", "name": "d", "requiredMinutesWatched": 60, "startAt": "2026-10-01T00:00:00Z",
         "endAt": "2026-10-20T00:00:00Z",

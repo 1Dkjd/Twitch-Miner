@@ -1,9 +1,9 @@
 from datetime import UTC, datetime, timedelta
 
-from dropsminer.models import Campaign, Drop, Game, LiveChannel, Prefs, Reward
-from dropsminer.runner import Runner, State
-from dropsminer.twitch.gql import AuthExpired, TwitchUnreachable
-from dropsminer.twitch.pubsub import DropClaimable, DropProgress, StreamDown
+from dropwatch.models import Campaign, Drop, Game, LiveChannel, Prefs, Reward
+from dropwatch.runner import Runner, State
+from dropwatch.twitch.gql import AuthExpired, TwitchUnreachable
+from dropwatch.twitch.pubsub import DropClaimable, DropProgress, StreamDown
 
 NOW = datetime(2026, 10, 9, 12, tzinfo=UTC)
 G = Game(1, "Palia", "palia")
@@ -129,7 +129,7 @@ async def test_three_heartbeat_failures_drop_the_channel():
     r = runner(c, w)
     await r.refresh()
     bad = r.watching.login
-    from dropsminer.runner import FAILS_BEFORE_SWITCH
+    from dropwatch.runner import FAILS_BEFORE_SWITCH
     for _ in range(FAILS_BEFORE_SWITCH):
         await r.tick()
     assert w.forgotten == [bad]
@@ -182,7 +182,7 @@ async def test_idle_when_nothing_live():
 
 
 async def test_safe_tick_paces_at_play_interval():
-    from dropsminer.twitch.constants import PLAY_INTERVAL
+    from dropwatch.twitch.constants import PLAY_INTERVAL
     r = runner(FakeClient([camp()], [chan("a", 7)]))
     await r.refresh()
     assert await r.safe_tick() == PLAY_INTERVAL

@@ -27,7 +27,7 @@ from .constants import GQL_BATCH, GQL_OPS, GQL_URL, ClientInfo, client_for
 from .session import TwitchSession, gql_headers
 from .transport import HttpTransport
 
-log = logging.getLogger("dropsminer.gql")
+log = logging.getLogger("dropwatch.gql")
 RETRYABLE = {
     "service error", "PersistedQueryNotFound", "service timeout", "request cancelled",
     "service unavailable", "context deadline exceeded", "server error",

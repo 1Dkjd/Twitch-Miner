@@ -16,12 +16,12 @@ from pathlib import Path
 
 from .parse import ts
 
-log = logging.getLogger("dropsminer.catalog")
+log = logging.getLogger("dropwatch.catalog")
 CATALOG_URL = "https://twitch-drops-api.sunkwi.com/v2/drops"
 FETCH_EVERY = timedelta(hours=1)
 RETRY_AFTER = timedelta(minutes=5)
 STALE_AFTER = timedelta(hours=6)
-HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; drops-miner)", "Accept": "application/json"}
+HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; dropwatch)", "Accept": "application/json"}
 
 
 def flatten(body: dict) -> tuple[dict[str, dict], datetime | None]:

@@ -174,7 +174,7 @@ async def signout(request: Request) -> None:
 
 
 def create_app(ctx: AppContext) -> FastAPI:
-    app = FastAPI(title="Drops Miner", version="0.2.0", docs_url=None, redoc_url=None)
+    app = FastAPI(title="Dropwatch", version="0.2.0", docs_url=None, redoc_url=None)
     app.state.ctx = ctx
     app.include_router(public)
     app.include_router(private_auth)

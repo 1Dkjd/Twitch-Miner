@@ -1,5 +1,5 @@
-import dropsminer
+import dropwatch
 
 
 def test_package_imports():
-    assert dropsminer.__name__ == "dropsminer"
+    assert dropwatch.__name__ == "dropwatch"

@@ -24,7 +24,7 @@ from .gql import GqlError, op
 from .session import TwitchSession, base_headers
 from .transport import HttpTransport
 
-log = logging.getLogger("dropsminer.watch")
+log = logging.getLogger("dropwatch.watch")
 USHER = "https://usher.ttvnw.net/api/channel/hls"
 # Per-step bounds, as in the JourneyDocker reference: a slow CDN edge must not stall playback.
 POLL_TIMEOUT, MEDIA_TIMEOUT, HEAD_TIMEOUT, SPADE_TIMEOUT = 10.0, 5.0, 3.0, 5.0

@@ -1,7 +1,7 @@
 import math
 from datetime import timedelta
 
-from dropsminer.models import (
+from dropwatch.models import (
     Campaign,
     Drop,
     Game,
@@ -129,7 +129,7 @@ def test_with_drop_replaces_by_id(now):
 
 
 def test_game_slug_matches_reference_rule():
-    from dropsminer.models import game_slug
+    from dropwatch.models import game_slug
     assert game_slug("Marvel Rivals") == "marvel-rivals"
     assert game_slug("Tom Clancy's Rainbow Six Siege") == "tom-clancys-rainbow-six-siege"
     assert game_slug("Out of the Park Baseball 27") == "out-of-the-park-baseball-27"

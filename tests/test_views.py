@@ -2,9 +2,9 @@ from datetime import timedelta
 
 from test_runner import NOW, FakeClient, FakePubSub, FakeStore, FakeWatcher, camp, chan
 
-from dropsminer.api.views import history_view, state_view
-from dropsminer.models import Campaign, Drop, Game
-from dropsminer.runner import Runner
+from dropwatch.api.views import history_view, state_view
+from dropwatch.models import Campaign, Drop, Game
+from dropwatch.runner import Runner
 
 
 class ViewStore(FakeStore):
@@ -13,7 +13,7 @@ class ViewStore(FakeStore):
         self.signed_in = signed_in
 
     def get_session(self):
-        from dropsminer.twitch.session import TwitchSession
+        from dropwatch.twitch.session import TwitchSession
         return TwitchSession("tok", 42, "kp", "d", "c", "s") if self.signed_in else None
 
 
