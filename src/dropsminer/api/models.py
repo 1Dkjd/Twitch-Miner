@@ -51,6 +51,11 @@ class CurrentOut(BaseModel):
     also_credited: list[str]
 
 
+class CatalogOut(BaseModel):
+    status: str  # ok | stale | unreachable
+    since: datetime | None
+
+
 class StateOut(BaseModel):
     state: str
     signed_in: bool
@@ -61,6 +66,7 @@ class StateOut(BaseModel):
     needs_you: list[CampaignOut]
     up_next: list[CampaignOut]
     done: list[CampaignOut]
+    catalog: CatalogOut | None = None  # set when campaigns come from the public catalogue (TV login)
 
 
 class ListsIn(BaseModel):

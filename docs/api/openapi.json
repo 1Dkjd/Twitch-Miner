@@ -90,6 +90,32 @@
     "title": "CampaignOut",
     "type": "object"
    },
+   "CatalogOut": {
+    "properties": {
+     "since": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Since"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "status",
+     "since"
+    ],
+    "title": "CatalogOut",
+    "type": "object"
+   },
    "ChannelIn": {
     "properties": {
      "login": {
@@ -598,6 +624,16 @@
    },
    "StateOut": {
     "properties": {
+     "catalog": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/CatalogOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
      "current": {
       "anyOf": [
        {

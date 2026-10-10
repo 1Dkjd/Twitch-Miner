@@ -6,6 +6,7 @@ from datetime import datetime
 from ..models import Campaign, campaign_minutes_needed, campaign_ratio, deadline_verdict
 from .models import (
     CampaignOut,
+    CatalogOut,
     ChannelOut,
     ClaimOut,
     CurrentOut,
@@ -36,7 +37,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
     if runner is None:
         return StateOut(state="signed_out" if session is None else "idle", signed_in=session is not None,
                         login=session.login if session else None, paused_until=None, last_refresh=None,
-                        current=None, needs_you=[], up_next=[], done=[])
+                        current=None, needs_you=[], up_next=[], done=[], catalog=None)
     by_id = {c.id: c for c in runner.campaigns}
     plan = runner.plan
     verdicts = plan.verdicts if plan else {}
@@ -63,8 +64,13 @@ def state_view(runner, store, now: datetime) -> StateOut:
         state=str(runner.state), signed_in=session is not None, login=session.login if session else None,
         paused_until=runner.paused_until, last_refresh=runner.last_refresh, current=current,
         needs_you=keep(plan.needs_you if plan else ()), up_next=keep(plan.queue if plan else ()),
-        done=keep(plan.done if plan else ()),
+        done=keep(plan.done if plan else ()), catalog=_catalog(runner),
     )
+
+
+def _catalog(runner) -> CatalogOut | None:
+    st = getattr(runner, "catalog_status", None)
+    return CatalogOut(status=st[0], since=st[1]) if st else None
 
 
 def history_view(claims: list[dict]) -> HistoryOut:

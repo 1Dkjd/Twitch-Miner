@@ -53,6 +53,11 @@ class Catalog:
         self._status: tuple[str, datetime | None] = ("ok", None)
 
     @property
+    def used(self) -> bool:
+        """False until the first fetch: an Android session lists campaigns itself and never needs it."""
+        return self._next_fetch is not None
+
+    @property
     def status(self) -> tuple[str, datetime | None]:
         return self._status
 

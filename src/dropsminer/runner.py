@@ -83,7 +83,9 @@ class Runner:
     def catalog_status(self):
         """(ok|stale|unreachable, since) when campaigns come from the catalogue, else None."""
         catalog = getattr(self._client, "catalog", None)
-        return catalog.status if catalog is not None else None
+        if catalog is None or not getattr(catalog, "used", True):
+            return None
+        return catalog.status
 
     # --- commands
     def pause(self, until: datetime | None) -> None:

@@ -21,6 +21,7 @@ class Parts:
 
 
 def build_parts(store, session, emit) -> Parts:
+    from .twitch.catalog import Catalog
     from .twitch.client import TwitchClient
     from .twitch.gql import Gql
     from .twitch.pubsub import PubSub
@@ -28,14 +29,18 @@ def build_parts(store, session, emit) -> Parts:
     from .twitch.watch import Watcher
 
     transport = AiohttpTransport()
+    catalog_transport = AiohttpTransport()  # its own cookie jar: nothing of Twitch's goes to the catalogue
+    catalog = Catalog(catalog_transport, store.path.parent / "catalog.json")
     pubsub = PubSub(lambda: session.access_token)
     gql = Gql(transport, lambda: session)
-    runner = Runner(TwitchClient(gql, session.user_id), Watcher(transport, lambda: session, gql),
-                    pubsub, store, user_id=session.user_id, emit=emit)
+    runner = Runner(TwitchClient(gql, session.user_id, catalog=catalog),
+                    Watcher(transport, lambda: session, gql), pubsub, store,
+                    user_id=session.user_id, emit=emit)
 
     async def close() -> None:
         await pubsub.close()
         await transport.close()
+        await catalog_transport.close()
     return Parts(runner, pubsub, close)
 
 
