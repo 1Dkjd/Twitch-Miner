@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS seen_channels (login TEXT PRIMARY KEY, game TEXT NOT 
   last_seen TEXT NOT NULL);
 """
 CLAIM_DETAIL_COLUMNS = (("minutes", "INTEGER"), ("channel", "TEXT"), ("campaign_rewards", "INTEGER"),
-                        ("campaign_ends", "TEXT"))
+                        ("campaign_ends", "TEXT"), ("box_art_url", "TEXT"))
 EVENT_RETENTION = timedelta(days=7)
 SESSION_TTL = timedelta(days=30)
 SEEN_KEEP = timedelta(days=30)  # channels seen live, for the favourites add box
@@ -160,25 +160,27 @@ class Store:
     # --- claims
     def add_claim(self, at: datetime, campaign_id: str, campaign: str, game: str,
                   rewards: list[tuple[str, str]], *, minutes: int | None = None, channel: str | None = None,
-                  campaign_rewards: int | None = None, campaign_ends: datetime | None = None) -> None:
+                  campaign_rewards: int | None = None, campaign_ends: datetime | None = None,
+                  box_art_url: str | None = None) -> None:
         """minutes: the watch time the drop needed; channel: where it was mined (None when not known)."""
         payload = json.dumps([{"name": n, "image_url": u} for n, u in rewards])
         ends = campaign_ends.astimezone(UTC).isoformat() if campaign_ends else None
         with self._db:
             self._db.execute(
                 "INSERT INTO claims (at, campaign_id, campaign, game, rewards, minutes, channel,"
-                " campaign_rewards, campaign_ends) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                " campaign_rewards, campaign_ends, box_art_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (at.astimezone(UTC).isoformat(), campaign_id, campaign, game, payload, minutes, channel,
-                 campaign_rewards, ends))
+                 campaign_rewards, ends, box_art_url or None))
 
     def claims_since(self, since: datetime) -> list[dict]:
         rows = self._db.execute(
             "SELECT at, campaign_id, campaign, game, rewards, minutes, channel, campaign_rewards,"
-            " campaign_ends FROM claims WHERE at >= ? ORDER BY at DESC", (since.astimezone(UTC).isoformat(),))
+            " campaign_ends, box_art_url FROM claims WHERE at >= ? ORDER BY at DESC",
+            (since.astimezone(UTC).isoformat(),))
         return [{"at": datetime.fromisoformat(at), "campaign_id": cid, "campaign": camp, "game": game,
                  "rewards": json.loads(rw), "minutes": mins, "channel": ch, "campaign_rewards": total,
-                 "campaign_ends": datetime.fromisoformat(ends) if ends else None}
-                for at, cid, camp, game, rw, mins, ch, total, ends in rows]
+                 "campaign_ends": datetime.fromisoformat(ends) if ends else None, "box_art_url": art}
+                for at, cid, camp, game, rw, mins, ch, total, ends, art in rows]
 
     # --- page password (argon2) and web sessions (sha256 of the token only)
     def has_password(self) -> bool:

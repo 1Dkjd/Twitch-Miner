@@ -287,7 +287,7 @@ class Runner:
                                       minutes=d.required_minutes if d else None,
                                       channel=self._mined_on.get(c.id),
                                       campaign_rewards=sum(len(x.rewards) for x in c.drops),
-                                      campaign_ends=c.ends_at)
+                                      campaign_ends=c.ends_at, box_art_url=c.game.box_art_url)
             return True
         self._store.log_event("claim_failed", {"campaign": c.name, "drop": drop_id})
         return False

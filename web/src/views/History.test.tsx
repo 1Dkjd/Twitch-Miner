@@ -79,3 +79,10 @@ test("a claim from before the details were saved shows its time and says why the
   expect(screen.getByText("Claimed before Dropwatch saved watch time and channel.")).toBeVisible();
   expect(document.querySelector(".hx-sum")).toBeNull(); // nothing known about the campaign either
 });
+
+test("a row uses the art saved with its claim, even when the miner knows no campaign for that game", async () => {
+  renderHistory([{ ...detailed("2026-10-10T13:00:00Z", "Rare 1", 120, "honeyxxo"), game: "Escape from Tarkov",
+    box_art_url: "https://static-cdn.jtvnw.net/ttv-boxart/491931_IGDB-{width}x{height}.jpg" }]);
+  const btn = await screen.findByRole("button", { name: /EXFIL Brothers Day 2/ });
+  expect(btn.querySelector("img.box")?.getAttribute("src")).toBe("https://static-cdn.jtvnw.net/ttv-boxart/491931_IGDB-144x192.jpg");
+});

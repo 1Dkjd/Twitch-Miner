@@ -205,6 +205,17 @@
       "title": "At",
       "type": "string"
      },
+     "box_art_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Box Art Url"
+     },
      "campaign": {
       "title": "Campaign",
       "type": "string"

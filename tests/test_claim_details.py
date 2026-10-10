@@ -59,3 +59,25 @@ async def test_history_api_returns_the_details(tmp_path):
     assert claim["minutes"] == 60 and claim["channel"] == "alpha" and claim["campaign_rewards"] == 3
     assert claim["campaign_ends"].startswith((NOW + timedelta(days=2)).date().isoformat())
     await c.aclose()
+
+
+async def test_box_art_is_saved_with_the_claim(tmp_path):
+    """History keeps a game's art after its campaigns end or before the miner has loaded any (2026-10-10)."""
+    from dataclasses import replace
+
+    from dropwatch.models import Game
+
+    st = Store(tmp_path / "d.db")
+    art = "https://static-cdn.jtvnw.net/ttv-boxart/1-{width}x{height}.jpg"
+    c0 = replace(camp(cur=60, claim_id="inst"), game=Game(1, "Palia", "palia", art))
+    r = Runner(FakeClient([c0], [chan("a", 7)]), FakeWatcher(), FakePubSub(), st, user_id=42,
+               clock=lambda: NOW)
+    await r.refresh()
+    (row,) = st.claims_since(NOW - timedelta(days=1))
+    assert row["box_art_url"] == art
+    app, ctx = make_app(tmp_path / "api")
+    ctx.store.add_claim(NOW, "c1", "Frights", "Palia", [], box_art_url="https://x/palia-{width}x{height}.jpg")
+    c = await logged_in(app)
+    got = (await c.get("/api/history")).json()["claims"][0]["box_art_url"]
+    assert got == "https://x/palia-{width}x{height}.jpg"
+    await c.aclose()

@@ -393,6 +393,8 @@ export interface components {
              * Format: date-time
              */
             at: string;
+            /** Box Art Url */
+            box_art_url?: string | null;
             /** Campaign */
             campaign: string;
             /** Campaign Ends */

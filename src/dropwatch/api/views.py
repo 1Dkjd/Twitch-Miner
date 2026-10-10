@@ -99,5 +99,6 @@ def history_view(claims: list[dict]) -> HistoryOut:
     out = [ClaimOut(at=row["at"], campaign_id=row["campaign_id"], campaign=row["campaign"], game=row["game"],
                     rewards=[RewardOut(**r) for r in row["rewards"]], minutes=row.get("minutes"),
                     channel=row.get("channel"), campaign_rewards=row.get("campaign_rewards"),
-                    campaign_ends=row.get("campaign_ends")) for row in claims]
+                    campaign_ends=row.get("campaign_ends"), box_art_url=row.get("box_art_url"))
+           for row in claims]
     return HistoryOut(total_rewards=sum(len(c.rewards) for c in out), claims=out)

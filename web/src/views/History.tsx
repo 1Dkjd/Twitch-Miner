@@ -75,7 +75,8 @@ export function HistoryView() {
               ...g.rows.map((r) => {
                 const key = `${g.key}-${r.campaign_id}`;
                 const isOpen = open.has(key);
-                const a = art.get(r.campaign_id) ?? art.get(`game:${r.game}`);
+                const saved = r.claims.find((c) => c.box_art_url)?.box_art_url;
+                const a = saved ? boxArt(saved) : art.get(r.campaign_id) ?? art.get(`game:${r.game}`);
                 const span = r.first.getTime() === r.last.getTime() ? TIME.format(r.first) : `${TIME.format(r.first)}–${TIME.format(r.last)}`;
                 return (
                   <div className="hx-item" key={key}>
@@ -141,7 +142,7 @@ function Details({ claims, claimed }: { claims: Claim[]; claimed: number }) {
   );
 }
 
-/** Claims don't carry box art; borrow it from campaigns the miner currently knows. */
+/** For claims saved before box art was (2026-10-10): borrow it from campaigns the miner currently knows. */
 function artLookup(state: State | null): Map<string, string> {
   const m = new Map<string, string>();
   if (!state) return m;

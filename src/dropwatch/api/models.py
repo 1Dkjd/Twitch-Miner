@@ -138,6 +138,7 @@ class ClaimOut(BaseModel):
     channel: str | None = None  # the channel it was mined on
     campaign_rewards: int | None = None  # rewards in the whole campaign
     campaign_ends: datetime | None = None
+    box_art_url: str | None = None  # saved with the claim: History keeps it after the campaign ends
 
 
 class HistoryOut(BaseModel):
