@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from ..models import Campaign, campaign_minutes_needed, campaign_ratio, deadline_verdict
+from ..models import Campaign, campaign_active, campaign_minutes_needed, campaign_ratio, deadline_verdict
 from ..planner import qualifies
 from .models import (
     CampaignOut,
@@ -69,12 +69,16 @@ def state_view(runner, store, now: datetime) -> StateOut:
             channels=[ChannelOut(login=ch.login, viewers=ch.viewers, favourite=ch.login in favs)
                       for ch in others])
     keep = lambda ids: [o for i in ids if (o := out(i)) is not None]  # noqa: E731
+    never_games = store.get_prefs().never
+    never = sorted((c for c in runner.campaigns if c.game.name in never_games and campaign_active(c, now)),
+                   key=lambda c: (c.ends_at, c.id))
     return StateOut(
         state=str(runner.state), signed_in=session is not None, login=session.login if session else None,
         paused_until=runner.paused_until, last_refresh=runner.last_refresh, current=current,
         needs_you=keep(plan.needs_you if plan else ()), up_next=keep(plan.queue if plan else ()),
         done=keep(plan.done if plan else ()), catalog=_catalog(runner),
         last_switch=_switch(runner, now), next_check_at=runner.next_check_at,
+        never=[campaign_out(c, now, None) for c in never],
     )
 
 

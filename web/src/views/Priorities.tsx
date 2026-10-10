@@ -213,6 +213,7 @@ function gameInfo(state: State | null): Info {
     const n = c.drops.reduce((k, d) => k + d.rewards.length, 0);
     put(c, `All ${n} ${n === 1 ? "reward" : "rewards"} claimed`);
   }
+  for (const c of state.never ?? []) put(c, `Campaign running · ends ${day(c.ends_at)}`);
   return m;
 }
 

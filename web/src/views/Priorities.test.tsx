@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AppProvider, useApp } from "../store";
 import { mockApi } from "../test/fetch";
-import { state } from "../test/fixtures";
+import { campaign, state } from "../test/fixtures";
 import { PrioritiesView } from "./Priorities";
 
 const ME = { authenticated: true, setup_required: false };
@@ -11,9 +11,9 @@ function Said() {
 }
 afterEach(() => vi.unstubAllGlobals());
 
-function setup(lists: { priority: string[]; never: string[]; favourites: string[] }, put?: (b: unknown) => unknown) {
+function setup(lists: { priority: string[]; never: string[]; favourites: string[] }, put?: (b: unknown) => unknown, s = state()) {
   const calls = mockApi({
-    "GET /api/state": state(), "GET /api/lists": lists,
+    "GET /api/state": s, "GET /api/lists": lists,
     "GET /api/suggestions": { games: ["Palia", "Phasmophobia", "007 First Light", "AION 2"], channels: [
       { login: "example_streamer", live: true, game: "Palia", last_seen: "2026-10-10T10:00:00Z" },
       { login: "dnd", live: false, game: "Dungeons & Dragons", last_seen: "2026-10-08T20:00:00Z" },
@@ -83,4 +83,15 @@ test("the channel add box suggests offline channels too, with a note", async () 
   expect(opts[0]).toEqual(["example_streamer", "Live now · Palia"]);
   expect(opts[1]![0]).toBe("dnd");
   expect(opts[1]![1]).toMatch(/^Offline · last seen/);
+});
+
+test("Never games keep their box art and say their campaign is running", async () => {
+  const ow = campaign({ id: "n1", game: "Overwatch", box_art_url: "https://static-cdn.jtvnw.net/ttv-boxart/515025-{width}x{height}.jpg",
+    ends_at: "2026-11-03T07:59:59Z" });
+  setup({ priority: [], never: ["Overwatch", "Rise Online"], favourites: [] }, undefined, state({ never: [ow] }));
+  const row = (await screen.findByText("Overwatch")).closest(".g") as HTMLElement;
+  expect(row.querySelector("img.box")?.getAttribute("src")).toContain("515025-");
+  expect(row.querySelector(".g-s")).toHaveTextContent(/^Campaign running · ends Tue 3 Nov$/);
+  const none = (await screen.findByText("Rise Online")).closest(".g") as HTMLElement;
+  expect(none.querySelector(".g-s")).toHaveTextContent("No campaign right now");
 });

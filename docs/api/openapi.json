@@ -742,6 +742,14 @@
       "title": "Needs You",
       "type": "array"
      },
+     "never": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/CampaignOut"
+      },
+      "title": "Never",
+      "type": "array"
+     },
      "next_check_at": {
       "anyOf": [
        {

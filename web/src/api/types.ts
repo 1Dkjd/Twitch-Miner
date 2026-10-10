@@ -561,6 +561,11 @@ export interface components {
             login: string | null;
             /** Needs You */
             needs_you: components["schemas"]["CampaignOut"][];
+            /**
+             * Never
+             * @default []
+             */
+            never: components["schemas"]["CampaignOut"][];
             /** Next Check At */
             next_check_at?: string | null;
             /** Paused Until */

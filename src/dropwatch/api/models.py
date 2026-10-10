@@ -77,6 +77,7 @@ class StateOut(BaseModel):
     catalog: CatalogOut | None = None  # set when campaigns come from the public catalogue (TV login)
     last_switch: SwitchOut | None = None  # for 10 minutes after the channel changed
     next_check_at: datetime | None = None  # the runner's next Twitch refresh (or retry)
+    never: list[CampaignOut] = []  # running campaigns of Never games: never mined, listed for their art
 
 
 class ListsIn(BaseModel):
