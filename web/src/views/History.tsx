@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { api, type Claim, type History, type State } from "../api/client";
+import type { components } from "../api/types";
 import { useApp } from "../store";
 import { boxArt, clock, day, dur } from "../ui/format";
 import { Icon } from "../ui/Icons";
@@ -39,13 +40,19 @@ export function HistoryView() {
   const [days, setDays] = useState(30);
   const [data, setData] = useState<History | null>(null);
   const [open, setOpen] = useState<Set<string>>(new Set());
+  const [filter, setFilter] = useState("");
   useEffect(() => {
     let live = true;
     api.get<History>(`/history?days=${days}`).then((h) => { if (live) setData(h); }).catch(() => undefined);
     return () => { live = false; };
   }, [days, state?.last_refresh]);
 
-  const groups = data ? groupByDay(data.claims) : [];
+  const needle = filter.trim().toLowerCase();
+  const matches = (x: { campaign?: string; name?: string; game: string }) =>
+    !needle || `${x.campaign ?? x.name ?? ""} ${x.game}`.toLowerCase().includes(needle);
+  const groups = data ? groupByDay(data.claims.filter(matches)) : [];
+  const missed = (data?.missed ?? []).filter(matches);
+  const notable = (data?.missed ?? []).filter(isNotable).length;
   const campaigns = new Set(data?.claims.map((c) => c.campaign_id)).size;
   // "3 of 10 rewards in this campaign": every claim of the campaign in the period, not just this day's
   const claimedIn = new Map<string, number>();
@@ -59,12 +66,15 @@ export function HistoryView() {
         <select className="period" aria-label="Time period" value={days} onChange={(e) => setDays(Number(e.target.value))}>
           {PERIODS.map(([d, l]) => <option key={d} value={d}>{l}</option>)}
         </select>
+        <label className="filter"><input type="search" aria-label="Filter History" placeholder="Filter by game or campaign"
+          value={filter} onChange={(e) => setFilter(e.target.value)} /></label>
       </div>
       {data && (
         <div className="hist-lead"><svg aria-hidden="true"><use href="#i-check" /></svg>
           <span>{data.total_rewards
             ? <><b>{data.total_rewards} {data.total_rewards === 1 ? "reward" : "rewards"}</b> claimed from {campaigns} {campaigns === 1 ? "campaign" : "campaigns"}.</>
-            : <>Nothing claimed in this period yet.</>}</span></div>
+            : <>Nothing claimed in this period yet.</>}
+            {notable > 0 && <> <b>{notable} {notable === 1 ? "campaign" : "campaigns"}</b> missed.</>}</span></div>
       )}
       {groups.length > 0 && (
         <section aria-labelledby="h-claimed">
@@ -99,6 +109,8 @@ export function HistoryView() {
           </div>
         </section>
       )}
+      {missed.length > 0 && <Missed missed={missed} />}
+      {needle && data && !groups.length && !missed.length && <p className="hint">Nothing in this period matches "{filter.trim()}".</p>}
       {!data && <p className="lead"><Icon name="clock" /> Loading…</p>}
     </section>
   );
@@ -153,4 +165,86 @@ function artLookup(state: State | null): Map<string, string> {
     m.set(`game:${c.game}`, boxArt(c.box_art_url));
   }
   return m;
+}
+
+type MissedRow = components["schemas"]["MissedOut"];
+
+/** Worth a full row: something Dropwatch started, a Priority or pinned game, or an account to link. The
+ * catalogue lists ~140 campaigns and most end unstarted, so those fold away with the Never ones. */
+const isNotable = (m: MissedRow) =>
+  m.reason !== "never_list" && (m.started || m.priority || m.pinned || m.reason === "not_linked");
+
+const REASON: Record<string, { chip: string; tone: string; why: (m: MissedRow) => string }> = {
+  not_linked: { chip: "Account not linked", tone: "red", why: (m) => m.minutes_watched > 0
+    ? `Twitch counted ${dur(m.minutes_watched)} but won't give rewards until ${m.game} is linked.`
+    : `${m.game} needs its account linked before Twitch gives rewards.` },
+  ran_out_of_time: { chip: "Ran out of time", tone: "warn", why: () => "It was listed with less time left than its rewards need." },
+  outranked: { chip: "Other campaigns came first", tone: "", why: (m) => m.priority
+    ? "Other Priority games came first; move it up in Priority to mine it sooner."
+    : `Not in Priority; add ${m.game} there, or pin it in Up next, to mine it sooner.` },
+  no_live_channels: { chip: "No live channels", tone: "", why: () => "No channel with drops for it was live near the end." },
+  dropwatch_off: { chip: "Dropwatch was off", tone: "", why: () => "Dropwatch wasn't running when it ended." },
+};
+
+/** History's "Missed" (approved mockup docs/design/next-features-mockup.html, 2026-10-10). */
+function Missed({ missed }: { missed: MissedRow[] }) {
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const rows = missed.filter(isNotable);
+  const skipped = missed.filter((m) => m.reason === "never_list");
+  const unstarted = missed.filter((m) => m.reason !== "never_list" && !isNotable(m));
+  const dayFmt = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  const byDay = new Map<string, MissedRow[]>();
+  for (const m of rows) {
+    const k = dayFmt.format(new Date(m.ends_at)).replace(",", "");
+    byDay.set(k, [...(byDay.get(k) ?? []), m]);
+  }
+  const fold = (key: string, label: string, list: MissedRow[], note: (m: MissedRow) => string) => list.length > 0 && (
+    <div key={key}>
+      <button className="done-h" type="button" aria-expanded={openGroup === key} aria-controls={`miss-${key}`}
+        onClick={() => setOpenGroup(openGroup === key ? null : key)}>
+        <span className="done-sum"><span className="chip">{label} · {list.length}</span>
+          <span className="hint">{list.slice(0, 3).map((m) => `${m.name} (${m.game})`).join(", ")}{list.length > 3 ? ", …" : ""}</span></span>
+        <Icon name="down" className="chev" /></button>
+      <div className="done-body" id={`miss-${key}`} hidden={openGroup !== key}>
+        {list.map((m) => (
+          <div className="row" key={m.campaign_id}>
+            {m.box_art_url ? <img className="box" src={boxArt(m.box_art_url)} alt="" /> : <span className="box ph" aria-hidden="true" />}
+            <div><div className="row-t">{m.name}</div><div className="row-s">{m.game}<span className="sep">·</span>{note(m)}</div></div>
+            <span className="when">ended {TIME.format(new Date(m.ends_at))}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+  return (
+    <section aria-labelledby="h-missed">
+      <div className="sec-h"><h2 id="h-missed">Missed</h2><span className="count">{rows.length}</span>
+        <span className="aside">Ended with rewards left, and why</span></div>
+      <div className="list">
+        {[...byDay.entries()].map(([label, list]) => [
+          <div className="day" key={`md-${label}`}>{label}</div>,
+          ...list.map((m) => {
+            const r = REASON[m.reason] ?? REASON.outranked!;
+            const left = m.rewards.filter((x) => !x.claimed);
+            return (
+              <div className="row" key={m.campaign_id}>
+                {m.box_art_url ? <img className="box" src={boxArt(m.box_art_url)} alt="" /> : <span className="box ph" aria-hidden="true" />}
+                <div>
+                  <div className="row-t">{m.name}</div>
+                  <div className="row-s">{m.game}<span className="sep">·</span>{m.rewards_claimed} of {m.rewards_total} {m.rewards_total === 1 ? "reward" : "rewards"}<span className="sep">·</span>ended {TIME.format(new Date(m.ends_at))}</div>
+                  {left.length > 0 && <div className="row-art gone">{left.slice(0, 6).map((x, i) => <img key={i} src={x.image_url} alt={x.name} />)}</div>}
+                  <div className="why"><span className={`chip${r.tone ? ` ${r.tone}` : ""}`}>{r.chip}</span> {r.why(m)}</div>
+                </div>
+                {m.reason === "not_linked" && m.link_url
+                  ? <a className="btn" href={m.link_url} target="_blank" rel="noreferrer">Link account</a>
+                  : <span />}
+              </div>
+            );
+          }),
+        ])}
+        {fold("skipped", "Skipped on purpose", skipped, () => "in Never")}
+        {fold("unstarted", "Never started", unstarted, (m) => REASON[m.reason]?.chip.toLowerCase() ?? "not started")}
+      </div>
+    </section>
+  );
 }

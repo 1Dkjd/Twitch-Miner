@@ -151,3 +151,6 @@ button.row.hx { width: 100%; text-align: left; background: none; border: 0; colo
 .row .grip { color: var(--muted); cursor: grab; display: inline-flex; padding: 6px 2px; touch-action: none; }
 .row .turn { margin-top: 6px; }
 @media (max-width: 720px) { .filter { margin-left: 0; width: 100%; } .filter input { flex: 1; width: auto; } .sec-h .aside + .arr { margin-left: 0; } }
+/* History → Missed (docs/design/next-features-mockup.html) */
+.row .why { margin-top: 6px; font-size: 13px; color: var(--muted); }
+.row-art.gone img { opacity: .4; filter: grayscale(.6); }

@@ -18,8 +18,8 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
-from .models import Campaign, LiveChannel, campaign_active, claimable, with_drop
-from .planner import Plan, plan
+from .models import Campaign, LiveChannel, campaign_active, campaign_minutes_needed, claimable, with_drop
+from .planner import Plan, plan, qualifies
 from .twitch.constants import PLAY_INTERVAL
 from .twitch.gql import AuthExpired, GqlError
 from .twitch.pubsub import DropClaimable, DropProgress, StreamChanged, StreamDown, StreamUp, topic
@@ -143,6 +143,7 @@ class Runner:
                     self.campaigns = await self._client.campaigns()
                 self._settle_awaiting(now)
             self.live = await self._client.live_channels(self.campaigns, prefs, now)
+            self._log_campaigns(now, prefs)
             if (record := getattr(self._store, "record_seen", None)) is not None:
                 record([(c.login, c.game_name) for c in self.live], now)
         except AuthExpired:
@@ -159,6 +160,29 @@ class Runner:
         self.last_refresh = now
         self._refresh_backoff, self._retry_refresh_at = 0.0, None
         self._plan(now, prefs)
+
+    def _log_campaigns(self, now: datetime, prefs) -> None:
+        """Keep History's "Missed" able to say why: the latest view of every active campaign."""
+        log = getattr(self._store, "log_campaigns", None)
+        if log is None:
+            return
+        rows = []
+        for c in self.campaigns:
+            if not campaign_active(c, now):
+                continue
+            left = (c.ends_at - now).total_seconds() / 60
+            rows.append({
+                "id": c.id, "name": c.name, "game": c.game.name, "box_art_url": c.game.box_art_url,
+                "link_url": c.link_url, "ends_at": c.ends_at, "linked": c.linked,
+                "badge": c.has_badge_or_emote,
+                "rewards": [{"name": r.name, "image_url": r.image_url, "claimed": d.claimed}
+                            for d in c.drops for r in d.rewards],
+                "impossible": campaign_minutes_needed(c, now) > left,
+                "never": c.game.name in prefs.never, "priority": c.game.name in prefs.priority,
+                "pinned": c.id in prefs.pins, "live": any(qualifies(c, ch) for ch in self.live),
+                "watched": max((d.current_minutes for d in c.drops), default=0),
+            })
+        log(now, rows)
 
     def _forget_ended_pins(self, now: datetime) -> None:
         """A pin lasts as long as its campaign: drop the ones that ended or left the list."""

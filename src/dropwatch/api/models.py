@@ -204,9 +204,34 @@ class ClaimOut(BaseModel):
     box_art_url: str | None = None  # saved with the claim: History keeps it after the campaign ends
 
 
+class MissedReward(BaseModel):
+    name: str
+    image_url: str
+    claimed: bool
+
+
+class MissedOut(BaseModel):
+    campaign_id: str
+    name: str
+    game: str
+    box_art_url: str
+    link_url: str
+    ends_at: datetime
+    # never_list | dropwatch_off | not_linked | ran_out_of_time | no_live_channels | outranked
+    reason: str
+    rewards: list[MissedReward]
+    rewards_total: int
+    rewards_claimed: int
+    minutes_watched: int
+    started: bool  # earned any minutes: shown as a full row; the rest fold away with the Never ones
+    priority: bool
+    pinned: bool
+
+
 class HistoryOut(BaseModel):
     total_rewards: int
     claims: list[ClaimOut]  # newest first; the page groups by the viewer's local day
+    missed: list[MissedOut] = []  # campaigns that ended in the period with rewards left, newest first
 
 
 class SignInStatus(BaseModel):

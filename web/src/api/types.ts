@@ -551,6 +551,11 @@ export interface components {
         HistoryOut: {
             /** Claims */
             claims: components["schemas"]["ClaimOut"][];
+            /**
+             * Missed
+             * @default []
+             */
+            missed: components["schemas"]["MissedOut"][];
             /** Total Rewards */
             total_rewards: number;
         };
@@ -583,6 +588,49 @@ export interface components {
         MineNowIn: {
             /** Campaign Id */
             campaign_id: string;
+        };
+        /** MissedOut */
+        MissedOut: {
+            /** Box Art Url */
+            box_art_url: string;
+            /** Campaign Id */
+            campaign_id: string;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /** Game */
+            game: string;
+            /** Link Url */
+            link_url: string;
+            /** Minutes Watched */
+            minutes_watched: number;
+            /** Name */
+            name: string;
+            /** Pinned */
+            pinned: boolean;
+            /** Priority */
+            priority: boolean;
+            /** Reason */
+            reason: string;
+            /** Rewards */
+            rewards: components["schemas"]["MissedReward"][];
+            /** Rewards Claimed */
+            rewards_claimed: number;
+            /** Rewards Total */
+            rewards_total: number;
+            /** Started */
+            started: boolean;
+        };
+        /** MissedReward */
+        MissedReward: {
+            /** Claimed */
+            claimed: boolean;
+            /** Image Url */
+            image_url: string;
+            /** Name */
+            name: string;
         };
         /** NotifyChannelIn */
         NotifyChannelIn: {

@@ -418,6 +418,14 @@
       "title": "Claims",
       "type": "array"
      },
+     "missed": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/MissedOut"
+      },
+      "title": "Missed",
+      "type": "array"
+     },
      "total_rewards": {
       "title": "Total Rewards",
       "type": "integer"
@@ -523,6 +531,111 @@
      "campaign_id"
     ],
     "title": "MineNowIn",
+    "type": "object"
+   },
+   "MissedOut": {
+    "properties": {
+     "box_art_url": {
+      "title": "Box Art Url",
+      "type": "string"
+     },
+     "campaign_id": {
+      "title": "Campaign Id",
+      "type": "string"
+     },
+     "ends_at": {
+      "format": "date-time",
+      "title": "Ends At",
+      "type": "string"
+     },
+     "game": {
+      "title": "Game",
+      "type": "string"
+     },
+     "link_url": {
+      "title": "Link Url",
+      "type": "string"
+     },
+     "minutes_watched": {
+      "title": "Minutes Watched",
+      "type": "integer"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "pinned": {
+      "title": "Pinned",
+      "type": "boolean"
+     },
+     "priority": {
+      "title": "Priority",
+      "type": "boolean"
+     },
+     "reason": {
+      "title": "Reason",
+      "type": "string"
+     },
+     "rewards": {
+      "items": {
+       "$ref": "#/components/schemas/MissedReward"
+      },
+      "title": "Rewards",
+      "type": "array"
+     },
+     "rewards_claimed": {
+      "title": "Rewards Claimed",
+      "type": "integer"
+     },
+     "rewards_total": {
+      "title": "Rewards Total",
+      "type": "integer"
+     },
+     "started": {
+      "title": "Started",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "campaign_id",
+     "name",
+     "game",
+     "box_art_url",
+     "link_url",
+     "ends_at",
+     "reason",
+     "rewards",
+     "rewards_total",
+     "rewards_claimed",
+     "minutes_watched",
+     "started",
+     "priority",
+     "pinned"
+    ],
+    "title": "MissedOut",
+    "type": "object"
+   },
+   "MissedReward": {
+    "properties": {
+     "claimed": {
+      "title": "Claimed",
+      "type": "boolean"
+     },
+     "image_url": {
+      "title": "Image Url",
+      "type": "string"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "image_url",
+     "claimed"
+    ],
+    "title": "MissedReward",
     "type": "object"
    },
    "NotifyChannelIn": {

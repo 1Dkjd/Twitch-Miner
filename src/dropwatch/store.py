@@ -33,7 +33,15 @@ CREATE TABLE IF NOT EXISTS claims (at TEXT NOT NULL, campaign_id TEXT NOT NULL, 
 CREATE TABLE IF NOT EXISTS web_sessions (token_hash TEXT PRIMARY KEY, expires_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS seen_channels (login TEXT PRIMARY KEY, game TEXT NOT NULL,
   last_seen TEXT NOT NULL);
+-- History "Missed" (2026-10-10): the last thing Dropwatch knew about each campaign, kept after it ends
+CREATE TABLE IF NOT EXISTS campaign_log (id TEXT PRIMARY KEY, name TEXT NOT NULL, game TEXT NOT NULL,
+  box_art_url TEXT NOT NULL, link_url TEXT NOT NULL, ends_at TEXT NOT NULL, rewards TEXT NOT NULL,
+  first_seen TEXT NOT NULL, impossible_at_first INTEGER NOT NULL, last_seen TEXT NOT NULL,
+  linked INTEGER, badge INTEGER NOT NULL, never INTEGER NOT NULL, priority INTEGER NOT NULL,
+  pinned INTEGER NOT NULL, live INTEGER NOT NULL, watched INTEGER NOT NULL);
 """
+CAMPAIGN_LOG_KEEP = timedelta(days=400)  # History's longest period is a year
+MISSED_OFF_AFTER = timedelta(hours=1)  # no look in the last hour before it ended: Dropwatch was off
 CLAIM_DETAIL_COLUMNS = (("minutes", "INTEGER"), ("channel", "TEXT"), ("campaign_rewards", "INTEGER"),
                         ("campaign_ends", "TEXT"), ("box_art_url", "TEXT"))
 EVENT_RETENTION = timedelta(days=7)
@@ -188,6 +196,63 @@ class Store:
         channels = self.get_channels()
         channels.pop(kind, None)
         self.set_setting("notify_channels", json.dumps(channels))
+
+    # --- the campaign log behind History's "Missed"
+    def log_campaigns(self, now: datetime, rows: list[dict]) -> None:
+        """Upsert the latest view of each active campaign. first_seen and impossible_at_first keep the
+        values from the first time Dropwatch saw the campaign."""
+        at = now.astimezone(UTC).isoformat()
+        with self._db:
+            self._db.executemany(
+                "INSERT INTO campaign_log VALUES (:id, :name, :game, :box_art_url, :link_url, :ends_at,"
+                " :rewards, :at, :impossible, :at, :linked, :badge, :never, :priority, :pinned, :live,"
+                " :watched)"
+                " ON CONFLICT(id) DO UPDATE SET name = excluded.name, game = excluded.game,"
+                " box_art_url = excluded.box_art_url, link_url = excluded.link_url,"
+                " ends_at = excluded.ends_at,"
+                " rewards = excluded.rewards, last_seen = excluded.last_seen, linked = excluded.linked,"
+                " badge = excluded.badge, never = excluded.never, priority = excluded.priority,"
+                " pinned = excluded.pinned, live = excluded.live, watched = excluded.watched",
+                [{**r, "at": at, "ends_at": r["ends_at"].astimezone(UTC).isoformat(),
+                  "rewards": json.dumps(r["rewards"]), "impossible": int(r["impossible"]),
+                  "linked": None if r["linked"] is None else int(r["linked"]),
+                  **{k: int(r[k]) for k in ("badge", "never", "priority", "pinned", "live")}} for r in rows])
+            self._db.execute("DELETE FROM campaign_log WHERE ends_at < ?",
+                             ((now - CAMPAIGN_LOG_KEEP).astimezone(UTC).isoformat(),))
+
+    def missed_between(self, since: datetime, now: datetime) -> list[dict]:
+        """Campaigns that ended in (since, now] with a reward left unclaimed, newest end first, each with
+        the reason read from the last look Dropwatch had before it ended."""
+        out = []
+        for row in self._db.execute(
+                "SELECT id, name, game, box_art_url, link_url, ends_at, rewards, first_seen,"
+                " impossible_at_first,"
+                " last_seen, linked, badge, never, priority, pinned, live, watched FROM campaign_log"
+                " WHERE ends_at > ? AND ends_at <= ? ORDER BY ends_at DESC",
+                (since.astimezone(UTC).isoformat(), now.astimezone(UTC).isoformat())):
+            (cid, name, game, art, link, ends, rewards, _first, impossible, last, linked, badge, never,
+             priority, pinned, live, watched) = row
+            rw = json.loads(rewards)
+            if all(r["claimed"] for r in rw):
+                continue
+            ends_at, last_seen = datetime.fromisoformat(ends), datetime.fromisoformat(last)
+            if never:
+                reason = "never_list"
+            elif ends_at - last_seen > MISSED_OFF_AFTER:
+                reason = "dropwatch_off"
+            elif linked == 0 and not badge:
+                reason = "not_linked"
+            elif impossible:
+                reason = "ran_out_of_time"
+            elif not live:
+                reason = "no_live_channels"
+            else:
+                reason = "outranked"
+            out.append({"campaign_id": cid, "name": name, "game": game, "box_art_url": art, "link_url": link,
+                        "ends_at": ends_at, "reason": reason, "rewards": rw, "rewards_total": len(rw),
+                        "rewards_claimed": sum(1 for r in rw if r["claimed"]), "minutes_watched": watched,
+                        "started": watched > 0, "priority": bool(priority), "pinned": bool(pinned)})
+        return out
 
     # --- claims
     def add_claim(self, at: datetime, campaign_id: str, campaign: str, game: str,
