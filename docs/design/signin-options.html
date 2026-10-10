@@ -1,0 +1,433 @@
+<title>Twitch Sign-in Options</title>
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Geist+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a decision page. Pros/cons first, then each option's real screens at true size inside a
+   browser frame, in the approved Mining ("ore") look. Dark first; tokens copied from the approved mockup. */
+:root {
+  --bg: #13110d; --surface: #1c1914; --surface-2: #26221b; --line: #363026;
+  --fg: #f0eadf; --muted: #a39a8c;
+  --accent: #f2b632; --accent-text: #f4bf4a; --accent-ink: #1c1405; --accent-soft: rgba(242,182,50,.14);
+  --ok: #5fbf8a; --ok-text: #6fcf98; --ok-soft: rgba(95,191,138,.14);
+  --alert: #f0765f; --alert-text: #f4907d; --alert-soft: rgba(240,118,95,.13);
+  --warn: #f0913c; --warn-text: #f5a35c; --warn-soft: rgba(240,145,60,.14);
+  --note: #7d9be0; --note-soft: rgba(125,155,224,.1);
+  --hatch: rgba(242,182,50,.05); --frame: #0c0b08;
+  --font: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Archivo", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f1f0ec; --surface: #ffffff; --surface-2: #e9e6df; --line: #d9d3c7;
+    --fg: #1c1a16; --muted: #5d564b;
+    --accent: #c98a0b; --accent-text: #7a5100; --accent-ink: #ffffff; --accent-soft: rgba(201,138,11,.13);
+    --ok: #23854f; --ok-text: #1d6e41; --ok-soft: rgba(35,133,79,.11);
+    --alert: #c4442c; --alert-text: #a8361f; --alert-soft: rgba(196,68,44,.09);
+    --warn: #b4560f; --warn-text: #94440a; --warn-soft: rgba(180,86,15,.1);
+    --note: #3c62b8; --note-soft: rgba(60,98,184,.07);
+    --hatch: rgba(122,81,0,.05); --frame: #d4cfc4;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f1f0ec; --surface: #ffffff; --surface-2: #e9e6df; --line: #d9d3c7;
+  --fg: #1c1a16; --muted: #5d564b;
+  --accent: #c98a0b; --accent-text: #7a5100; --accent-ink: #ffffff; --accent-soft: rgba(201,138,11,.13);
+  --ok: #23854f; --ok-text: #1d6e41; --ok-soft: rgba(35,133,79,.11);
+  --alert: #c4442c; --alert-text: #a8361f; --alert-soft: rgba(196,68,44,.09);
+  --warn: #b4560f; --warn-text: #94440a; --warn-soft: rgba(180,86,15,.1);
+  --note: #3c62b8; --note-soft: rgba(60,98,184,.07);
+  --hatch: rgba(122,81,0,.05); --frame: #d4cfc4;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { accent-color: var(--accent); }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.45; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+svg.i { width: 16px; height: 16px; flex: none; }
+.mono { font-family: var(--mono); }
+.page { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 72px; display: grid; gap: 36px; }
+
+/* ---------- decision page ---------- */
+.intro h1 { font-family: var(--display); font-stretch: 82%; font-weight: 760; font-size: 32px; letter-spacing: -.01em; }
+.intro p { color: var(--muted); margin-top: 6px; max-width: 72ch; }
+.cmp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.opt { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; display: grid; gap: 14px; align-content: start; }
+.opt-h { display: grid; gap: 4px; }
+.opt-h .tag { font-family: var(--display); font-stretch: 75%; font-weight: 700; font-size: 13px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.opt-h h2 { font-family: var(--display); font-stretch: 82%; font-weight: 740; font-size: 22px; }
+.opt-h p { color: var(--muted); }
+.pc { display: grid; gap: 6px; }
+.pc h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
+.pc.pro h3 { color: var(--ok-text); }
+.pc.con h3 { color: var(--alert-text); }
+.pc ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+.pc li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 8px; }
+.pc li svg { margin-top: 2px; }
+.pc.pro svg { color: var(--ok-text); }
+.pc.con svg { color: var(--alert-text); }
+.pc li span { color: var(--muted); }
+.pc li b { font-weight: 600; color: var(--fg); }
+.facts { width: 100%; border-collapse: collapse; font-size: 13px; }
+.facts-w { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.facts th, .facts td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.facts tr:last-child td { border-bottom: 0; }
+.facts thead th { font-family: var(--display); font-stretch: 75%; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-size: 12px; background: var(--surface-2); }
+.facts td:first-child { color: var(--muted); width: 22%; }
+.v { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.v::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+.v.good::before { background: var(--ok); } .v.bad::before { background: var(--alert); } .v.mid::before { background: var(--warn); }
+.src { color: var(--muted); font-size: 12px; }
+.take { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; max-width: 80ch; }
+.take b { font-weight: 600; }
+
+/* ---------- screen viewer ---------- */
+.viewer { display: grid; gap: 14px; }
+.vh { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.vh h2 { font-family: var(--display); font-stretch: 82%; font-weight: 740; font-size: 22px; margin-right: 6px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; padding: 3px; background: var(--surface); gap: 2px; flex-wrap: wrap; }
+.seg button { border: 0; background: none; padding: 6px 12px; border-radius: 7px; cursor: pointer; color: var(--muted); font-weight: 500; font-size: 13px; }
+.seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--fg); }
+.steps-nav { display: flex; flex-wrap: wrap; gap: 6px; }
+.steps-nav button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 13px; color: var(--muted); display: inline-flex; gap: 7px; align-items: center; }
+.steps-nav button .k { font-family: var(--mono); font-size: 11px; }
+.steps-nav button[aria-pressed="true"] { border-color: var(--accent); color: var(--fg); background: var(--accent-soft); }
+.caption { color: var(--muted); max-width: 80ch; min-height: 2.9em; }
+.ctl { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.ctl select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; }
+
+.win { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--frame); margin-inline: auto; width: 100%; transition: max-width .2s ease; }
+.win[data-dev="phone"] { max-width: 390px; border-radius: 26px; }
+.win-bar { display: flex; align-items: center; gap: 10px; padding: 9px 14px; font-size: 12px; color: var(--muted); }
+.win-bar .url { flex: 1; min-width: 0; background: color-mix(in srgb, var(--bg) 80%, var(--frame)); border-radius: 7px; padding: 4px 10px; font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app { background: var(--bg); min-height: 620px; }
+.win[data-dev="phone"] .app { min-height: 700px; }
+
+/* ---------- the product's own UI (as approved) ---------- */
+.bar { border-bottom: 1px solid var(--line); }
+.bar-in { margin: 0 auto; max-width: 1040px; padding-inline: 20px; display: flex; align-items: center; gap: 20px; min-height: 56px; }
+.brand { display: flex; align-items: center; gap: 9px; font-family: var(--display); font-stretch: 82%; font-weight: 750; font-size: 15px; letter-spacing: -.01em; }
+.brand svg { color: var(--accent); width: 20px; height: 20px; }
+.tabs { display: flex; gap: 2px; }
+.tabs span { color: var(--muted); padding: 7px 12px; border-radius: 8px; font-weight: 500; }
+.tabs span.on { color: var(--fg); background: var(--surface-2); }
+.pill { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.pill[data-tone="alert"] { color: var(--alert-text); border-color: color-mix(in srgb, var(--alert) 45%, var(--line)); }
+.pill[data-tone="alert"] .dot { background: var(--alert); }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 6px 14px; min-height: 38px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; text-decoration: none; }
+.btn.strong { background: var(--fg); border-color: var(--fg); color: var(--bg); font-weight: 600; }
+.btn.quiet { border-color: transparent; background: none; color: var(--muted); }
+.btn.wide { width: 100%; }
+.btn.sm { min-height: 32px; font-size: 13px; padding: 4px 10px; }
+.stage { padding: clamp(24px, 6vh, 48px) 20px 40px; display: flex; justify-content: center; }
+.col { width: 100%; max-width: 440px; display: grid; gap: 22px; }
+.col.wide { max-width: 880px; }
+.steps { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--muted); }
+.steps li { display: flex; align-items: center; gap: 8px; }
+.steps .n { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-family: var(--mono); font-size: 12px; }
+.steps li.done .n { background: var(--ok-soft); border-color: transparent; color: var(--ok-text); }
+.steps li.now { color: var(--fg); font-weight: 600; }
+.steps li.now .n { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.steps .sep { width: 28px; height: 1px; background: var(--line); }
+.head { display: grid; gap: 8px; }
+.head h1 { font-family: var(--display); font-stretch: 82%; font-weight: 760; font-size: 30px; letter-spacing: -.01em; line-height: 1.1; }
+.head p { color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 16px; }
+.fine { color: var(--muted); font-size: 13px; }
+.how { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; counter-reset: how; }
+.how li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; counter-increment: how; }
+.how li::before { content: counter(how); width: 24px; height: 24px; border-radius: 50%; background: var(--surface-2); color: var(--muted); font-family: var(--mono); font-size: 12px; display: grid; place-items: center; }
+.how b { font-weight: 600; } .how span { color: var(--muted); }
+/* code flow */
+.code-box { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; }
+.code-lab { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.code { font-family: var(--mono); font-size: 34px; font-weight: 500; letter-spacing: .14em; display: flex; gap: .45em; line-height: 1; user-select: all; }
+.code-acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.qr { width: 116px; height: 116px; border-radius: 10px; background: #fff; padding: 8px; display: grid; place-items: center; }
+.qr img, .qr canvas { width: 100% !important; height: 100% !important; image-rendering: pixelated; }
+.qr-cap { font-size: 12px; color: var(--muted); text-align: center; margin-top: 6px; }
+.wait-row { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid var(--line); }
+.waiting { display: inline-flex; align-items: center; gap: 9px; font-weight: 500; }
+.spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); animation: spin .9s linear infinite; flex: none; }
+.ml { margin-left: auto; }
+/* remote browser */
+.remote { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.remote-bar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); font-size: 13px; }
+.addr { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); min-width: 0; }
+.addr svg { width: 14px; height: 14px; }
+.addr .mono { color: var(--fg); }
+.live { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+.live .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--alert); animation: pulse 1.6s ease-in-out infinite; }
+.screen { position: relative; height: 340px; display: grid; place-items: center; text-align: center; padding: 24px;
+  background: repeating-linear-gradient(135deg, var(--hatch) 0 12px, transparent 12px 24px), var(--bg); }
+.screen .ph { display: grid; gap: 6px; max-width: 42ch; } .screen .ph b { font-weight: 600; } .screen .ph span { color: var(--muted); font-size: 13px; }
+.screen .veil { position: absolute; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 78%, transparent); }
+.remote-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.paste { display: flex; gap: 6px; align-items: center; flex: 1 1 280px; min-width: 0; }
+.paste input { flex: 1; min-width: 0; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; min-height: 32px; font-size: 13px; }
+/* status + banners */
+.status { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px 14px; align-items: start; }
+.status > svg { width: 22px; height: 22px; margin-top: 2px; }
+.status.ok > svg { color: var(--ok-text); } .status.alert > svg { color: var(--alert-text); }
+.status-t { font-weight: 600; font-size: 16px; } .status-b { color: var(--muted); margin-top: 3px; }
+.who { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 999px; background: var(--surface-2); font-weight: 600; justify-self: start; }
+.who .av { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; font-size: 12px; font-family: var(--mono); }
+.view { max-width: 1040px; margin: 0 auto; padding: 24px 20px 40px; display: grid; gap: 28px; }
+.banner { border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px 14px; align-items: start; background: var(--surface-2); border: 1px solid var(--line); }
+.banner > svg { width: 20px; height: 20px; margin-top: 1px; }
+.banner.alert { background: var(--alert-soft); border-color: color-mix(in srgb, var(--alert) 40%, var(--line)); }
+.banner.alert > svg { color: var(--alert-text); }
+.banner.warn { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); }
+.banner.warn > svg { color: var(--warn-text); }
+.banner-t { font-weight: 600; } .banner-b { margin-top: 2px; opacity: .85; max-width: 70ch; }
+.acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.sec-h { font-family: var(--display); font-stretch: 75%; font-weight: 700; font-size: 14px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 22px; color: var(--muted); }
+.mini { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 14px; align-items: center; }
+.mini .art { width: 56px; height: 74px; border-radius: 8px; background: linear-gradient(160deg, #3a3326, #1d1a14); }
+.mini b { font-weight: 600; display: block; } .mini span { color: var(--muted); font-size: 13px; }
+.bar-track { height: 8px; border-radius: 999px; background: var(--surface-2); margin-top: 8px; overflow: hidden; }
+.bar-track i { display: block; height: 100%; width: 78%; background: repeating-linear-gradient(115deg, #f2b632 0 10px, #e2a222 10px 13px); }
+
+@keyframes spin { to { transform: rotate(1turn); } }
+@keyframes pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .spin, .live .dot { animation: none; } .win { transition: none; } }
+@media (max-width: 760px) { .cmp { grid-template-columns: minmax(0, 1fr); } }
+/* the product at phone width (container-driven, so the phone frame works on a desktop too) */
+.win[data-dev="phone"] .tabs { display: none; }
+.win[data-dev="phone"] .head h1 { font-size: 26px; }
+.win[data-dev="phone"] .code-box { grid-template-columns: minmax(0, 1fr); }
+.win[data-dev="phone"] .qr-w { display: none; }
+.win[data-dev="phone"] .code { font-size: 30px; }
+.win[data-dev="phone"] .banner { grid-template-columns: auto minmax(0, 1fr); }
+.win[data-dev="phone"] .banner .acts { grid-column: 2; }
+.win[data-dev="phone"] .screen { height: 420px; }
+@media (max-width: 560px) {
+  .tabs { display: none; } .code-box { grid-template-columns: minmax(0, 1fr); } .qr-w { display: none; }
+  .banner { grid-template-columns: auto minmax(0, 1fr); } .banner .acts { grid-column: 2; } .code { font-size: 28px; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-pick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5c3 .5 5.5 3 6 6"/><path d="M3.5 14.5c.5 3 3 5.5 6 6"/><path d="M5 19 19 5"/><path d="M9 4.5 4.5 9l3 3L12 7.5z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 7.9z"/><path d="m4 4 16 16"/></symbol>
+</svg>
+
+<main class="page">
+  <section class="intro">
+    <h1>Two ways to sign in to Twitch</h1>
+    <p>Both are tested on your account. Below: what each one costs you, then every screen you'd see, at real size, in the approved Mining look.</p>
+  </section>
+
+  <section class="cmp" aria-label="Pros and cons">
+    <article class="opt">
+      <div class="opt-h"><span class="tag">Option A</span><h2>Code sign-in + campaign catalogue</h2>
+        <p>You get an 8-letter code, enter it at twitch.tv/activate on any device, done.</p></div>
+      <div class="pc pro"><h3>Pros</h3><ul>
+        <li><svg class="i"><use href="#i-check"/></svg><div><b>Sign in from anywhere.</b> <span>Any phone or computer, in your own browser, so your password manager and 2FA work as usual.</span></div></li>
+        <li><svg class="i"><use href="#i-check"/></svg><div><b>The login doesn't expire.</b> <span>Twitch reported no end date in the test. Twitch can still end it.</span></div></li>
+        <li><svg class="i"><use href="#i-check"/></svg><div><b>No browser inside Docker.</b> <span>About 400 MB smaller and fewer moving parts.</span></div></li>
+        <li><svg class="i"><use href="#i-check"/></svg><div><b>Earns minutes 1:1.</b> <span>Tested: 12 minutes watched, +12 on your Tarkov drop.</span></div></li>
+      </ul></div>
+      <div class="pc con"><h3>Cons</h3><ul>
+        <li><svg class="i"><use href="#i-minus"/></svg><div><b>New campaigns come from a third party.</b> <span>An anonymous public feed (Sunkwi). If it stops, campaigns you've started keep mining, but new ones go unnoticed. Priority games get a partial backup lookup.</span></div></li>
+        <li><svg class="i"><use href="#i-minus"/></svg><div><b>Account links are unknown until a campaign starts.</b> <span>Twitch hides them from this login. Proposed fix: if a campaign's minutes don't move for about 10 minutes, it moves to Needs you as "may need linking".</span></div></li>
+        <li><svg class="i"><use href="#i-minus"/></svg><div><b>Claiming not yet proven here.</b> <span>Another miner reports it works. The first real claim confirms it.</span></div></li>
+        <li><svg class="i"><use href="#i-minus"/></svg><div><b>Twitch already hid the campaign list from this login.</b> <span>It could restrict it further.</span></div></li>
+      </ul></div>
+    </article>
+    <article class="opt">
+      <div class="opt-h"><span class="tag">Option B</span><h2>Browser sign-in inside the page</h2>
+        <p>Twitch's real login page runs in the container and shows live inside Drops Miner.</p></div>
+      <div class="pc pro"><h3>Pros</h3><ul>
+        <li><svg class="i"><use href="#i-check"/></svg><div><b>Everything comes from Twitch.</b> <span>Full campaign list (152 for you today) and account links, with no third party.</span></div></li>
+        <li><svg class="i"><use href="#i-check"/></svg><div><b>Proven end to end.</b> <span>It's what is mining for you now, claims included.</span></div></li>
+        <li><svg class="i"><use href="#i-check"/></svg><div><b>Same approach as your dungfu container.</b></div></li>
+      </ul></div>
+      <div class="pc con"><h3>Cons</h3><ul>
+        <li><svg class="i"><use href="#i-minus"/></svg><div><b>Typing into a streamed browser.</b> <span>Password managers can't fill it, and phones need a keyboard button. The paste box and keyboard button are unproven fixes.</span></div></li>
+        <li><svg class="i"><use href="#i-minus"/></svg><div><b>Bigger, fiddlier container.</b> <span>Chromium, a virtual screen and VNC: about 400 MB, plus phase 5 setup work.</span></div></li>
+        <li><svg class="i"><use href="#i-minus"/></svg><div><b>Relies on rewriting Twitch's login request.</b> <span>That trick breaks if Twitch changes its login page. It changed sign-in once already, in September.</span></div></li>
+        <li><svg class="i"><use href="#i-minus"/></svg><div><b>How long the login lasts is unmeasured.</b> <span>The current one has held since 9 October.</span></div></li>
+      </ul></div>
+    </article>
+  </section>
+
+  <section aria-label="Side by side facts">
+    <div class="facts-w"><table class="facts">
+      <thead><tr><th>Question</th><th>A · Code + catalogue</th><th>B · Browser in page</th></tr></thead>
+      <tbody>
+        <tr><td>Sign in from your phone</td><td><span class="v good">Yes, natively</span></td><td><span class="v mid">Yes, through a streamed browser</span></td></tr>
+        <tr><td>Where the campaign list comes from</td><td><span class="v mid">Public feed: 123 campaigns, refreshed every 60 s</span></td><td><span class="v good">Twitch: 152 campaigns</span></td></tr>
+        <tr><td>If that source goes down</td><td><span class="v mid">Started campaigns continue; new ones wait</span></td><td><span class="v good">n/a</span></td></tr>
+        <tr><td>Knows if a game account is linked</td><td><span class="v bad">Only after the campaign starts</span></td><td><span class="v good">Always</span></td></tr>
+        <tr><td>Earns watch minutes</td><td><span class="v good">Yes (tested 10 Oct)</span></td><td><span class="v good">Yes (live since 9 Oct)</span></td></tr>
+        <tr><td>Claims rewards</td><td><span class="v mid">Reported, not yet seen here</span></td><td><span class="v good">Yes: 20 claims since 9 Oct</span></td></tr>
+        <tr><td>Docker image</td><td><span class="v good">Small</span></td><td><span class="v bad">About +400 MB</span></td></tr>
+        <tr><td>Login lifetime</td><td><span class="v good">No expiry reported</span></td><td><span class="v mid">Unmeasured (holding since 9 Oct)</span></td></tr>
+      </tbody></table></div>
+    <p class="src" style="margin-top:8px">The 123 and 152 counts aren't directly comparable: the feed lists active campaigns for everyone, while Twitch's count is for your account and includes upcoming ones. I haven't checked which campaigns differ.</p>
+  </section>
+
+  <p class="take"><b>My take:</b> A is the nicer product, and the test says it mines. Its real weak spots are the third-party feed and unknown account links. B is the safer engine, with clunkier sign-in and a heavier container. Either way, the other one can stay in the code as a manual fallback.</p>
+
+  <section class="viewer" aria-label="Screens">
+    <div class="vh">
+      <h2>See every screen</h2>
+      <div class="seg" role="group" aria-label="Option">
+        <button type="button" data-opt="A" aria-pressed="true">A · Code sign-in</button>
+        <button type="button" data-opt="B" aria-pressed="false">B · Browser in page</button>
+      </div>
+      <div class="seg" role="group" aria-label="Device">
+        <button type="button" data-dev="desktop" aria-pressed="true">Desktop</button>
+        <button type="button" data-dev="phone" aria-pressed="false">Phone</button>
+      </div>
+      <span class="ctl"><label for="theme">Theme</label>
+        <select id="theme"><option value="">System</option><option value="dark">Dark</option><option value="light">Light</option></select></span>
+    </div>
+    <div class="steps-nav" id="steps-nav" role="group" aria-label="Screen"></div>
+    <p class="caption" id="caption"></p>
+    <div class="win" id="win" data-dev="desktop">
+      <div class="win-bar"><span class="url" id="url">http://192.168.1.10:5810/</span></div>
+      <div class="app" id="app"></div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const ico = (n) => `<svg class="i" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+  const CODE = "BKDQMDGP";
+  let opt = "A", dev = "desktop", step = 0;
+
+  const bar = (tabs, pill) => `<div class="bar"><div class="bar-in">
+    <div class="brand"><svg aria-hidden="true"><use href="#i-pick"/></svg>Drops Miner</div>
+    ${tabs ? `<nav class="tabs"><span class="on">Overview</span><span>Priorities</span><span>History</span><span>Settings</span></nav>` : ""}
+    ${pill ? `<span class="pill" data-tone="${pill[0]}"><span class="dot"></span>${pill[1]}</span>` : ""}
+  </div></div>`;
+  const steps = `<ol class="steps"><li class="done"><span class="n">✓</span>Page password</li><li aria-hidden="true"><span class="sep"></span></li><li class="now"><span class="n">2</span>Twitch account</li></ol>`;
+  const headA = `${steps}<div class="head"><h1>Connect your Twitch account</h1><p>Use the account that should earn the drops.</p></div>`;
+  const done = `<div class="card"><div class="status ok">${ico("check")}<div><div class="status-t">Connected</div>
+      <div class="status-b">Mining starts now. Your campaigns appear on Overview within a minute.</div></div></div>
+      <span class="who"><span class="av">K</span>kernelpanicattack</span>
+      <a class="btn strong wide" href="#overview">Go to Overview</a></div>`;
+  const center = (inner, wide) => `<div class="stage"><div class="col ${wide ? "wide" : ""}">${inner}</div></div>`;
+  const mining = `<section><h2 class="sec-h">Mining now</h2><div class="mini"><div class="art"></div><div><b>Escape from Tarkov</b>
+      <span>on pestily · 571 min watched (example)</span><div class="bar-track"><i></i></div></div></div></section>`;
+  const signedOut = (btnLabel) => bar(true, ["alert", "Signed out"]) + `<div class="view">
+      <div class="banner alert" role="alert">${ico("alert")}<div><div class="banner-t">Twitch signed you out at 19:42</div>
+        <div class="banner-b">Mining is stopped until you sign in again. Drop progress is kept.</div></div>
+        <div class="acts"><button class="btn strong" type="button">${ico("key")}${btnLabel}</button></div></div>
+      <section><h2 class="sec-h">Mining now</h2><div class="empty">Nothing is being mined while you're signed out of Twitch.</div></section></div>`;
+
+  const A = [
+    { k: "Ready", url: "/setup/twitch", cap: "First run, step 2. One button. Nothing about passwords: you never type one into Drops Miner.",
+      html: () => bar(false) + center(`${headA}<div class="card"><ol class="how">
+        <li><div><b>Get a code here.</b> <span>Eight letters, valid for 30 minutes.</span></div></li>
+        <li><div><b>Enter it at twitch.tv/activate.</b> <span>On this device or any other, phone included. You sign in to Twitch there as usual.</span></div></li>
+        <li><div><b>Click Authorize on Twitch.</b> <span>This page notices on its own and starts mining.</span></div></li></ol>
+        <button class="btn strong wide" type="button">${ico("key")}Get a sign-in code</button></div>`) },
+    { k: "Code", url: "/setup/twitch", cap: "The code is the hero. Copy it, open Twitch in a new tab, or scan the QR code with your phone. The page waits and moves on by itself.",
+      html: () => bar(false) + center(`${headA}<div class="card">
+        <div class="code-box"><div><div class="code-lab">Your code</div>
+            <div class="code" aria-label="Code ${CODE.split("").join(" ")}"><span>${CODE.slice(0, 4)}</span><span>${CODE.slice(4)}</span></div>
+            <div class="code-acts"><button class="btn sm" type="button">${ico("copy")}Copy code</button>
+              <a class="btn sm" href="https://www.twitch.tv/activate" target="_blank" rel="noopener">Open twitch.tv/activate${ico("ext")}</a></div></div>
+          <div class="qr-w"><div class="qr" id="qr" aria-label="QR code for twitch.tv/activate"></div><div class="qr-cap">Scan with your phone</div></div></div>
+        <div class="wait-row"><span class="waiting"><span class="spin" aria-hidden="true"></span>Waiting for you to authorize on Twitch</span>
+          <span class="fine ml">Expires in <span class="mono">29:41</span></span></div>
+        <button class="btn quiet" type="button" style="justify-self:start">Cancel</button></div>`), after: drawQR },
+    { k: "Expired", url: "/setup/twitch", cap: "If 30 minutes pass, the code dies quietly. One click gets a fresh one.",
+      html: () => bar(false) + center(`${headA}<div class="card"><div class="status alert">${ico("alert")}<div><div class="status-t">That code expired</div>
+        <div class="status-b">Codes last 30 minutes. Get a new one and enter it at twitch.tv/activate.</div></div></div>
+        <button class="btn strong wide" type="button">${ico("key")}Get a new code</button></div>`) },
+    { k: "Connected", url: "/setup/twitch", cap: "Same success screen for both options.", html: () => bar(false) + center(`${headA}${done}`) },
+    { k: "Signed out", url: "/", cap: "Later, if Twitch ends the login (a password change, say), Overview says so. The button goes straight to a code.",
+      html: () => signedOut("Get a sign-in code") },
+    { k: "Catalogue down", url: "/", cap: "New with option A: if the public feed stops, mining carries on and Overview says what's missing. It clears by itself.",
+      html: () => bar(true, ["ok", "Mining"]) + `<div class="view">
+        <div class="banner warn" role="status">${ico("cloud")}<div><div class="banner-t">Can't reach the campaign list since 14:05</div>
+          <div class="banner-b">Campaigns you've started keep mining. New campaigns show up again once the list is back. Checking every 5 minutes.</div></div></div>${mining}</div>` },
+  ];
+  const B = [
+    { k: "Ready", url: "/setup/twitch", cap: "First run, step 2. Explains up front that Twitch's own page opens inside this one.",
+      html: () => bar(false) + center(`${headA}<div class="card"><ol class="how">
+        <li><div><b>Twitch's own sign-in page opens.</b> <span>Right here, inside this page.</span></div></li>
+        <li><div><b>Sign in as you normally would.</b> <span>Including the code from your authenticator or email.</span></div></li>
+        <li><div><b>Drops Miner keeps the sign-in, then closes the browser.</b> <span>It saves the token Twitch issues, never your password.</span></div></li></ol>
+        <button class="btn strong wide" type="button">${ico("key")}Open Twitch sign-in</button></div>`) },
+    { k: "Browser open", url: "/setup/twitch", cap: "The live view. Twitch's real page streams into the hatched area (placeholder here). The paste box exists because password managers can't fill a streamed browser.",
+      html: () => bar(false) + center(`${headA}<div class="remote"><div class="remote-bar"><span class="addr">${ico("lock")}<span class="mono">twitch.tv/login</span></span>
+          <span class="live"><span class="dot"></span>Live</span></div>
+        <div class="screen"><div class="ph"><b>Twitch's sign-in page shows here, live</b><span>Click inside it and type as usual. Everything you type goes straight to that browser.</span></div></div>
+        <div class="remote-foot"><span class="waiting"><span class="spin" aria-hidden="true"></span>Waiting for you to sign in</span>
+          <form class="paste" onsubmit="return false"><input type="password" aria-label="Text to paste into the sign-in browser" placeholder="Paste a password here, then Ctrl+V in the page"><button class="btn sm" type="submit">Send</button></form>
+          ${dev === "phone" ? `<button class="btn sm" type="button">Show keyboard</button>` : ""}
+          <button class="btn quiet sm ml" type="button">Cancel sign-in</button></div></div>
+        <p class="fine">If this page is closed for 10 minutes, the sign-in browser shuts down by itself.</p>`, true) },
+    { k: "Checking", url: "/setup/twitch", cap: "A second or two while Drops Miner confirms Twitch issued the right kind of login.",
+      html: () => bar(false) + center(`${headA}<div class="remote"><div class="remote-bar"><span class="addr">${ico("lock")}<span class="mono">twitch.tv/login</span></span></div>
+        <div class="screen"><div class="veil"><span class="waiting"><span class="spin" aria-hidden="true"></span>Checking the sign-in with Twitch…</span></div></div></div>`, true) },
+    { k: "Connected", url: "/setup/twitch", cap: "Same success screen for both options.", html: () => bar(false) + center(`${headA}${done}`) },
+    { k: "Failed", url: "/setup/twitch", cap: "B's own failure: Twitch hands back the website login instead of the app one, usually because its login page changed.",
+      html: () => bar(false) + center(`${headA}<div class="card"><div class="status alert">${ico("alert")}<div><div class="status-t">Twitch issued the wrong kind of sign-in</div>
+        <div class="status-b">Drops Miner needs the sign-in Twitch gives its mobile app, and got the website one. Try again. If it keeps happening, Twitch has probably changed its sign-in, and Drops Miner needs an update.</div></div></div>
+        <button class="btn strong" type="button" style="justify-self:start">Try again</button></div>`) },
+    { k: "Signed out", url: "/", cap: "Later, if Twitch ends the login, Overview says so. The button reopens the live browser.", html: () => signedOut("Sign in to Twitch") },
+  ];
+
+  function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function drawQR() {
+    const el = $("qr");
+    if (!el || typeof QRCode === "undefined") { if (el) el.closest(".qr-w").hidden = true; return; }
+    el.innerHTML = "";
+    new QRCode(el, { text: "https://www.twitch.tv/activate", width: 200, height: 200, colorDark: "#13110d", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+  }
+
+  function render() {
+    const list = opt === "A" ? A : B;
+    if (step >= list.length) step = 0;
+    $("steps-nav").innerHTML = list.map((s, i) =>
+      `<button type="button" data-step="${i}" aria-pressed="${i === step}"><span class="k">${i + 1}</span>${s.k}</button>`).join("");
+    const s = list[step];
+    $("caption").textContent = s.cap;
+    $("url").textContent = "http://192.168.1.10:5810" + s.url;
+    $("win").dataset.dev = dev;
+    $("app").innerHTML = s.html();
+    if (s.after) s.after();
+  }
+
+  document.addEventListener("click", (e) => {
+    const o = e.target.closest("[data-opt]"), d = e.target.closest("[data-dev]"), st = e.target.closest("[data-step]");
+    if (o) { opt = o.dataset.opt; step = 0; document.querySelectorAll("[data-opt]").forEach((b) => b.setAttribute("aria-pressed", String(b === o))); render(); }
+    if (d) { dev = d.dataset.dev; document.querySelectorAll("[data-dev]").forEach((b) => b.setAttribute("aria-pressed", String(b === d))); render(); }
+    if (st) { step = Number(st.dataset.step); render(); }
+    if (e.target.closest("#app a[href^='#'], #app button")) e.preventDefault();
+  });
+  $("theme").addEventListener("change", (e) => {
+    if (e.target.value) document.documentElement.dataset.theme = e.target.value;
+    else delete document.documentElement.dataset.theme;
+  });
+  render();
+  document.querySelectorAll("[data-opt]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.opt === opt)));
+})();
+</script>

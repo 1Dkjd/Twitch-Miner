@@ -29,7 +29,7 @@ its GUI. This project keeps the Twitch knowledge and replaces the rest.
 | Language | Python 3.12, asyncio | The port is near line-for-line. The workload is waiting on the network. Nick already maintains Python apps. |
 | Audience | Private GitHub repo `drops-miner`, Nick's Unraid only | It can go public later. |
 | Frontend | React + Vite + Tailwind, TypeScript | The same stack as homelab-dashboard. TypeScript types are generated from the API's OpenAPI schema. |
-| Twitch sign-in | Browser sign-in that obtains an Android-app token (the fork's method) | See section 4. The only verified way to get a token that can also list campaigns. |
+| Twitch sign-in | **TV code login** (twitch.tv/activate + an 8-letter code) plus a **public campaign catalogue** for discovery. *(Changed 2026-10-10; was browser sign-in.)* | See section 4. Nick chose it after both were tested on his account: it signs in from any device and needs no browser in Docker. |
 | Scheduling | Priority games first in list order, then everything else least-spare-time first; Never list excluded; favourite channels break ties | Agreed during the mockup rounds. Priority is not a whitelist. |
 | UI | Approved mockup v7, Mining look | `docs/design/approved-mockup-v7.html`, also https://claude.ai/artifact/1C2ggUHkgriumwXYtQo8Qc |
 
@@ -63,8 +63,9 @@ DevilXD/TwitchDropsMiner. They were checked on 2026-10-08 and 2026-10-09.
   events (progress, claim available), notifications, and channel stream up/down plus title or game
   changes.
 - **Discovery and inventory.** GQL persisted queries:
-  - `ViewerDropsDashboard`: all campaigns.
-  - `Inventory`: the account's campaigns in progress and their claimed state.
+  - `ViewerDropsDashboard`: all campaigns. Returns nothing for the TV login (section 4).
+  - `Inventory`: the account's campaigns in progress, their claimed state and account-link flag.
+    Works for every login.
   - `CampaignDetails`.
 - **Claiming.** GQL `DropsPage_ClaimDropRewards`.
 - **Channel choice in the original.** Within the same game priority, a channel on the campaign's own
@@ -85,34 +86,53 @@ Spike results, run on Nick's account on 2026-10-09 (read-only, throwaway code):
 | Our own registered app ("Dropwatch Miner", Public client), device-code login, 2026-10-09 | Login works, and the public API (Helix `users`) accepts it. The drops GQL refuses it: with our Client-ID, HTTP 400 `The "Client-ID" header is invalid`; with the WEB or Android Client-ID, HTTP 401 `The "Authorization" token is invalid`. The same queries with the Android session return 152 campaigns. So "Login with Twitch" (redirect or device code) can't feed a drops miner. The test token was revoked. |
 | TV client (`SMARTBOX`, `ue6666qo…`) device-code login, watching with our playback watcher, 2026-10-10 | Login works and never expires (`expires_in: 0`). `Inventory` and `DropCurrentSessionContext` work; `ViewerDropsDashboard` returns 0 campaigns. Watching pestily (Tarkov) with the TV login, sending as the TV client: control 3 min not watching stayed at 559; 12 min watching went 559 → 571 (+12, 69/69 sends ok). So the TV login earns minutes 1:1. Claiming with it is untested (GrubDrops reports it works). Discovery would need an outside catalogue: twitch-drops-api.sunkwi.com/v2/drops had 123 campaigns / 98 games with Twitch's own IDs, refreshed every 60 s. Login revoked after the test. |
 
-**Chosen method: browser sign-in with Android delegation**, as fireph's `webui/browser_login.py` does it.
-It is proven by Nick's running container, which lists campaigns he never started.
+**Chosen method (2026-10-10): the TV code login plus a public campaign catalogue.** Nick compared
+both options with mockups (`docs/design/signin-options.html`, option A) and chose this one.
 
-1. When the owner presses **Sign in to Twitch**, the server starts Chromium in a virtual display (Xvfb)
-   on `twitch.tv/login`. It streams the browser to the page through noVNC, proxied over the app's own
-   port.
-2. The owner signs in on the real Twitch page, including 2FA.
-3. The automation (CDP) intercepts the POST to `passport.twitch.tv/protected_login` (and `/shim`). It
-   sets `client_id` to the WEB client and `delegate_client_id` to the Android app client, so Twitch
-   issues an **Android-app token**.
-4. The server checks the token with `id.twitch.tv/oauth2/validate`. It accepts it only if the client ID
-   is the Android app's. Then it stores the token and closes the browser.
-5. Chromium and the virtual display run only during sign-in. They stay up until sign-in finishes or the
-   owner presses Cancel. They also close if no page has been watching the sign-in for 10 minutes. There
-   is no timer on the owner's typing.
+**Sign-in (`twitch/auth`, `DeviceCodeSignIn`)**
+1. The owner presses **Get a sign-in code**. The server asks `id.twitch.tv/oauth2/device` for a code
+   with Twitch's own TV client (`SMARTBOX`, `ue6666qo…`). The page shows the 8-letter code, a link to
+   `twitch.tv/activate`, a QR code and the time left (30 minutes).
+2. The owner enters the code on any device and clicks Authorize. The server polls the token endpoint
+   at the interval Twitch gives. It has no timeout of its own; the code's own expiry ends it.
+3. The server validates the token. It accepts it only if the client ID is the TV client's. Then it
+   stores the session.
+4. Every Twitch call is sent as the session's own client: the TV client for a TV login. Sending a TV
+   token under another client ID earns no watch time (upstream GrubDrops report). The spade URL is
+   still scraped from the normal `www.twitch.tv` channel page.
 
-The Android token is used for everything else: GQL, PubSub, heartbeat and claims. The original and the
-fork both run that way today.
+The browser sign-in with Android delegation (phase 1) stays in the code as a **manual fallback on a
+PC** only: `dropsminer signin --browser`. An existing Android session keeps working; the session's
+client ID decides which client is used. Docker ships without a browser.
 
-**Swappable.** `twitch/auth` exposes one interface: `SessionProvider.sign_in()`, which returns a
-`TwitchSession` (token, client info, device id, user id). If browser sign-in breaks, a TV-code provider
-can replace it. That would also need a campaign source other than `ViewerDropsDashboard`, which is out of
-scope for v1.
+**Discovery (`twitch/catalog`)**
+- If `ViewerDropsDashboard` returns campaigns (an Android session), it is the source, as before.
+- Otherwise the campaign list comes from the public catalogue
+  `https://twitch-drops-api.sunkwi.com/v2/drops`: Twitch's own campaign records (same IDs and fields),
+  republished by an anonymous third party, refreshed every 60 s. It is fetched hourly, with a
+  separate cookie-less HTTP session, and **nothing about the account is ever sent to it**.
+- `Inventory` is merged over the catalogue, so the account's own state (progress, claimed, linked) always
+  wins.
+- The last good catalogue is kept in `/data/catalog.json`, so a restart while the catalogue is down
+  still has campaigns. A catalogue older than 6 hours counts as stale.
+- **If the catalogue is unreachable or stale:** campaigns already in `Inventory` keep mining and claiming.
+  New campaigns are not discovered until it is back. The state carries `catalog: {status, since}`, and
+  Overview shows a warning banner ("Can't reach the campaign list since 14:05").
 
-**UI consequence.** The approved mockup's "sign-in expired" banner shows a device code. That flow no
-longer applies. The banner needs a **Sign in to Twitch** button that opens the embedded browser view.
-The first-run screens (set the page password, then sign in to Twitch) also don't exist in the mockup yet.
-**Both get a mockup round before they are built.**
+**Account links are unknown for campaigns not yet started.** Neither the catalogue nor the TV login says
+whether a game account is linked until the campaign appears in `Inventory`. So:
+- `Campaign.linked` becomes `True`, `False` or **unknown**. The planner treats unknown as eligible.
+- The runner watches the progress of a campaign whose link is unknown. If its minutes don't move for
+  **10 minutes** of successful watching, it marks the campaign **may need linking** and stops choosing
+  it. It shows in Needs you with the catalogue's link URL. The mark clears when `Inventory` reports the
+  campaign as linked, or after 6 hours.
+
+Spike results for this method are the 2026-10-10 rows in the table above. **Not yet proven here: claiming
+with the TV login** (reported to work by GrubDrops). The first real claim after switching confirms it.
+
+**UI consequence.** The approved mockup's device-code banner flow applies again, redrawn in
+`docs/design/signin-options.html` (option A): Ready → Code → Expired → Connected, the signed-out banner,
+and the catalogue-down banner.
 
 ## 5. Architecture
 
@@ -134,7 +154,8 @@ Each unit has one job and a small interface. Nothing below `api` knows the UI ex
 
 | Unit | Job | Interface (sketch) | Depends on |
 |---|---|---|---|
-| `twitch/auth` | Get and keep a `TwitchSession` | `SessionProvider.sign_in() -> TwitchSession`; `validate(session) -> bool` | Chromium (only during sign-in) |
+| `twitch/auth` | Get and keep a `TwitchSession` | `DeviceCodeSignIn.start() -> DeviceCode`, `.wait(cancel) -> TwitchSession`; browser sign-in kept for the PC fallback | `id.twitch.tv` |
+| `twitch/catalog` | The public campaign list when Twitch hides it | `await catalog.campaigns() -> list[raw]`, `.status -> (ok \| stale \| unreachable, since)` | the catalogue URL, `/data/catalog.json` |
 | `twitch/gql` | Persisted queries, rate limit, backoff, single retry on `service error` / `PersistedQueryNotFound` | `await gql.inventory()`, `.campaigns()`, `.campaign_details(ids)`, `.current_drop(channel_id)`, `.claim(drop_instance_id)`, `.claim_points(...)`, `.stream_info(logins)` | `TwitchSession` |
 | `twitch/pubsub` | Websocket pool, topic subscribe/unsubscribe, reconnects | async iterator of typed events: `DropProgress`, `DropClaimable`, `StreamUp/Down`, `StreamChanged`, `PointsClaimable` | `TwitchSession` |
 | `twitch/watch` | The minute heartbeat to one channel | `await watch.send(channel) -> bool` | `TwitchSession` |
@@ -148,7 +169,8 @@ Each unit has one job and a small interface. Nothing below `api` knows the UI ex
 Libraries: `aiohttp` (Twitch HTTP and websockets, as in the reference), `fastapi` + `uvicorn` (API and
 SSE), `pydantic` (API models and OpenAPI), `argon2-cffi` (page password), `zendriver` (Chromium CDP, as in
 the fork), Xvfb + x11vnc + noVNC/websockify (sign-in view). Tests: `pytest`, `pytest-asyncio`. Lint:
-`ruff`.
+`ruff`. *(2026-10-10: `zendriver` becomes an optional extra, `[browser]`, for the PC fallback; Xvfb,
+x11vnc and noVNC are dropped.)*
 
 ## 6. The planner (the rules, exactly)
 
@@ -218,6 +240,7 @@ channel stops being eligible. They are not planner inputs that persist forever.
 | `campaign_snapshots` | latest known state per campaign: end time, linked flag, drops with minutes, `blocked_reasons` seen while live (e.g. "no qualifying channel online") |
 | `ended_campaigns` | written once when a campaign ends: rewards got, missed, and a **missed reason** |
 | `events` | a rolling log of runner events (last 7 days) for diagnosis |
+| *(file)* `catalog.json` | the last good copy of the public campaign catalogue |
 
 **Missed-reward reasons**, decided at campaign end from the snapshot. Only for games not on Never:
 
@@ -245,7 +268,7 @@ All endpoints require the page session cookie, except login and first-run setup.
 | `GET /api/suggestions` | Games with campaigns and channels seen, for the add boxes |
 | `GET /api/history?days=30` | Claims grouped by day and campaign; ended campaigns with missed reasons |
 | `GET/PUT /api/settings` · `POST /api/notify/test` | Settings and the "Send test" button |
-| `POST /api/twitch/signin` · `DELETE /api/twitch/signin` · `GET /api/twitch/signin/vnc` (WebSocket) | Start, cancel, and view the sign-in browser |
+| `POST /api/twitch/signin` · `GET /api/twitch/signin` · `DELETE /api/twitch/signin` | Get a sign-in code, read its status (code, link, expiry, waiting/done/expired/failed), cancel |
 | `POST /api/twitch/signout` | Forget the Twitch session |
 | `POST /api/login` · `POST /api/logout` · `POST /api/setup` | Page password: first-run setup, sign-in, sign-out |
 
@@ -262,8 +285,11 @@ The runner reports exactly one state, and the UI renders it. The UI never infers
 | `switched` | the channel changed in the last few minutes (carries from/to) | "Streamer went offline" notice |
 | `paused` | owner paused; carries `until` | Paused banner + dimmed card |
 | `idle` | nothing eligible; carries the next check time and what's first in line | Nothing to mine |
-| `signed_out` | no valid Twitch session | Sign-in banner (re-mocked, section 4) |
+| `signed_out` | no valid Twitch session | Signed-out banner with **Get a sign-in code** (section 4) |
 | `twitch_unreachable` | Twitch calls failing; carries the last success time | Can't reach Twitch |
+
+The catalogue's status is reported **alongside** the state, not as a state: mining continues while it is
+down.
 
 "Can't reach the miner" (UI ↔ API) is detected by the **page** when the SSE stream drops. It is the one
 state the page determines itself, because the server can't report its own absence.
@@ -299,13 +325,13 @@ mockup's Settings:
   - non-breaking spaces between numbers and units.
 - State comes from `GET /api/state` plus SSE events, held in one store. There is no polling except the
   SSE reconnect.
-- **Before building them:** a mockup round for first-run setup and the browser sign-in view (section 4).
+- First-run setup and sign-in follow `docs/design/signin-mockup.html` (page password, page sign-in) and
+  `docs/design/signin-options.html` option A (the code sign-in), both reviewed by Nick on 2026-10-10.
 
 ## 12. Deployment
 
 - One image built from a `Dockerfile` in two stages: build the web UI with Node, then a Python 3.12-slim
-  runtime with Chromium, Xvfb, x11vnc and noVNC. Expected size is about 400 MB, comparable to dungfu's
-  415 MB.
+  runtime. No browser (2026-10-10), so it should be far smaller than dungfu's 415 MB.
 - Runs as a non-root user. `/data` is the only volume. Port `5810` (dungfu uses 5800, so they don't
   clash while both exist). `TZ` env var.
 - Unraid: added as a container through Nick's usual route. The image is built locally or in GitHub
@@ -346,9 +372,11 @@ Each phase ends tested and reviewed before the next one starts.
    - Run with a CLI: sign in through the browser locally, then mine and log.
    - Gate: mines and claims on Nick's account.
 2. **API and store.** All endpoints, SSE, page auth, history tables, OpenAPI types.
-3. **UI.**
-   - Mockup round for first-run and the sign-in view first.
-   - Then build the web app against the API.
+2b. **Code sign-in and catalogue** (added 2026-10-10). TV code login, sending as the session's client,
+   the catalogue source with its cache and status, unknown account links and the "may need linking" rule,
+   sign-in API for codes. Gate: the live miner switches to a TV login on Nick's code, keeps earning, and
+   claims a reward.
+3. **UI.** Build the web app against the API, from the reviewed mockups.
 4. **History, missed reasons, notifications, channel points.**
 5. **Docker image and Unraid.** Image, container, live acceptance, then retire dungfu with Nick's say-so.
 
@@ -357,7 +385,6 @@ Each phase ends tested and reviewed before the next one starts.
 - Multiple Twitch accounts.
 - Mining several channels at once (one session per account).
 - Push channels other than ntfy and Discord.
-- The TV-code sign-in plus an external campaign catalogue.
 - Public release, a Docker Hub image, or docs for other users.
 
 ## 16. Risks
@@ -368,4 +395,6 @@ Each phase ends tested and reviewed before the next one starts.
 | Persisted query hashes rotate | medium | a feature stops (e.g. discovery) | Hashes live in one module; failures are logged by operation name; check upstream for new hashes |
 | Twitch adds integrity checks to the Android token's GQL | low–medium | the miner stops | Same as upstream; nothing better available |
 | Account action for automation (Twitch ToS) | low, accepted | account penalty | Nick's decision. The app behaves like the original (one channel, minute heartbeats). |
-| Chromium sign-in inside the container is fiddly (fonts, sandbox, memory) | medium | phase 5 friction | Reuse the fork's working setup (`Dockerfile.webui`, `entrypoint-webui.sh`) as reference |
+| The public catalogue disappears or goes stale | medium | no new campaigns found; started ones continue | Cached copy, a visible banner, and the PC browser fallback (an Android session lists campaigns itself) |
+| Twitch restricts the TV client further (it already hid the campaign list) | medium | sign-in or mining breaks | The browser fallback; watch upstream #1165/#1180 |
+| Claiming with the TV login doesn't work | low (reported working) | rewards reach 100% but aren't claimed | Proven or disproven on the first real claim after switching; the Android session is the fallback |
