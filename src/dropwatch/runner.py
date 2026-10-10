@@ -35,6 +35,9 @@ BACKOFF_START, BACKOFF_MAX = 60.0, 600.0
 # spec §4 (2026-10-10): an unknown account link that earns nothing for 10 minutes of good playback
 LINK_PROBE_TICKS = 60  # ticks are PLAY_INTERVAL (10 s) apart
 MAYBE_UNLINKED_FOR = timedelta(hours=6)
+# earning doesn't prove the link: Twitch's inventory does, once it lists the campaign (ER ESPORTS DROPS,
+# 2026-10-10: an hour of counted minutes, then isAccountConnected false and no reward)
+LINK_RECHECK = timedelta(minutes=10)
 # GqlError covers TwitchUnreachable; the rest are unexpected response shapes from parsing.
 TWITCH_ERRORS = (GqlError, KeyError, TypeError, ValueError)
 
@@ -78,6 +81,7 @@ class Runner:
         self._retry_refresh_at: datetime | None = None
         self.last_switch: dict | None = None  # {"from", "to", "at"}
         self._link_probe: dict[str, tuple[int, int]] = {}  # campaign -> (good ticks, minutes at start)
+        self._link_recheck: dict[str, datetime] = {}  # unknown-link campaign -> campaigns last re-read for it
         self.maybe_unlinked: dict[str, datetime] = {}  # campaign -> marked at
         self._mined_on: dict[str, str] = {}  # campaign -> channel last watched for it (History details)
 
@@ -220,7 +224,13 @@ class Runner:
         total = sum(d.current_minutes for d in c.drops)
         ticks, start = self._link_probe.get(c.id, (0, total))
         if total > start:
-            self._link_probe.pop(c.id, None)  # it earns: whatever the link says, it works
+            # it earns, but that doesn't prove the link: re-read Twitch's campaigns now, then every
+            # LINK_RECHECK while the link is still unknown, rather than waiting for the hourly fetch
+            self._link_probe.pop(c.id, None)
+            last = self._link_recheck.get(c.id)
+            if last is None or now - last >= LINK_RECHECK:
+                self._link_recheck[c.id] = now
+                await self.refresh(force_campaigns=True)
             return
         ticks += 1
         if ticks < LINK_PROBE_TICKS:
