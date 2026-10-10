@@ -163,7 +163,10 @@ function gameInfo(state: State | null): Info {
   if (state.current) put(state.current.campaign, `Mining now · ${dur(state.current.campaign.minutes_needed)} to go · ends ${day(state.current.campaign.ends_at)}`);
   for (const c of state.needs_you) put(c, `${c.maybe_unlinked ? "May need account link" : "Needs account link"} · ends ${day(c.ends_at)}`, true);
   for (const c of state.up_next) put(c, `${dur(c.minutes_needed)} to go · ends ${day(c.ends_at)}`);
-  for (const c of state.done) put(c, `All ${c.drops.reduce((n, d) => n + d.rewards.length, 0)} rewards claimed`);
+  for (const c of state.done) {
+    const n = c.drops.reduce((k, d) => k + d.rewards.length, 0);
+    put(c, `All ${n} ${n === 1 ? "reward" : "rewards"} claimed`);
+  }
   return m;
 }
 

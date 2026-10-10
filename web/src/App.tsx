@@ -75,6 +75,10 @@ function MinerDown() {
 function Shell() {
   const { me, announcement, connection } = useApp();
   const view = useView();
+  useEffect(() => {
+    if (me?.setup_required) document.title = "Set up · Dropwatch";
+    else if (me && !me.authenticated) document.title = "Sign in · Dropwatch";
+  }, [me]);
   let body: ReactNode;
   let tabs = false;
   if (!me) body = connection === "lost" ? <MinerDown /> : null;

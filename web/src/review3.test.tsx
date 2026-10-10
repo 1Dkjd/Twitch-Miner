@@ -81,3 +81,17 @@ test("the Twitch step says 'already connected' when the miner is signed in", asy
   expect(screen.queryByRole("button", { name: "Get a sign-in code" })).not.toBeInTheDocument();
   sessionStorage.clear();
 });
+
+// found at the live gate: the catalogue can queue dozens of campaigns
+test("Up next shows the next 5 and the rest on request", async () => {
+  desktop();
+  const s = state();
+  s.up_next = Array.from({ length: 12 }, (_, i) => ({ ...s.up_next[0]!, id: `u${i}`, name: `Camp ${i}` }));
+  mockApi({ "GET /api/state": s, "GET /api/lists": { priority: [], never: [], favourites: [] } });
+  render(<AppProvider initialMe={ME}><OverviewView /></AppProvider>);
+  expect(await screen.findByText("Camp 4")).toBeInTheDocument();
+  expect(screen.queryByText("Camp 5")).not.toBeInTheDocument();
+  const more = screen.getByRole("button", { name: /Show all 12/ });
+  more.click();
+  expect(await screen.findByText("Camp 11")).toBeInTheDocument();
+});

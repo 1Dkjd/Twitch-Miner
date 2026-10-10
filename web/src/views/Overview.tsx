@@ -311,13 +311,17 @@ function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) =>
 
 function UpNext({ state, priorityOf }: { state: State; priorityOf: (g: string) => string | null }) {
   const { refreshState, say } = useApp();
+  const [all, setAll] = useState(false);
   if (!state.up_next.length) return null;
   const curGame = state.current?.campaign.game;
+  // the catalogue can queue dozens of campaigns: show the next few, the rest on request
+  const shown = all ? state.up_next : state.up_next.slice(0, UP_NEXT_SHOWN);
+  const more = state.up_next.length - UP_NEXT_SHOWN;
   return (
     <Sec id="next" title="Up next" count={state.up_next.length}
       aside={curGame ? `Starts when ${curGame} is done or its streams go offline` : undefined}>
-      <div className="list">
-        {state.up_next.map((c) => {
+      <div className="list" id="up-next-list">
+        {shown.map((c) => {
           const { watched, max } = milestones(c.drops);
           const r = firstReward(c);
           const pr = priorityOf(c.game);
@@ -346,9 +350,15 @@ function UpNext({ state, priorityOf }: { state: State; priorityOf: (g: string) =
           );
         })}
       </div>
+      {more > 0 && (
+        <button className="btn quiet more" type="button" aria-expanded={all} aria-controls="up-next-list" onClick={() => setAll(!all)}>
+          {all ? "Show only the next " + UP_NEXT_SHOWN : `Show all ${state.up_next.length}`}<Icon name="down" className="chev" /></button>
+      )}
     </Sec>
   );
 }
+
+const UP_NEXT_SHOWN = 5;
 
 function Done({ state }: { state: State }) {
   const [open, setOpen] = useState(false);
