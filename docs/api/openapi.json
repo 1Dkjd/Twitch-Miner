@@ -515,6 +515,190 @@
     "title": "MineNowIn",
     "type": "object"
    },
+   "NotifyChannelIn": {
+    "properties": {
+     "values": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "maxProperties": 5,
+      "title": "Values",
+      "type": "object"
+     }
+    },
+    "title": "NotifyChannelIn",
+    "type": "object"
+   },
+   "NotifyChannelOut": {
+    "properties": {
+     "configured": {
+      "title": "Configured",
+      "type": "boolean"
+     },
+     "fields": {
+      "items": {
+       "$ref": "#/components/schemas/NotifyFieldOut"
+      },
+      "title": "Fields",
+      "type": "array"
+     },
+     "hint": {
+      "title": "Hint",
+      "type": "string"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "summary": {
+      "title": "Summary",
+      "type": "string"
+     },
+     "type": {
+      "title": "Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "type",
+     "name",
+     "configured",
+     "summary",
+     "hint",
+     "fields"
+    ],
+    "title": "NotifyChannelOut",
+    "type": "object"
+   },
+   "NotifyChannelsOut": {
+    "properties": {
+     "available": {
+      "items": {
+       "$ref": "#/components/schemas/NotifyKind"
+      },
+      "title": "Available",
+      "type": "array"
+     },
+     "channels": {
+      "items": {
+       "$ref": "#/components/schemas/NotifyChannelOut"
+      },
+      "title": "Channels",
+      "type": "array"
+     }
+    },
+    "required": [
+     "channels",
+     "available"
+    ],
+    "title": "NotifyChannelsOut",
+    "type": "object"
+   },
+   "NotifyFieldOut": {
+    "properties": {
+     "key": {
+      "title": "Key",
+      "type": "string"
+     },
+     "label": {
+      "title": "Label",
+      "type": "string"
+     },
+     "secret": {
+      "title": "Secret",
+      "type": "boolean"
+     },
+     "set": {
+      "title": "Set",
+      "type": "boolean"
+     },
+     "value": {
+      "title": "Value",
+      "type": "string"
+     }
+    },
+    "required": [
+     "key",
+     "label",
+     "secret",
+     "value",
+     "set"
+    ],
+    "title": "NotifyFieldOut",
+    "type": "object"
+   },
+   "NotifyKind": {
+    "properties": {
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "type": {
+      "title": "Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "type",
+     "name"
+    ],
+    "title": "NotifyKind",
+    "type": "object"
+   },
+   "NotifyResult": {
+    "properties": {
+     "message": {
+      "title": "Message",
+      "type": "string"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "ok": {
+      "title": "Ok",
+      "type": "boolean"
+     },
+     "type": {
+      "title": "Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "type",
+     "name",
+     "ok",
+     "message"
+    ],
+    "title": "NotifyResult",
+    "type": "object"
+   },
+   "NotifyTestOut": {
+    "properties": {
+     "message": {
+      "title": "Message",
+      "type": "string"
+     },
+     "ok": {
+      "title": "Ok",
+      "type": "boolean"
+     },
+     "results": {
+      "items": {
+       "$ref": "#/components/schemas/NotifyResult"
+      },
+      "title": "Results",
+      "type": "array"
+     }
+    },
+    "required": [
+     "ok",
+     "message",
+     "results"
+    ],
+    "title": "NotifyTestOut",
+    "type": "object"
+   },
    "PasswordIn": {
     "properties": {
      "password": {
@@ -567,6 +751,7 @@
     "type": "object"
    },
    "SettingsIn": {
+    "additionalProperties": false,
     "properties": {
      "claim_points": {
       "anyOf": [
@@ -590,7 +775,7 @@
       ],
       "title": "Mine Badges"
      },
-     "notify_claimed": {
+     "notify_claim_failed": {
       "anyOf": [
        {
         "type": "boolean"
@@ -599,7 +784,7 @@
         "type": "null"
        }
       ],
-      "title": "Notify Claimed"
+      "title": "Notify Claim Failed"
      },
      "notify_needs_you": {
       "anyOf": [
@@ -612,6 +797,30 @@
       ],
       "title": "Notify Needs You"
      },
+     "notify_not_earning": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Not Earning"
+     },
+     "notify_not_earning_minutes": {
+      "anyOf": [
+       {
+        "maximum": 240.0,
+        "minimum": 10.0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Not Earning Minutes"
+     },
      "notify_signin": {
       "anyOf": [
        {
@@ -623,17 +832,40 @@
       ],
       "title": "Notify Signin"
      },
-     "notify_target": {
+     "notify_stopped": {
       "anyOf": [
        {
-        "maxLength": 500,
-        "type": "string"
+        "type": "boolean"
        },
        {
         "type": "null"
        }
       ],
-      "title": "Notify Target"
+      "title": "Notify Stopped"
+     },
+     "notify_unreachable": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Unreachable"
+     },
+     "notify_unreachable_minutes": {
+      "anyOf": [
+       {
+        "maximum": 240.0,
+        "minimum": 5.0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Unreachable Minutes"
      }
     },
     "title": "SettingsIn",
@@ -649,30 +881,50 @@
       "title": "Mine Badges",
       "type": "boolean"
      },
-     "notify_claimed": {
-      "title": "Notify Claimed",
+     "notify_claim_failed": {
+      "title": "Notify Claim Failed",
       "type": "boolean"
      },
      "notify_needs_you": {
       "title": "Notify Needs You",
       "type": "boolean"
      },
+     "notify_not_earning": {
+      "title": "Notify Not Earning",
+      "type": "boolean"
+     },
+     "notify_not_earning_minutes": {
+      "title": "Notify Not Earning Minutes",
+      "type": "integer"
+     },
      "notify_signin": {
       "title": "Notify Signin",
       "type": "boolean"
      },
-     "notify_target": {
-      "title": "Notify Target",
-      "type": "string"
+     "notify_stopped": {
+      "title": "Notify Stopped",
+      "type": "boolean"
+     },
+     "notify_unreachable": {
+      "title": "Notify Unreachable",
+      "type": "boolean"
+     },
+     "notify_unreachable_minutes": {
+      "title": "Notify Unreachable Minutes",
+      "type": "integer"
      }
     },
     "required": [
      "mine_badges",
      "claim_points",
-     "notify_target",
-     "notify_claimed",
+     "notify_signin",
+     "notify_unreachable",
+     "notify_not_earning",
+     "notify_claim_failed",
+     "notify_stopped",
      "notify_needs_you",
-     "notify_signin"
+     "notify_unreachable_minutes",
+     "notify_not_earning_minutes"
     ],
     "title": "SettingsOut",
     "type": "object"
@@ -1208,6 +1460,130 @@
      }
     },
     "summary": "Mine Now"
+   }
+  },
+  "/api/notify/channels": {
+   "get": {
+    "operationId": "get_channels_api_notify_channels_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/NotifyChannelsOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Channels"
+   }
+  },
+  "/api/notify/channels/{kind}": {
+   "delete": {
+    "operationId": "delete_channel_api_notify_channels__kind__delete",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/NotifyChannelsOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Delete Channel"
+   },
+   "put": {
+    "description": "Adds the channel if new; changes only the fields given (\"\" clears one).",
+    "operationId": "put_channel_api_notify_channels__kind__put",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NotifyChannelIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/NotifyChannelsOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Put Channel"
+   }
+  },
+  "/api/notify/test": {
+   "post": {
+    "description": "Settings' \"Send test notification\": every set-up channel, one result each.",
+    "operationId": "notify_test_api_notify_test_post",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/NotifyTestOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Notify Test"
    }
   },
   "/api/pause": {

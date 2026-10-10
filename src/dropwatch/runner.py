@@ -290,6 +290,10 @@ class Runner:
                                       campaign_ends=c.ends_at, box_art_url=c.game.box_art_url)
             return True
         self._store.log_event("claim_failed", {"campaign": c.name, "drop": drop_id})
+        # for the "a reward couldn't be claimed" notification; same shape as "claimed", so a later
+        # success matches it
+        self._emit("claim_failed", {"campaign": c.name,
+                                    "reward": ", ".join(r.name for r in d.rewards) if d else drop_id})
         return False
 
     async def tick(self) -> None:

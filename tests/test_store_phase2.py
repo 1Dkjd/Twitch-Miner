@@ -51,10 +51,10 @@ def test_web_sessions_store_only_hash_and_expire(tmp_path):
 def test_settings_typed_defaults_and_validation(tmp_path):
     st = Store(tmp_path / "d.db")
     s = st.get_settings()
-    assert s == {"mine_badges": False, "claim_points": True, "notify_target": "",
-                 "notify_claimed": True, "notify_needs_you": True, "notify_signin": True}
-    out = st.put_settings({"mine_badges": True, "notify_target": "https://ntfy.sh/x"})
-    assert out["mine_badges"] is True and out["notify_target"] == "https://ntfy.sh/x"
+    # notification defaults are covered in test_notify_store (the single-URL design was replaced 2026-10-10)
+    assert (s["mine_badges"], s["claim_points"]) == (False, True)
+    out = st.put_settings({"mine_badges": True, "notify_signin": False})
+    assert out["mine_badges"] is True and out["notify_signin"] is False
     assert st.get_prefs().mine_badges is True
     with pytest.raises(ValueError):
         st.put_settings({"unknown": 1})
