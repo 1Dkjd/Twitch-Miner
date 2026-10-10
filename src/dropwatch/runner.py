@@ -76,8 +76,15 @@ class Runner:
         self._gave_up_claim: set[str] = set()
         self._refresh_backoff = 0.0
         self._retry_refresh_at: datetime | None = None
+        self.last_switch: dict | None = None  # {"from", "to", "at"}
         self._link_probe: dict[str, tuple[int, int]] = {}  # campaign -> (good ticks, minutes at start)
         self.maybe_unlinked: dict[str, datetime] = {}  # campaign -> marked at
+
+    @property
+    def next_check_at(self) -> datetime | None:
+        if self.state == State.TWITCH_UNREACHABLE and self._retry_refresh_at is not None:
+            return self._retry_refresh_at
+        return self.last_refresh + REFRESH_EVERY if self.last_refresh else None
 
     @property
     def catalog_status(self):
@@ -173,6 +180,7 @@ class Runner:
             elif previous and previous.login != self.watching.login:
                 self._fails = 0
                 info = {"from": previous.login, "to": self.watching.login}
+                self.last_switch = {**info, "at": now}
                 self._emit("switched", info)
                 self._store.log_event("switched", info)
                 self._set_state(State.SWITCHED, info)

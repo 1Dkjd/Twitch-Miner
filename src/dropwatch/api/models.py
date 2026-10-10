@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field, StrictBool
+from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
 
 class RewardOut(BaseModel):
@@ -49,6 +49,14 @@ class CurrentOut(BaseModel):
     reason: str
     channel_reason: str
     also_credited: list[str]
+    channels: list[ChannelOut] = []  # other live channels that qualify (the "change" picker)
+
+
+class SwitchOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    from_: str = Field(alias="from")
+    to: str
+    at: datetime
 
 
 class CatalogOut(BaseModel):
@@ -66,7 +74,9 @@ class StateOut(BaseModel):
     needs_you: list[CampaignOut]
     up_next: list[CampaignOut]
     done: list[CampaignOut]
-    catalog: CatalogOut | None = None  # set when campaigns come from the public catalogue (TV login)
+    catalog: CatalogOut | None = None
+    last_switch: SwitchOut | None = None  # for 10 minutes after the channel changed
+    next_check_at: datetime | None = None  # set when campaigns come from the public catalogue (TV login)
 
 
 class ListsIn(BaseModel):

@@ -36,7 +36,7 @@ class Plan:
     also_credited: tuple[str, ...] = ()
 
 
-def _qualifies(c: Campaign, ch: LiveChannel) -> bool:
+def qualifies(c: Campaign, ch: LiveChannel) -> bool:
     if not ch.drops_enabled:
         return False
     if c.allowed_logins and ch.login not in c.allowed_logins:
@@ -86,7 +86,7 @@ def plan(
             continue
         if not any(drop_earnable_now(c, d, now) for d in c.drops):
             continue
-        chans = [ch for ch in live if _qualifies(c, ch)]
+        chans = [ch for ch in live if qualifies(c, ch)]
         if chans:
             qualifying[c.id] = sorted(chans, key=lambda ch: _channel_rank(c, ch, prefs))
 
@@ -129,7 +129,7 @@ def plan(
 
     also = tuple(
         c.id for c in eligible
-        if c.id != chosen.id and c.game.id == chosen.game.id and _qualifies(c, channel)
+        if c.id != chosen.id and c.game.id == chosen.game.id and qualifies(c, channel)
     )
     queue = tuple(c.id for c in eligible if c.id != chosen.id)
     return Plan(

@@ -4,9 +4,11 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 from ..runner import State
 from .auth import private_auth, public, require_session
@@ -147,6 +149,12 @@ async def events(request: Request) -> StreamingResponse:
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+@api.post("/refresh", status_code=204)
+async def check_now(request: Request) -> None:
+    """The idle card's "Check now": re-read campaigns and live channels immediately."""
+    await _runner(_c(request)).refresh(force_campaigns=True)
+
+
 @api.post("/twitch/signin", status_code=202, response_model=SignInStatus)
 async def signin_start(request: Request) -> SignInStatus:
     status = await _c(request).signin.start()
@@ -173,10 +181,31 @@ async def signout(request: Request) -> None:
     ctx.bus.publish("signin", {"status": "signed_out", "message": ""})
 
 
-def create_app(ctx: AppContext) -> FastAPI:
-    app = FastAPI(title="Dropwatch", version="0.2.0", docs_url=None, redoc_url=None)
+def create_app(ctx: AppContext, web_dir: Path | None = None) -> FastAPI:
+    app = FastAPI(title="Dropwatch", version="0.3.0", docs_url=None, redoc_url=None)
     app.state.ctx = ctx
     app.include_router(public)
     app.include_router(private_auth)
     app.include_router(api)
+    if web_dir is not None and (web_dir / "index.html").is_file():
+        _serve_web(app, web_dir)
     return app
+
+
+def _serve_web(app: FastAPI, web_dir: Path) -> None:
+    """The built page (web/dist): its assets, and index.html for every other non-API path."""
+    if (web_dir / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=web_dir / "assets"), name="assets")
+    index = web_dir / "index.html"
+    root = web_dir.resolve()
+
+    @app.get("/{path:path}", include_in_schema=False)
+    async def page(path: str):
+        if path == "api" or path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="Not Found")
+        # all handlers stay async (one event loop owns the store and runner); these checks are on
+        # small local files, so the blocking cost is negligible
+        f = (web_dir / path).resolve()  # noqa: ASYNC240
+        if path and f.is_relative_to(root) and f.is_file():  # noqa: ASYNC240
+            return FileResponse(f)
+        return FileResponse(index)

@@ -211,6 +211,14 @@
       "title": "Channel Reason",
       "type": "string"
      },
+     "channels": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/ChannelOut"
+      },
+      "title": "Channels",
+      "type": "array"
+     },
      "reason": {
       "title": "Reason",
       "type": "string"
@@ -663,6 +671,16 @@
       ],
       "title": "Last Refresh"
      },
+     "last_switch": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/SwitchOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
      "login": {
       "anyOf": [
        {
@@ -680,6 +698,18 @@
       },
       "title": "Needs You",
       "type": "array"
+     },
+     "next_check_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Next Check At"
      },
      "paused_until": {
       "anyOf": [
@@ -747,6 +777,30 @@
     "title": "SuggestionsOut",
     "type": "object"
    },
+   "SwitchOut": {
+    "properties": {
+     "at": {
+      "format": "date-time",
+      "title": "At",
+      "type": "string"
+     },
+     "from": {
+      "title": "From",
+      "type": "string"
+     },
+     "to": {
+      "title": "To",
+      "type": "string"
+     }
+    },
+    "required": [
+     "from",
+     "to",
+     "at"
+    ],
+    "title": "SwitchOut",
+    "type": "object"
+   },
    "ValidationError": {
     "properties": {
      "ctx": {
@@ -791,7 +845,7 @@
  },
  "info": {
   "title": "Dropwatch",
-  "version": "0.2.0"
+  "version": "0.3.0"
  },
  "openapi": "3.1.0",
  "paths": {
@@ -1078,6 +1132,18 @@
      }
     },
     "summary": "Pause"
+   }
+  },
+  "/api/refresh": {
+   "post": {
+    "description": "The idle card's \"Check now\": re-read campaigns and live channels immediately.",
+    "operationId": "check_now_api_refresh_post",
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Check Now"
    }
   },
   "/api/resume": {
