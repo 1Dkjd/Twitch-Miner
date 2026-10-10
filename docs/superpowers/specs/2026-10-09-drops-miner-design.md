@@ -402,7 +402,6 @@ Each phase ends tested and reviewed before the next one starts.
 
 - Multiple Twitch accounts.
 - Mining several channels at once (one session per account).
-- Push channels other than ntfy and Discord.
 - Public release, a Docker Hub image, or docs for other users.
 
 ## 16. Risks
