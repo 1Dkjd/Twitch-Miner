@@ -80,3 +80,8 @@
 .g.lifted { background: var(--surface); border-radius: 10px; box-shadow: 0 14px 34px rgba(0, 0, 0, .45), 0 0 0 1px var(--accent-soft); cursor: grabbing; }
 .zone.over { background: var(--accent-soft); }
 @media (prefers-reduced-motion: reduce) { .g { transition: none !important; } }
+/* Up next rows carry a progress bar and two buttons: on phones the bar takes its own line above them */
+@media (max-width: 720px) {
+  .row-acts:has(> .mini) { flex-wrap: wrap; }
+  .row-acts > .mini { flex-basis: 100%; }
+}
