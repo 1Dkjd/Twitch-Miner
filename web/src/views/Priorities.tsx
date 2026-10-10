@@ -1,3 +1,9 @@
+import {
+  DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, useDroppable, useSensor, useSensors,
+  type DragEndEvent, type DragOverEvent, type DragStartEvent,
+} from "@dnd-kit/core";
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS as DndCSS } from "@dnd-kit/utilities";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api, type Campaign, type Lists, type State, type Suggestions } from "../api/client";
 import { useLists } from "../lists";
@@ -20,7 +26,13 @@ export function PrioritiesView() {
   const { lists, save } = useLists();
   const [sugg, setSugg] = useState<Suggestions>({ games: [], channels: [] });
   const [focus, setFocus] = useState<[string, string] | null>(null);
-  const drag = useRef<string | null>(null);
+  const [draft, setDraft] = useState<Lists | null>(null);
+  const [active, setActive] = useState<string | null>(null);
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }), // buttons in the row still click
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }), // a press, so phones can scroll
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
   useEffect(() => { api.get<Suggestions>("/suggestions").then(setSugg).catch(() => undefined); }, []);
   useEffect(() => {
     if (!focus) return;
@@ -81,20 +93,45 @@ export function PrioritiesView() {
     }
   }
 
-  // drag and drop between Priority and Never, and within each ordered list (drag ref is above)
-  function drop(e: React.DragEvent<HTMLDivElement>, z: Zone) {
-    e.preventDefault();
-    e.currentTarget.classList.remove("over");
-    const name = drag.current;
-    if (!name) return;
-    if ((z === "fav") !== (zoneOf(name) === "fav")) return; // channels and games don't mix
-    let index: number | undefined;
-    if (z !== "never") {
-      const rows = [...e.currentTarget.querySelectorAll<HTMLElement>(".g")].filter((r) => r.dataset.name !== name);
-      index = rows.findIndex((r) => { const b = r.getBoundingClientRect(); return e.clientY < b.top + b.height / 2; });
-      if (index < 0) index = rows.length;
+  /* Drag to reorder (dnd-kit): the row lifts and follows the pointer while the others slide apart; games can
+   * also move between Priority and Never; the save happens once, on drop. */
+  const shown = draft ?? lists;
+  const containerOf = (id: string, L: Lists): Zone | null =>
+    (["priority", "never", "fav"] as Zone[]).find((z) => z === id || L[KEY[z]].includes(id)) ?? null;
+  function onDragStart(e: DragStartEvent) {
+    setActive(String(e.active.id));
+    setDraft({ priority: [...lists!.priority], never: [...lists!.never], favourites: [...lists!.favourites] });
+  }
+  function onDragOver(e: DragOverEvent) {
+    if (!e.over || !draft) return;
+    const id = String(e.active.id);
+    const from = containerOf(id, draft);
+    const to = containerOf(String(e.over.id), draft);
+    if (!from || !to || from === to || (from === "fav") !== (to === "fav")) return; // channels and games don't mix
+    const target = draft[KEY[to]];
+    const overIdx = target.indexOf(String(e.over.id));
+    const next = { ...draft, [KEY[from]]: draft[KEY[from]].filter((n) => n !== id) } as Lists;
+    const list = [...target];
+    list.splice(overIdx < 0 ? list.length : overIdx, 0, id);
+    setDraft({ ...next, [KEY[to]]: list });
+  }
+  function onDragEnd(e: DragEndEvent) {
+    const id = String(e.active.id);
+    let next = draft;
+    setActive(null);
+    setDraft(null);
+    if (!next || !e.over) return;
+    const z = containerOf(id, next);
+    if (z) {
+      const L = next[KEY[z]];
+      const a = L.indexOf(id);
+      const b = L.indexOf(String(e.over.id));
+      if (b >= 0 && a !== b) next = { ...next, [KEY[z]]: arrayMove(L, a, b) };
     }
-    void commit(moved(name, z, index), `${name} moved to ${z === "never" ? "Never" : z === "fav" ? "favourite channels" : "Priority"}`);
+    const same = (["priority", "never", "favourites"] as const).every((k) => next![k].join("\n") === lists![k].join("\n"));
+    if (same || !z) return;
+    const pos = next[KEY[z]].indexOf(id) + 1;
+    void commit(next, z === "never" ? `${id} moved to Never` : `${id} moved to position ${pos} of ${next[KEY[z]].length} in ${z === "fav" ? "favourite channels" : "Priority"}`);
   }
 
   const info = gameInfo(state);
@@ -104,19 +141,19 @@ export function PrioritiesView() {
   const knownCh = sugg.channels.filter((c) => !lists.favourites.includes(c));
 
   const zone = (z: Zone) => {
-    const list = lists[KEY[z]];
+    const list = shown[KEY[z]];
     return (
-      <div className="zone" data-zone={z} id={`z-${z}`}
-        onDragOver={(e) => { if (!drag.current) return; e.preventDefault(); e.currentTarget.classList.add("over"); }}
-        onDragLeave={(e) => e.currentTarget.classList.remove("over")}
-        onDrop={(e) => drop(e, z)}>
-        {list.length ? list.map((n, i) => (
-          <Row key={n} name={n} zone={z} i={i} n={list.length} info={info} live={liveChannels.has(n) ? liveGame : undefined}
-            onAct={onAct} onDragStart={() => { drag.current = n; }} onDragEnd={() => { drag.current = null; }} />
-        )) : <div className="empty">{EMPTY[z]}</div>}
-      </div>
+      <DropZone id={z}>
+        <SortableContext items={list} strategy={verticalListSortingStrategy}>
+          {list.length ? list.map((n, i) => (
+            <SortableRow key={n} name={n} zone={z} i={i} n={list.length} info={info} live={liveChannels.has(n) ? liveGame : undefined}
+              onAct={onAct} />
+          )) : <div className="empty">{EMPTY[z]}</div>}
+        </SortableContext>
+      </DropZone>
     );
   };
+  const activeZone = active ? containerOf(active, shown) : null;
 
   return (
     <section className="view" id="v-priorities" aria-labelledby="h-priorities">
@@ -124,22 +161,31 @@ export function PrioritiesView() {
       <p className="lead">Every game with a drop campaign gets mined. Games in Priority go first, in your order. Games not listed here are mined after them, most urgent first. Overview shows the full order under Up next.</p>
       <datalist id="campaign-games">{pool.map((g) => <option key={g} value={g} />)}</datalist>
       <datalist id="known-channels">{knownCh.map((c) => <option key={c} value={c} />)}</datalist>
-      <Bucket title="Priority" count={lists.priority.length} help="Mined first, top to bottom.">
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragOver={onDragOver}
+        onDragEnd={onDragEnd} onDragCancel={() => { setActive(null); setDraft(null); }}>
+      <Bucket title="Priority" count={shown.priority.length} help="Mined first, top to bottom.">
         {zone("priority")}
         <AddForm to="priority" list="campaign-games" placeholder="Add a game" known={sugg.games} label="Add a game to Priority"
           onAdd={(name) => commit(moved(name, "priority"), `${name} added to Priority`)} />
       </Bucket>
-      <Bucket title="Favourite channels" count={lists.favourites.length}
+      <Bucket title="Favourite channels" count={shown.favourites.length}
         help="When a campaign can be mined on several live channels, these get watched first, top to bottom. Your game order above still decides which campaign.">
         {zone("fav")}
         <AddForm to="fav" list="known-channels" placeholder="Add a channel" known={sugg.channels} label="Add a favourite channel"
           onAdd={(name) => commit(moved(name.toLowerCase(), "fav"), `${name} added to favourite channels`)} />
       </Bucket>
-      <Bucket title="Never" count={lists.never.length} help="Never mined, even when nothing else is live.">
+      <Bucket title="Never" count={shown.never.length} help="Never mined, even when nothing else is live.">
         {zone("never")}
         <AddForm to="never" list="campaign-games" placeholder="Add a game" known={sugg.games} label="Add a game to Never"
           onAdd={(name) => commit(moved(name, "never"), `${name} added to Never`)} />
       </Bucket>
+      <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(.2,.8,.2,1)" }}>
+        {active && activeZone ? (
+          <RowBody name={active} zone={activeZone} i={shown[KEY[activeZone]].indexOf(active)} n={shown[KEY[activeZone]].length}
+            info={info} live={liveChannels.has(active) ? liveGame : undefined} onAct={() => undefined} lifted />
+        ) : null}
+      </DragOverlay>
+      </DndContext>
     </section>
   );
 }
@@ -170,17 +216,30 @@ function gameInfo(state: State | null): Info {
   return m;
 }
 
-function Row({ name, zone, i, n, info, live, onAct, onDragStart, onDragEnd }: {
-  name: string; zone: Zone; i: number; n: number; info: Info; live?: string;
-  onAct: (name: string, act: string) => void; onDragStart: () => void; onDragEnd: () => void;
+function DropZone({ id, children }: { id: Zone; children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return <div ref={setNodeRef} className={`zone${isOver ? " over" : ""}`} data-zone={id} id={`z-${id}`}>{children}</div>;
+}
+
+type RowProps = { name: string; zone: Zone; i: number; n: number; info: Info; live?: string; onAct: (name: string, act: string) => void };
+
+function SortableRow(props: RowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: props.name });
+  return (
+    <RowBody {...props} rootRef={setNodeRef} placeholder={isDragging}
+      rootProps={{ ...attributes, ...listeners, style: { transform: DndCSS.Translate.toString(transform), transition } }} />
+  );
+}
+
+function RowBody({ name, zone, i, n, info, live, onAct, rootRef, rootProps, placeholder, lifted }: RowProps & {
+  rootRef?: (el: HTMLElement | null) => void; rootProps?: React.HTMLAttributes<HTMLDivElement>; placeholder?: boolean; lifted?: boolean;
 }) {
   const btn = (act: string, label: string, content: React.ReactNode, cls = "ib", disabled = false) => (
     <button className={cls} type="button" data-act={act} aria-label={label} disabled={disabled} onClick={() => onAct(name, act)}>{content}</button>
   );
   const common = {
-    className: `g ${zone}`, "data-name": name, draggable: true,
-    onDragStart: (e: React.DragEvent) => { e.currentTarget.classList.add("dragging"); try { e.dataTransfer.setData("text/plain", name); e.dataTransfer.effectAllowed = "move"; } catch { /* old browsers */ } onDragStart(); },
-    onDragEnd: (e: React.DragEvent) => { e.currentTarget.classList.remove("dragging"); onDragEnd(); },
+    ...rootProps, ref: rootRef,
+    className: `g ${zone}${placeholder ? " placeholder" : ""}${lifted ? " lifted" : ""}`, "data-name": name,
   };
   if (zone === "fav") {
     return (

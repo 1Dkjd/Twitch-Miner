@@ -72,3 +72,11 @@
 .now-facts b { color: var(--fg); font-weight: 500; }
 .now-facts .k { font-family: var(--display); font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
 :root[data-look="ore"] .now .now-facts { color: var(--muted-art); }
+/* drag to reorder (dnd-kit): the slot left behind, and the row that follows the pointer */
+.g { touch-action: manipulation; }
+.g.placeholder { opacity: .35; background: var(--surface-2); }
+.g.placeholder > * { visibility: hidden; }
+.g.placeholder { outline: 1px dashed var(--line); outline-offset: -1px; }
+.g.lifted { background: var(--surface); border-radius: 10px; box-shadow: 0 14px 34px rgba(0, 0, 0, .45), 0 0 0 1px var(--accent-soft); cursor: grabbing; }
+.zone.over { background: var(--accent-soft); }
+@media (prefers-reduced-motion: reduce) { .g { transition: none !important; } }
