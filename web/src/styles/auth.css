@@ -154,7 +154,21 @@ button.row.hx { width: 100%; text-align: left; background: none; border: 0; colo
 /* History → Missed (docs/design/next-features-mockup.html) */
 .row .why { margin-top: 6px; font-size: 13px; color: var(--muted); }
 .row-art.gone img { opacity: .4; filter: grayscale(.6); }
-.opt .d .inline-sel { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; color: var(--fg); font: inherit; padding: 1px 6px; }
+/* Every dropdown (History period, Notifications day/time/zone, Settings intervals): one themed control, the
+   chevron drawn from theme colours so light and dark both follow; the open list uses the surface colours */
+select.inline-sel, select.period {
+  appearance: none; -webkit-appearance: none; cursor: pointer;
+  background-color: var(--surface-2); color: var(--fg); border: 1px solid var(--line); border-radius: 8px;
+  font: inherit; font-size: 13px; line-height: 1.3; padding: 6px 30px 6px 10px; min-height: 32px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: right 15px center, right 10px center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+}
+select.inline-sel:hover:not(:disabled), select.period:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+select.inline-sel:disabled { opacity: .55; cursor: default; }
+select.inline-sel option, select.period option { background: var(--surface); color: var(--fg); }
+/* inside a sentence (the weekly summary line): smaller, so it sits on the text line */
+.opt .d select.inline-sel { font-size: 12.5px; min-height: 0; padding: 1px 24px 1px 7px; border-radius: 6px;
+  background-position: right 12px center, right 7px center; background-size: 4px 4px, 4px 4px; vertical-align: baseline; }
 /* Up next rows can carry three buttons (Pin / Add to Priority / Never mine): on phones they wrap */
 @media (max-width: 720px) { #up-next-list .row-acts { flex-wrap: wrap; row-gap: 4px; } }
 
