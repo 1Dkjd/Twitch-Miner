@@ -66,9 +66,16 @@ export function SettingsView() {
         </div>
         <div className="opt">
           <div><label htmlFor="m-points">Also claim channel points</label>
-            <div className="d">Opens the bonus chest on whichever channel is being watched.</div></div>
+            <div className="d">Opens the bonus chest on the channel being watched, and any left waiting on channels watched in the last week.</div></div>
           <input type="checkbox" className="sw" id="m-points" disabled={!settings} checked={!!settings?.claim_points}
             onChange={(e) => void put({ claim_points: e.target.checked })} />
+        </div>
+        <div className="opt">
+          <div><label htmlFor="m-streak">Collect watch-streak bonuses on favourite channels</label>
+            <div className="d">When a favourite is live with a stream Dropwatch hasn't watched yet, it watches it for about 7 minutes first. Drops wait meanwhile.</div></div>
+          <input type="checkbox" className="sw" id="m-streak" disabled={!settings || !settings.claim_points}
+            checked={!!settings?.points_watch_streak && !!settings?.claim_points}
+            onChange={(e) => void put({ points_watch_streak: e.target.checked })} />
         </div>
         <div className="opt">
           <div><label htmlFor="m-every">Check Twitch for campaign changes</label>

@@ -22,6 +22,10 @@ class PointsClient(FakeClient):
         self.context_calls.append(login)
         return self.waiting
 
+    async def waiting_points_claims(self, logins):  # the batched check the runner uses since 2026-10-11
+        self.context_calls.extend(logins)
+        return [(logins[0], *self.waiting)] if self.waiting and logins else []
+
 
 def make(tmp_path, on=True, waiting=None):
     st = Store(tmp_path / "d.db")
@@ -77,6 +81,22 @@ async def test_a_broken_points_check_never_breaks_the_refresh(tmp_path):
     async def boom(login):
         raise AttributeError("not an error the runner already expects")
 
-    client.waiting_points_claim = boom
+    client.waiting_points_claims = boom  # the batched check (review fix)
     await r.refresh()
     assert r.plan.current is not None and r.state == "mining"
+
+
+async def test_batched_chest_check_reads_each_channel():
+    class G:
+        async def run_many(self, payloads):
+            out = []
+            for p in payloads:
+                lg = p["variables"]["channelLogin"]
+                claim = {"id": f"c-{lg}"} if lg != "none" else None
+                out.append({"data": {"community": {"channel": {"id": "7" if lg == "a" else "8",
+                            "self": {"communityPoints": {"availableClaim": claim}}}}}})
+            out.append({})  # never read past the request list
+            return out[:len(payloads)]
+    got = await TwitchClient(G(), 42).waiting_points_claims(["a", "none", "b"])
+    assert got == [("a", 7, "c-a"), ("b", 8, "c-b")]
+    assert await TwitchClient(G(), 42).waiting_points_claims([]) == []

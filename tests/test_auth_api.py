@@ -9,7 +9,7 @@ PRIVATE = [
     ("GET", "/api/notify/channels"), ("PUT", "/api/notify/channels/{kind}"),
     ("DELETE", "/api/notify/channels/{kind}"), ("POST", "/api/notify/test"),
     ("GET", "/api/pins"), ("PUT", "/api/pins"), ("GET", "/api/about"),
-    ("GET", "/api/backup"), ("POST", "/api/restore"), ("GET", "/api/activity"),
+    ("GET", "/api/backup"), ("POST", "/api/restore"), ("GET", "/api/activity"), ("POST", "/api/streak/end"),
 ]
 
 

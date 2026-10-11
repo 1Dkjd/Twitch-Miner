@@ -61,6 +61,7 @@ SETTINGS: dict[str, type] = {
     "notify_claimed": bool, "notify_weekly": bool, "notify_weekly_day": int, "notify_weekly_hour": int,
     "notify_weekly_tz": str,  # an IANA zone name; "" = the server's zone (Docker: TZ, often UTC)
     "campaigns_every_minutes": int,  # how often the campaign list (and link status) is re-read from Twitch
+    "points_watch_streak": bool,  # watch a favourite's new stream a few minutes first, for its watch streak
 }
 SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "notify_signin": True, "notify_unreachable": True, "notify_not_earning": True,
@@ -68,7 +69,7 @@ SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "notify_unreachable_minutes": 15, "notify_not_earning_minutes": 30,
                     "arrange_up_next": False, "notify_claimed": False, "notify_weekly": False,
                     "notify_weekly_day": 6, "notify_weekly_hour": 18, "notify_weekly_tz": "",
-                    "campaigns_every_minutes": 60}
+                    "campaigns_every_minutes": 60, "points_watch_streak": True}
 _ph = PasswordHasher()
 
 
@@ -161,6 +162,12 @@ class Store:
             self._db.execute(
                 "DELETE FROM events WHERE at < ?", ((now - EVENT_RETENTION).isoformat(),)
             )
+
+    def switched_since(self, since: datetime) -> list[dict]:
+        """Channel switches since then, newest first (the chest check's recently watched channels)."""
+        rows = self._db.execute("SELECT data FROM events WHERE kind = 'switched' AND at >= ? "
+                                "ORDER BY at DESC, rowid DESC", (since.astimezone(UTC).isoformat(),))
+        return [json.loads(d) for (d,) in rows]
 
     def recent_events(self, limit: int | None = 100) -> list[tuple[str, str, dict]]:
         """(kind, at, data), newest first; limit None = everything kept (EVENT_RETENTION bounds it)."""

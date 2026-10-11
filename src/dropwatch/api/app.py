@@ -127,6 +127,7 @@ ACTIVITY_FIELDS = {
     "points_claim_failed": ("channel",),
     "notified": ("title", "sent", "failed"),
     "checked": ("manual", "campaigns", "new", "linked", "seconds"),
+    "points_earned": ("channel", "reason", "points"),
 }
 
 
@@ -188,7 +189,8 @@ async def put_settings(body: SettingsIn, request: Request) -> SettingsOut:
     ctx = _c(request)
     out = SettingsOut(**ctx.store.put_settings(values))
     # settings the planner reads take effect now, not at the next 5-minute refresh
-    if values.keys() & {"arrange_up_next", "mine_badges", "claim_points"} and ctx.service.runner is not None:
+    if (values.keys() & {"arrange_up_next", "mine_badges", "claim_points", "points_watch_streak"}
+            and ctx.service.runner is not None):
         await ctx.service.runner.replan()
     return out
 
@@ -342,6 +344,12 @@ async def events(request: Request) -> StreamingResponse:
     return StreamingResponse(sse_stream(_c(request).bus, request.is_disconnected),
                              media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@api.post("/streak/end", status_code=204)
+async def end_streak(request: Request) -> None:
+    """Stop a watch-streak visit and go back to drops now."""
+    await _runner(_c(request)).end_streak_visit()
 
 
 @api.post("/refresh", status_code=204)

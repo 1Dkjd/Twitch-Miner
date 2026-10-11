@@ -71,6 +71,11 @@ class CatalogOut(BaseModel):
     since: datetime | None
 
 
+class StreakVisitOut(BaseModel):
+    channel: str
+    until: datetime
+
+
 class StateOut(BaseModel):
     state: str
     signed_in: bool
@@ -86,6 +91,7 @@ class StateOut(BaseModel):
     next_check_at: datetime | None = None  # the runner's next Twitch refresh (or retry)
     never: list[CampaignOut] = []  # running campaigns of Never games: never mined, listed for their art
     first_in_line: list[str] = []  # idle: names of the next campaigns to mine once a channel goes live
+    streak_visit: StreakVisitOut | None = None  # watching a favourite for its watch streak; drops wait
 
 
 class ListsIn(BaseModel):
@@ -129,6 +135,7 @@ class SettingsIn(BaseModel):
     notify_weekly_hour: StrictInt | None = Field(default=None, ge=0, le=23)
     notify_weekly_tz: Annotated[StrictStr, Field(max_length=64), AfterValidator(_zone)] | None = None
     campaigns_every_minutes: Literal[15, 30, 60, 120, 240] | None = None  # the choices Settings offers
+    points_watch_streak: StrictBool | None = None
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -150,6 +157,7 @@ class SettingsOut(BaseModel):
     notify_weekly_hour: int
     notify_weekly_tz: str
     campaigns_every_minutes: int
+    points_watch_streak: bool
 
 
 class ActivityEvent(BaseModel):

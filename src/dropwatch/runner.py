@@ -12,6 +12,7 @@ Robustness rules (phase-1 final review):
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import time
 from collections.abc import Callable
@@ -35,6 +36,7 @@ from .twitch.pubsub import (
     DropClaimable,
     DropProgress,
     PointsClaimable,
+    PointsEarned,
     StreamChanged,
     StreamDown,
     StreamUp,
@@ -47,6 +49,10 @@ STALL_TICKS = 18  # ticks are PLAY_INTERVAL (10 s) apart: resync after ~3 min of
 EXCLUDE_FOR = timedelta(minutes=10)
 REFRESH_EVERY = timedelta(minutes=5)
 CAMPAIGNS_EVERY = timedelta(hours=1)  # default; Settings' campaigns_every_minutes overrides it
+CHEST_LOOKBACK = timedelta(days=7)  # channels watched this recently are checked for a waiting chest
+RECENT_CHEST_CHANNELS = 30  # at most this many of them per refresh (one or two batched requests)
+STREAK_VISIT = timedelta(minutes=7)  # a favourite's new stream is watched this long for its watch streak
+STREAK_REMEMBER = 200  # visited broadcast ids kept across restarts
 CLAIM_WAIT = timedelta(hours=1)  # force campaign re-fetches this long; the hourly fetch covers the rest
 BACKOFF_START, BACKOFF_MAX = 60.0, 600.0
 # spec §4 (2026-10-10): an unknown account link that earns nothing for 10 minutes of good playback
@@ -101,6 +107,10 @@ class Runner:
         self._link_recheck: dict[str, datetime] = {}  # unknown-link campaign -> campaigns last re-read for it
         self.maybe_unlinked: dict[str, datetime] = {}  # campaign -> marked at
         self._mined_on: dict[str, str] = {}  # campaign -> channel last watched for it (History details)
+        self._streak: tuple[str, str, datetime] | None = None  # watch-streak visit: (broadcast, login, since)
+        # broadcasts already visited (or mined) for their streak; kept across restarts (review fix)
+        get = getattr(store, "get_setting", None)
+        self._streak_done: set[str] = set(json.loads((get("streak_done") if get else None) or "[]"))
 
     @property
     def next_check_at(self) -> datetime | None:
@@ -134,9 +144,11 @@ class Runner:
         # "Mine now" on a may-need-linking campaign means "I linked it, try again"
         self.maybe_unlinked.pop(campaign_id, None)
         self._link_probe.pop(campaign_id, None)
+        self._end_streak_visit()
 
     def use_channel(self, login: str) -> None:
         self._override_channel = login
+        self._end_streak_visit()  # the user's pick wins over a watch-streak visit
 
     # --- core
     def _set_state(self, state: State, extra: dict | None = None) -> None:
@@ -263,7 +275,9 @@ class Runner:
         self._settle_link_marks(now)
         planned = [replace(c, linked=False) if c.id in self.maybe_unlinked else c for c in self.campaigns]
         self.plan = plan(planned, usable, prefs, now,
-                         watching=previous.login if previous else None,
+                         # during a watch-streak visit, the drop channel is the one to stay on
+                         watching=(self.plan.current.channel_login if self._streak and self.plan
+                                   and self.plan.current else previous.login if previous else None),
                          override_campaign=self._override_campaign,
                          override_channel=self._override_channel,
                          current_campaign=self.plan.current.campaign_id
@@ -277,7 +291,10 @@ class Runner:
         if self._override_channel and (cur is None or cur.channel_login != self._override_channel):
             self._override_channel = None
         self.watching = next((c for c in usable if cur and c.login == cur.channel_login), None)
-        if self.watching and cur:
+        visit = self._streak_visit(now, usable, prefs)
+        if visit is not None:
+            self.watching = visit  # drops wait a few minutes; the plan itself is unchanged
+        elif self.watching and cur:
             for cid in (cur.campaign_id, *self.plan.also_credited):
                 self._mined_on[cid] = self.watching.login
         topics = {topic("user_drops", self._user_id), topic("user_notifications", self._user_id)}
@@ -308,8 +325,58 @@ class Runner:
             if c is None or c.linked is not None or now - at >= MAYBE_UNLINKED_FOR:
                 del self.maybe_unlinked[cid]
 
+    @property
+    def streak_visit(self) -> tuple[str, datetime] | None:
+        """(channel, ends at) while a watch-streak visit is on, for the page."""
+        return (self._streak[1], self._streak[2] + STREAK_VISIT) if self._streak else None
+
+    def _mark_streak_done(self, broadcast: str) -> None:
+        self._streak_done.add(broadcast)
+        if (put := getattr(self._store, "set_setting", None)) is not None:
+            put("streak_done", json.dumps(sorted(self._streak_done)[-STREAK_REMEMBER:]))
+
+    async def end_streak_visit(self) -> None:
+        """The page's "Back to drops now"."""
+        self._end_streak_visit()
+        await self.replan()
+
+    def _end_streak_visit(self) -> None:
+        if self._streak:
+            self._mark_streak_done(self._streak[0])
+            self._streak = None
+
+    def _streak_on(self) -> bool:
+        get = getattr(self._store, "get_settings", None)
+        return bool(get and get().get("points_watch_streak")) and self._points_on()
+
+    def _streak_visit(self, now: datetime, usable: list[LiveChannel], prefs) -> LiveChannel | None:
+        """Watch streaks (asked for 2026-10-11): when a favourite starts a new stream, watch it for
+        STREAK_VISIT first. One visit per stream; a favourite already being mined earns it anyway."""
+        if not self._streak_on():
+            self._streak = None
+            return None
+        if self._streak:
+            b, lg, since = self._streak
+            ch = next((c for c in usable if c.login == lg and c.broadcast_id == b), None)
+            if ch is not None and now - since < STREAK_VISIT:
+                return ch
+            self._end_streak_visit()
+        drop = self.watching
+        for lg in prefs.favourites:
+            ch = next((c for c in usable if c.login == lg), None)
+            if ch is None or ch.broadcast_id in self._streak_done:
+                continue
+            if drop is not None and ch.login == drop.login:
+                self._mark_streak_done(ch.broadcast_id)  # earned while mining it
+                continue
+            self._streak = (ch.broadcast_id, ch.login, now)
+            return ch
+        return None
+
     async def _probe_link(self, now: datetime) -> None:
         """Called after each good playback tick. Unknown link + no new minutes for 10 min -> Needs you."""
+        if self._streak:  # a watch-streak visit earns no drop minutes by design
+            return
         cur = self.plan.current if self.plan else None
         c = next((x for x in self.campaigns if cur and x.id == cur.campaign_id), None)
         if c is None or c.linked is not None or c.has_badge_or_emote:
@@ -398,6 +465,8 @@ class Runner:
                 self._set_state(State.PAUSED)
                 return
             self.resume()
+        if self._streak and now - self._streak[2] >= STREAK_VISIT:
+            await self.replan()  # a visit ends on time, not at the next refresh (review fix)
         if self.state == State.TWITCH_UNREACHABLE and self._retry_refresh_at is not None:
             due = now >= self._retry_refresh_at  # back off while Twitch is failing
         else:
@@ -446,6 +515,10 @@ class Runner:
 
     def _switch_why(self, previous: str) -> dict:
         """For Activity: what is mined now and why the channel changed."""
+        gone = previous not in self._excluded and any(ch.login == previous for ch in self.live)
+        if self._streak and self.watching and self.watching.login == self._streak[1]:
+            return {"campaign": None, "game": self.watching.game_name or None, "reason": "watch streak",
+                    "channel_reason": None, "from_live": gone}
         choice = self.plan.current if self.plan else None
         c = next((x for x in self.campaigns if choice and x.id == choice.campaign_id), None)
         return {"campaign": c.name if c else None, "game": c.game.name if c else None,
@@ -465,33 +538,61 @@ class Runner:
         get = getattr(self._store, "get_settings", None)
         return bool(get and get().get("claim_points"))
 
-    async def _claim_points(self, channel_id: int, claim_id: str) -> None:
+    async def _claim_points(self, channel_id: int, claim_id: str, login: str | None = None) -> None:
         try:
             ok = await self._client.claim_points(channel_id, claim_id)
         except Exception as exc:  # noqa: BLE001 - points are a bonus: never let them break mining
             log.info("Points claim raised %s", type(exc).__name__)
             ok = False
-        login = next((ch.login for ch in self.live if ch.id == channel_id), None)
+        login = login or next((ch.login for ch in self.live if ch.id == channel_id), None)
         self._store.log_event("points_claimed" if ok else "points_claim_failed",
                               {"channel_id": channel_id, "channel": login})
 
+    def _recent_channels(self) -> list[str]:
+        """Channels watched in the last week, newest first (from Activity's switch events), capped."""
+        switched = getattr(self._store, "switched_since", None)
+        if switched is None:
+            return []
+        out: list[str] = []
+        for data in switched(self._clock() - CHEST_LOOKBACK):
+            for lg in (data.get("to"), data.get("from")):
+                if lg and lg not in out:
+                    out.append(lg)
+            if len(out) >= RECENT_CHEST_CHANNELS:
+                break
+        return out[:RECENT_CHEST_CHANNELS]
+
     async def _claim_waiting_points(self) -> None:
-        """A chest that was already waiting when we started watching never arrives over PubSub: look once
-        per refresh on the channel being watched."""
-        if not self.watching or not self._points_on():
+        """Bonus chests stay claimable after we stop watching a channel, and one already waiting when we
+        start watching never arrives over PubSub: once per refresh, look on the channel being watched and
+        on those watched in the last week (asked for 2026-10-11), in one batch."""
+        if not self._points_on():
+            return
+        logins = [self.watching.login] if self.watching else []
+        logins += [lg for lg in self._recent_channels() if lg not in logins]
+        if not logins:
             return
         try:
-            waiting = await self._client.waiting_points_claim(self.watching.login)
+            waiting = await self._client.waiting_points_claims(logins)
         except Exception as exc:  # noqa: BLE001 - points are a bonus: never let them break a refresh
             log.info("Points check raised %s", type(exc).__name__)
             return
-        if waiting:
-            await self._claim_points(*waiting)
+        for login, channel_id, claim_id in waiting:
+            await self._claim_points(channel_id, claim_id, login)
 
     async def handle(self, event: object) -> None:
         if isinstance(event, PointsClaimable):
             if self._points_on() and event.channel_id and event.claim_id:
                 await self._claim_points(event.channel_id, event.claim_id)
+            return
+        if isinstance(event, PointsEarned):
+            login = next((ch.login for ch in self.live if ch.id == event.channel_id), None)
+            if event.reason not in ("WATCH", "CLAIM"):  # every-5-minute points and chests: not news
+                self._store.log_event("points_earned", {"channel": login, "reason": event.reason,
+                                                        "points": event.points})
+            if event.reason == "WATCH_STREAK" and self._streak and login == self._streak[1]:
+                self._end_streak_visit()
+                await self.replan()  # back to drops now
             return
         if isinstance(event, DropProgress):
             self._ticks_since_progress = 0
