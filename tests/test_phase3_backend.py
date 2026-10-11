@@ -63,7 +63,7 @@ async def test_check_now_refreshes_campaigns(tmp_path):
     ctx.service.runner.refresh = spy
     c = await logged_in(app)
     assert (await c.post("/api/refresh")).status_code == 204
-    assert calls == [{"force_campaigns": True}]
+    assert calls == [{"force_campaigns": True, "manual": True}]  # manual: logged as clicked in Activity
     await c.aclose()
 
 

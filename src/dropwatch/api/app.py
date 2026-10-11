@@ -126,6 +126,7 @@ ACTIVITY_FIELDS = {
     "points_claimed": ("channel",),
     "points_claim_failed": ("channel",),
     "notified": ("title", "sent", "failed"),
+    "checked": ("manual", "campaigns", "new", "linked", "seconds"),
 }
 
 
@@ -346,7 +347,7 @@ async def events(request: Request) -> StreamingResponse:
 @api.post("/refresh", status_code=204)
 async def check_now(request: Request) -> None:
     """The idle card's "Check now": re-read campaigns and live channels immediately."""
-    await _runner(_c(request)).refresh(force_campaigns=True)
+    await _runner(_c(request)).refresh(force_campaigns=True, manual=True)
 
 
 @api.post("/twitch/signin", status_code=202, response_model=SignInStatus)

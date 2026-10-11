@@ -156,7 +156,7 @@ class ActivityEvent(BaseModel):
     at: datetime
     kind: str  # started | state | switched | claimed | claim_failed | needs_you | channel_dropped |
     #            points_claimed | points_claim_failed | notified
-    data: dict[str, str | bool | int | list[str] | None]
+    data: dict[str, str | bool | int | float | list[str] | None]
 
 
 class ActivityOut(BaseModel):

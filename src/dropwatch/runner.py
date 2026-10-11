@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
@@ -145,17 +146,21 @@ class Runner:
             self._emit("state", data)
             self._store.log_event("state", data)
 
-    async def refresh(self, *, force_campaigns: bool = False) -> None:
+    async def refresh(self, *, force_campaigns: bool = False, manual: bool = False) -> None:
+        """manual: the page's Check Twitch (logged as clicked in Activity)."""
         async with self._lock:
-            await self._refresh(force_campaigns)
+            await self._refresh(force_campaigns, manual)
 
-    async def _refresh(self, force_campaigns: bool) -> None:
+    async def _refresh(self, force_campaigns: bool, manual: bool = False) -> None:
         now = self._clock()
+        started = time.monotonic()
         prefs = self._store.get_prefs()
+        before: dict[str, Campaign] | None = None
         try:
             due = (self._campaigns_at is None or now - self._campaigns_at >= self._campaigns_every()
                    or bool(self._awaiting_claim))
             if force_campaigns or due:
+                before = {c.id: c for c in self.campaigns}
                 self.campaigns = await self._client.campaigns()
                 self._campaigns_at = now
                 if await self._catch_up_claims(now):
@@ -177,9 +182,21 @@ class Runner:
             return
         self.last_refresh = now
         self._refresh_backoff, self._retry_refresh_at = 0.0, None
+        if before is not None:
+            self._log_check(before, manual, time.monotonic() - started)
         self._bookkeeping(now, prefs)
         self._plan(now, prefs)
         await self._claim_waiting_points()
+
+    def _log_check(self, before: dict[str, Campaign], manual: bool, seconds: float) -> None:
+        """Activity: a campaign re-read (Check Twitch, or the Settings interval and other automatic
+        ones), with what it found: new campaigns and games whose account now shows as linked."""
+        linked = sorted({c.game.name for c in self.campaigns
+                         if c.linked is True and c.id in before and before[c.id].linked is not True})
+        self._store.log_event("checked", {
+            "manual": manual, "campaigns": len(self.campaigns),
+            "new": sum(1 for c in self.campaigns if c.id not in before) if before else 0,
+            "linked": linked, "seconds": round(seconds, 1)})
 
     def _bookkeeping(self, now: datetime, prefs) -> None:
         """History's campaign log and pin pruning: a failure is logged, never a reason to stop planning."""
