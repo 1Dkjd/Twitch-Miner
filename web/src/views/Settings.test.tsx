@@ -104,3 +104,12 @@ test("Backup: a file that isn't JSON is refused before anything is sent", async 
   expect(await screen.findByText("That file isn't a Dropwatch backup.")).toBeInTheDocument();
   expect(calls.some((c) => c.path === "/api/restore")).toBe(false);
 });
+
+test("how often campaigns are re-read is chosen in Mining and saves straight away", async () => {
+  const calls = setup({ "PUT /api/settings": { ...SETTINGS, campaigns_every_minutes: 15 } });
+  const sel = await screen.findByRole("combobox", { name: "Check Twitch for campaign changes" });
+  await waitFor(() => expect(sel).toBeEnabled());
+  expect([...(sel as HTMLSelectElement).options].map((o) => o.text)).toEqual(["Every 15 min", "Every 30 min", "Every hour", "Every 2 hours", "Every 4 hours"]);
+  await userEvent.selectOptions(sel, "15");
+  await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ campaigns_every_minutes: 15 }));
+});

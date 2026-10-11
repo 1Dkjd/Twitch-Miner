@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 
@@ -128,6 +128,7 @@ class SettingsIn(BaseModel):
     notify_weekly_day: StrictInt | None = Field(default=None, ge=0, le=6)  # 0 = Monday
     notify_weekly_hour: StrictInt | None = Field(default=None, ge=0, le=23)
     notify_weekly_tz: Annotated[StrictStr, Field(max_length=64), AfterValidator(_zone)] | None = None
+    campaigns_every_minutes: Literal[15, 30, 60, 120, 240] | None = None  # the choices Settings offers
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -148,6 +149,7 @@ class SettingsOut(BaseModel):
     notify_weekly_day: int
     notify_weekly_hour: int
     notify_weekly_tz: str
+    campaigns_every_minutes: int
 
 
 class ActivityEvent(BaseModel):

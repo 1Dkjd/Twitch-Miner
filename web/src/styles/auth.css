@@ -200,3 +200,12 @@ label.btn:has(input:focus-visible) { outline: 2px solid var(--accent); outline-o
 .adot.ok { background: var(--ok); } .adot.gold { background: var(--accent); } .adot.bad { background: var(--alert); } .adot.note { background: var(--note); }
 .act .s { font-size: 14px; overflow-wrap: anywhere; } .act .s b { font-weight: 600; } .act .d { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
 .keep { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+/* Top bar: Check Twitch (2026-10-10) */
+.check-tw { margin-left: auto; min-height: 30px; padding: 4px 10px; }
+.check-tw + .pill { margin-left: 4px; }
+.check-tw .i { width: 15px; height: 15px; }
+.check-tw.busy .i { animation: check-spin 1s linear infinite; }
+@keyframes check-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .check-tw.busy .i { animation: none; } }
+@media (max-width: 720px) { .check-tw-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }

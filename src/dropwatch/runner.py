@@ -45,7 +45,7 @@ FAILS_BEFORE_SWITCH = 9  # ticks are 10 s apart: ~90 s of failed playback before
 STALL_TICKS = 18  # ticks are PLAY_INTERVAL (10 s) apart: resync after ~3 min of silence
 EXCLUDE_FOR = timedelta(minutes=10)
 REFRESH_EVERY = timedelta(minutes=5)
-CAMPAIGNS_EVERY = timedelta(hours=1)
+CAMPAIGNS_EVERY = timedelta(hours=1)  # default; Settings' campaigns_every_minutes overrides it
 CLAIM_WAIT = timedelta(hours=1)  # force campaign re-fetches this long; the hourly fetch covers the rest
 BACKOFF_START, BACKOFF_MAX = 60.0, 600.0
 # spec §4 (2026-10-10): an unknown account link that earns nothing for 10 minutes of good playback
@@ -153,7 +153,7 @@ class Runner:
         now = self._clock()
         prefs = self._store.get_prefs()
         try:
-            due = (self._campaigns_at is None or now - self._campaigns_at >= CAMPAIGNS_EVERY
+            due = (self._campaigns_at is None or now - self._campaigns_at >= self._campaigns_every()
                    or bool(self._awaiting_claim))
             if force_campaigns or due:
                 self.campaigns = await self._client.campaigns()
@@ -436,6 +436,12 @@ class Runner:
                 "channel_reason": choice.channel_reason if choice else None,
                 # the directory lists a stream for minutes after it ends: an excluded channel is gone
                 "from_live": previous not in self._excluded and any(ch.login == previous for ch in self.live)}
+
+    def _campaigns_every(self) -> timedelta:
+        """Settings' "Check Twitch for campaign changes every" (campaigns_every_minutes; 1 h by default)."""
+        get = getattr(self._store, "get_settings", None)
+        minutes = get().get("campaigns_every_minutes") if get else None
+        return timedelta(minutes=minutes) if minutes else CAMPAIGNS_EVERY
 
     def _points_on(self) -> bool:
         """Settings' "Also claim channel points" (claim_points; on by default)."""

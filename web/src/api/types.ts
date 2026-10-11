@@ -849,6 +849,8 @@ export interface components {
         SettingsIn: {
             /** Arrange Up Next */
             arrange_up_next?: boolean | null;
+            /** Campaigns Every Minutes */
+            campaigns_every_minutes?: (15 | 30 | 60 | 120 | 240) | null;
             /** Claim Points */
             claim_points?: boolean | null;
             /** Mine Badges */
@@ -884,6 +886,8 @@ export interface components {
         SettingsOut: {
             /** Arrange Up Next */
             arrange_up_next: boolean;
+            /** Campaigns Every Minutes */
+            campaigns_every_minutes: number;
             /** Claim Points */
             claim_points: boolean;
             /** Mine Badges */
