@@ -292,7 +292,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
 .hist-lead { display: flex; align-items: center; gap: 10px; font-size: 15px; }
 .hist-lead svg { color: var(--ok-text); width: 20px; height: 20px; }
 .def { color: var(--muted); font-size: 13px; margin: 6px 0 0; max-width: 60ch; }
-.period { margin-left: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+.period { margin-left: auto; }  /* the look: auth.css, with every dropdown */
 .day { padding: 10px 16px 6px; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); }
 .when { font-family: var(--num); font-stretch: var(--num-stretch); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); white-space: nowrap; }
 .examples { border: 1px dashed var(--line); border-radius: 14px; }

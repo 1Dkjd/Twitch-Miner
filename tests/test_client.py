@@ -28,9 +28,13 @@ class FakeGql:
         }[payload["operationName"]]
 
     async def run_many(self, payloads):
+        self.batches = getattr(self, "batches", []) + [[p["operationName"] for p in payloads]]
         details = {d["data"]["user"]["dropCampaign"]["id"]: d for d in load("campaign_details.json")}
         out = []
         for p in payloads:
+            if p["operationName"] != "DropCampaignDetails":
+                out.append(await self.run(p))
+                continue
             cid = p["variables"]["dropID"]
             out.append(details.get(cid) or {"data": {"user": {"dropCampaign": {"id": cid}}}})
         return out
@@ -55,3 +59,18 @@ async def test_live_channels_skips_never_games():
     never = frozenset(x.game.name for x in camps)
     await c.live_channels(camps, Prefs(never=never), datetime.now(UTC))
     assert "DirectoryPage_Game" not in g.ops
+
+
+async def test_live_channels_asks_for_every_game_in_batches_not_one_by_one():
+    # 2026-10-10: one request per game took 13-38 s for ~57 games; batched (20 per request) took ~1 s
+    g = FakeGql()
+    c = TwitchClient(g, 42)
+    camps = await c.campaigns()
+    g.ops.clear()
+    g.batches = []
+    live = await c.live_channels(camps, Prefs(), datetime.now(UTC))
+    assert live
+    assert any("DirectoryPage_Game" in b for b in g.batches)
+    direct = [o for o in g.ops if o == "DirectoryPage_Game"]
+    # every lookup went via a batch
+    assert len(direct) == sum(b.count("DirectoryPage_Game") for b in g.batches)

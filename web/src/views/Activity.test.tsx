@@ -68,3 +68,13 @@ test("a notification no channel took is a problem line", () => {
   expect(line?.tone).toBe("bad");
   expect(line?.d).toBe("Tried Discord");
 });
+
+test("check-ins read as clicked or automatic, with what they found", () => {
+  const clicked = describe(ev("2026-10-10T23:02:51Z", "checked", { manual: true, campaigns: 143, new: 2, linked: ["Riders Republic"], seconds: 1.3 }), undefined);
+  expect(clicked?.text).toBe("You checked Twitch");
+  expect(clicked?.d).toBe("143 campaigns · 2 new · Riders Republic now linked · took 1.3 s");
+  expect(clicked?.group).toBe("mining");
+  const auto = describe(ev("2026-10-10T22:01:00Z", "checked", { manual: false, campaigns: 143, new: 0, linked: [], seconds: 0.9 }), undefined);
+  expect(auto?.text).toBe("Checked Twitch for campaign changes");
+  expect(auto?.d).toBe("143 campaigns · took 0.9 s");
+});

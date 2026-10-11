@@ -70,6 +70,9 @@
          "type": "integer"
         },
         {
+         "type": "number"
+        },
+        {
          "items": {
           "type": "string"
          },
@@ -1039,6 +1042,24 @@
       ],
       "title": "Arrange Up Next"
      },
+     "campaigns_every_minutes": {
+      "anyOf": [
+       {
+        "enum": [
+         15,
+         30,
+         60,
+         120,
+         240
+        ],
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Campaigns Every Minutes"
+     },
      "claim_points": {
       "anyOf": [
        {
@@ -1223,6 +1244,10 @@
       "title": "Arrange Up Next",
       "type": "boolean"
      },
+     "campaigns_every_minutes": {
+      "title": "Campaigns Every Minutes",
+      "type": "integer"
+     },
      "claim_points": {
       "title": "Claim Points",
       "type": "boolean"
@@ -1300,7 +1325,8 @@
      "notify_weekly",
      "notify_weekly_day",
      "notify_weekly_hour",
-     "notify_weekly_tz"
+     "notify_weekly_tz",
+     "campaigns_every_minutes"
     ],
     "title": "SettingsOut",
     "type": "object"

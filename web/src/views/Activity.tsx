@@ -66,6 +66,17 @@ export function describe(e: ActivityEvent, older: ActivityEvent | undefined): Li
     case "points_claim_failed":
       return { text: d.channel ? <>Couldn't open a channel points chest on <b>{s(d.channel)}</b></> : "Couldn't open a channel points chest",
         tone: "bad", group: "problems" };
+    case "checked": {
+      const linked = Array.isArray(d.linked) ? d.linked : [];
+      const parts = [
+        typeof d.campaigns === "number" ? `${d.campaigns} campaigns` : "",
+        typeof d.new === "number" && d.new > 0 ? `${d.new} new` : "",
+        ...linked.map((g) => `${g} now linked`),
+        typeof d.seconds === "number" ? `took ${d.seconds} s` : "",
+      ].filter(Boolean);
+      return { text: d.manual ? "You checked Twitch" : "Checked Twitch for campaign changes", d: parts.join(" · ") || undefined,
+        tone: "", group: "mining" };
+    }
     case "notified": {
       const title = s(d.title).replace(/^Dropwatch: /, "");
       const sent = Array.isArray(d.sent) ? d.sent : [];

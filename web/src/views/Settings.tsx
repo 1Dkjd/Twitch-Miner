@@ -70,6 +70,14 @@ export function SettingsView() {
           <input type="checkbox" className="sw" id="m-points" disabled={!settings} checked={!!settings?.claim_points}
             onChange={(e) => void put({ claim_points: e.target.checked })} />
         </div>
+        <div className="opt">
+          <div><label htmlFor="m-every">Check Twitch for campaign changes</label>
+            <div className="d">How often Dropwatch re-reads the campaign list, so new campaigns and accounts you've just linked can take this long (plus a few minutes) to show up. Check Twitch at the top checks now.</div></div>
+          <select id="m-every" className="inline-sel" disabled={!settings} value={settings?.campaigns_every_minutes ?? 60}
+            onChange={(e) => void put({ campaigns_every_minutes: Number(e.target.value) as 15 | 30 | 60 | 120 | 240 })}>
+            {EVERY.map(([m, label]) => <option key={m} value={m}>{label}</option>)}
+          </select>
+        </div>
       </Set>
       <Set title="This page">
         <div className="opt"><div>Theme</div>
@@ -162,6 +170,8 @@ function Backup({ onRestored }: { onRestored: () => void }) {
     </Set>
   );
 }
+
+const EVERY: [number, string][] = [[15, "Every 15 min"], [30, "Every 30 min"], [60, "Every hour"], [120, "Every 2 hours"], [240, "Every 4 hours"]];
 
 function Set({ title, children }: { title: string; children: ReactNode }) {
   return <div className="set"><h2>{title}</h2>{children}</div>;

@@ -3,6 +3,7 @@ import { type View, useView } from "./router";
 import { ConnectScreen } from "./screens/Connect";
 import { LoginScreen, SetupScreen } from "./screens/PagePassword";
 import { AppProvider, useApp } from "./store";
+import { CheckTwitch } from "./ui/CheckTwitch";
 import { Icon, IconSprite, Mark, type IconName } from "./ui/Icons";
 import { ActivityView } from "./views/Activity";
 import { HistoryView } from "./views/History";
@@ -53,6 +54,7 @@ function TopBar({ view, tabs }: { view: View; tabs: boolean }) {
             ))}
           </nav>
         )}
+        {tabs && state?.signed_in && <CheckTwitch />}
         {tabs && <span className="pill" role="status" data-tone={tone}><span className="dot" aria-hidden="true" />{label}</span>}
       </div>
     </header>
