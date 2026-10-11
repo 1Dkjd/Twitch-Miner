@@ -90,7 +90,7 @@ async def test_cancel_is_idle_not_failed():
 # I4: a rebuilt page is never served from a stale cache
 async def test_index_is_not_cached(tmp_path):
     app = web_app(tmp_path)
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t") as c:
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://127.0.0.1") as c:
         for path in ("/", "/priorities"):
             assert (await c.get(path)).headers["cache-control"] == "no-cache"
 
@@ -109,7 +109,7 @@ async def test_network_paths_never_touch_the_filesystem(tmp_path, monkeypatch):
             touched.append(str(self))
         return real(self, *a, **k)
     monkeypatch.setattr(pathlib.Path, "resolve", spy)
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t") as c:
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://127.0.0.1") as c:
         for path in ("///evil.host/share/x", "/%5C%5Cevil.host%5Cshare%5Cx", "/%2F%2Fevil.host/share",
                      "/c:%5Cevil"):
             r = await c.get(path)

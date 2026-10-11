@@ -68,7 +68,7 @@ def make_app(tmp_path, runner=None, password="correct horse"):
 
 
 def client(app):
-    return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test")
+    return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://127.0.0.1")
 
 
 async def logged_in(app, password="correct horse"):

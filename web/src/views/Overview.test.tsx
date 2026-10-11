@@ -113,10 +113,12 @@ test("deadline verdicts map to the approved chips", async () => {
 
 test("idle: first in line and Check now", async () => {
   setPhone(false);
-  const calls = setup(state({ state: "idle", current: null, next_check_at: new Date(Date.now() + 4 * 60_000).toISOString() }),
+  // while idle the miner's Up next is empty (nothing is live); first_in_line names what waits
+  const calls = setup(state({ state: "idle", current: null, up_next: [], first_in_line: ["Crimson Eye 2026", "Palia Frights"],
+    next_check_at: new Date(Date.now() + 4 * 60_000).toISOString() }),
     { "POST /api/refresh": undefined });
   expect(await screen.findByText("Nothing to mine right now")).toBeInTheDocument();
-  expect(screen.getByText(/Crimson Eye 2026 is first in line/)).toBeInTheDocument();
+  expect(screen.getByText(/Crimson Eye 2026 is first in line, then Palia Frights/)).toBeInTheDocument();
   await act(async () => { await userEvent.click(screen.getByRole("button", { name: "Check now" })); });
   expect(calls.some((c) => c.path === "/api/refresh")).toBe(true);
 });

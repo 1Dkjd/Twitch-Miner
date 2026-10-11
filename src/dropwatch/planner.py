@@ -34,6 +34,7 @@ class Plan:
     done: tuple[str, ...] = ()
     verdicts: dict[str, str] = field(default_factory=dict)
     also_credited: tuple[str, ...] = ()
+    waiting: tuple[str, ...] = ()  # could be mined but nobody qualifying is live, in queue order
 
 
 def qualifies(c: Campaign, ch: LiveChannel) -> bool:
@@ -81,6 +82,7 @@ def plan(
     }
 
     qualifying: dict[str, list[LiveChannel]] = {}
+    offline: list[Campaign] = []
     for c in considered:
         if not account_eligible(c, prefs):
             continue
@@ -89,6 +91,8 @@ def plan(
         chans = [ch for ch in live if qualifies(c, ch)]
         if chans:
             qualifying[c.id] = sorted(chans, key=lambda ch: _channel_rank(c, ch, prefs))
+        else:
+            offline.append(c)
 
     eligible = [c for c in considered if c.id in qualifying]
     # spec §4 (2026-10-10): outside Priority, campaigns known (or very likely) to be linked come
@@ -106,8 +110,9 @@ def plan(
         return (2, 0, link_rank(c), campaign_ratio(c, now), c.ends_at, c.id)
 
     eligible.sort(key=order)
+    waiting = tuple(c.id for c in sorted(offline, key=order))
     if not eligible:
-        return Plan(None, (), needs_you, done, verdicts, ())
+        return Plan(None, (), needs_you, done, verdicts, (), waiting)
 
     chosen = next((c for c in eligible if c.id == override_campaign), eligible[0])
     if chosen.id != override_campaign:
@@ -138,7 +143,7 @@ def plan(
     queue = tuple(c.id for c in eligible if c.id != chosen.id)
     return Plan(
         Choice(chosen.id, channel.login, reason, channel_reason),
-        queue, needs_you, done, verdicts, also,
+        queue, needs_you, done, verdicts, also, waiting,
     )
 
 

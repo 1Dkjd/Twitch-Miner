@@ -811,6 +811,11 @@ export interface components {
             current: components["schemas"]["CurrentOut"] | null;
             /** Done */
             done: components["schemas"]["CampaignOut"][];
+            /**
+             * First In Line
+             * @default []
+             */
+            first_in_line: string[];
             /** Last Refresh */
             last_refresh: string | null;
             last_switch?: components["schemas"]["SwitchOut"] | null;

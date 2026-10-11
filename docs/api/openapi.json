@@ -1232,6 +1232,14 @@
       "title": "Done",
       "type": "array"
      },
+     "first_in_line": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "First In Line",
+      "type": "array"
+     },
      "last_refresh": {
       "anyOf": [
        {

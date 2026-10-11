@@ -1,7 +1,8 @@
 """FastAPI application: public auth routes plus the session-protected API (spec §8)."""
 from __future__ import annotations
 
-from collections.abc import Callable
+import ipaddress
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -12,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 
 from ..notify import CHANNELS, configured, send_all, summary
 from ..runner import State
-from .auth import private_auth, public, require_session
+from .auth import LoginLimiter, private_auth, public, require_session
 from .models import (
     ChannelIn,
     ChannelSuggestion,
@@ -305,9 +306,56 @@ async def signout(request: Request) -> None:
     ctx.bus.publish("signin", {"status": "signed_out", "message": ""})
 
 
-def create_app(ctx: AppContext, web_dir: Path | None = None) -> FastAPI:
-    app = FastAPI(title="Dropwatch", version="0.3.0", docs_url=None, redoc_url=None)
+class HostCheck:
+    """Answer only to an IP address, localhost, or a name listed in DROPWATCH_HOSTS.
+
+    A web page elsewhere can point its own domain at this box's LAN address (DNS rebinding) and then
+    talk to it as same-origin; the one thing it can't fake is the Host header, which still carries
+    its domain. Refusing unknown names keeps first-run setup and the login out of its reach."""
+
+    def __init__(self, app, hosts: Iterable[str]) -> None:
+        self.app = app
+        self.hosts = {h.strip().lower().rstrip(".") for h in hosts if h.strip()}
+
+    def allowed(self, host: str) -> bool:
+        if "*" in self.hosts:
+            return True
+        host = host.strip().lower()
+        if host.startswith("["):  # [v6]:port
+            name = host[1:host.find("]")] if "]" in host else ""
+        else:
+            name = host.rsplit(":", 1)[0] if host.count(":") == 1 else host
+        name = name.rstrip(".")
+        if not name:
+            return False
+        try:
+            ipaddress.ip_address(name)
+            return True
+        except ValueError:
+            pass
+        return name == "localhost" or name.endswith(".localhost") or name in self.hosts
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] in ("http", "websocket"):
+            host = next((v.decode("latin-1") for k, v in scope["headers"] if k == b"host"), "")
+            if not self.allowed(host):
+                name = host.rsplit(":", 1)[0] if host.count(":") == 1 else host
+                body = (f"Dropwatch doesn't answer to the name '{name}'. To use it, add the name to "
+                        "DROPWATCH_HOSTS (comma-separated) and restart, or open it by IP address.\n").encode()
+                await send({"type": "http.response.start", "status": 400,
+                            "headers": [(b"content-type", b"text/plain; charset=utf-8"),
+                                        (b"content-length", str(len(body)).encode())]})
+                await send({"type": "http.response.body", "body": body})
+                return
+        await self.app(scope, receive, send)
+
+
+def create_app(ctx: AppContext, web_dir: Path | None = None, hosts: Iterable[str] = ()) -> FastAPI:
+    # the schema isn't served: `dropwatch openapi` builds it from app.openapi() for the page's types
+    app = FastAPI(title="Dropwatch", version="0.3.0", docs_url=None, redoc_url=None, openapi_url=None)
+    app.add_middleware(HostCheck, hosts=list(hosts))
     app.state.ctx = ctx
+    app.state.login_limiter = LoginLimiter()
     app.include_router(public)
     app.include_router(private_auth)
     app.include_router(api)

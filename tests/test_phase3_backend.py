@@ -87,7 +87,7 @@ def web_app(tmp_path):
 
 async def test_serves_index_and_assets(tmp_path):
     app = web_app(tmp_path)
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t") as c:
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://127.0.0.1") as c:
         r = await c.get("/")
         assert r.status_code == 200 and "<title>Dropwatch</title>" in r.text
         assert (await c.get("/assets/app.js")).text == "console.log(1)"
@@ -96,7 +96,7 @@ async def test_serves_index_and_assets(tmp_path):
 
 async def test_spa_fallback_not_for_api(tmp_path):
     app = web_app(tmp_path)
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t") as c:
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://127.0.0.1") as c:
         assert (await c.get("/api/nope")).status_code == 404
         assert (await c.get("/api/state")).status_code == 401
 
@@ -109,7 +109,7 @@ def test_no_web_dir_means_api_only(tmp_path):
 
 async def test_page_server_never_escapes_web_dir(tmp_path):
     app = web_app(tmp_path)  # d.db sits next to dist/
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t") as c:
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://127.0.0.1") as c:
         for path in ("/%2e%2e/d.db", "/..%2fd.db", "/assets/..%2f..%2fd.db"):
             r = await c.get(path)
             assert b"SQLite" not in r.content, path

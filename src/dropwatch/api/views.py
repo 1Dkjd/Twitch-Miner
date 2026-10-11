@@ -91,6 +91,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
         done=keep(plan.done if plan else ()), catalog=_catalog(runner),
         last_switch=_switch(runner, now), next_check_at=runner.next_check_at,
         never=[campaign_out(c, now, None) for c in never],
+        first_in_line=[o.name for o in keep(plan.waiting[:2])] if plan and not plan.current else [],
     )
 
 

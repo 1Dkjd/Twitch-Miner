@@ -76,11 +76,14 @@ export function AppProvider({ children, initialMe = null, retryMs = 5000 }: { ch
         setConnection(live ? "live" : "lost");
         setLostSince(live ? null : new Date());
       },
+      // a 401 closes the stream: if the page session has expired, /me says so and the page shows
+      // sign-in; if the miner is really gone, /me fails too and the lost timer carries on
+      onClosed: () => void refreshMe().catch(() => undefined),
       onEvent: (kind: EventKind, data) => {
         if (kind === "signin" && data && typeof data === "object") setSignin(data as SignIn);
       },
     });
-  }, [authed, refreshState]);
+  }, [authed, refreshState, refreshMe]);
 
   const value = useMemo(
     () => ({ me, state, connection, lostSince, signin, clearSignin, refreshMe, refreshState, say, announcement }),
