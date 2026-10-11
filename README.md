@@ -42,7 +42,7 @@ Until Dropwatch is listed in Community Applications, add its template by hand on
 1. Open the Unraid terminal (the `>_` icon at the top right) and run:
 
    ```
-   wget -O /boot/config/plugins/dockerMan/templates-user/my-dropwatch.xml https://raw.githubusercontent.com/weltern/dropwatch/main/unraid/dropwatch.xml
+   wget -O /boot/config/plugins/dockerMan/templates-user/my-dropwatch.xml https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/unraid/dropwatch.xml
    ```
 
 2. Go to **Docker**, then **Add Container**, and pick **dropwatch** from the **Template** list.
@@ -58,7 +58,7 @@ docker run -d --name dropwatch --restart unless-stopped \
   -p 5800:5800 -v /path/to/dropwatch:/data \
   -e TZ=America/New_York \
   --log-opt max-size=10m --log-opt max-file=3 \
-  ghcr.io/weltern/dropwatch:latest
+  ghcr.io/kernelpanic-studios/dropwatch:latest
 ```
 
 `--restart unless-stopped` matters: if mining ever gets stuck, Dropwatch exits on purpose so Docker can
@@ -97,7 +97,7 @@ One Twitch account per container. Don't run another drops miner on the same acco
 
 ## Support
 
-Questions and bug reports: [GitHub issues](https://github.com/weltern/dropwatch/issues).
+Questions and bug reports: [GitHub issues](https://github.com/KernelPanic-Studios/dropwatch/issues).
 
 ## Credits and license
 

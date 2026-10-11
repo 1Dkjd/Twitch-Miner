@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>dropwatch</Name>
-  <Repository>ghcr.io/weltern/dropwatch:latest</Repository>
-  <Registry>https://github.com/weltern/dropwatch/pkgs/container/dropwatch</Registry>
+  <Repository>ghcr.io/kernelpanic-studios/dropwatch:latest</Repository>
+  <Registry>https://github.com/orgs/KernelPanic-Studios/packages/container/package/dropwatch</Registry>
   <Network>bridge</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/weltern/dropwatch/issues</Support>
-  <Project>https://github.com/weltern/dropwatch</Project>
+  <Support>https://github.com/KernelPanic-Studios/dropwatch/issues</Support>
+  <Project>https://github.com/KernelPanic-Studios/dropwatch</Project>
   <Overview>Dropwatch earns Twitch Drops for you in the background. It picks which campaign to watch, moves to another channel when a stream goes offline, and claims each reward as soon as it's earned. It also collects channel points and watch-streak bonuses on your favourite channels. A web dashboard shows what's being mined, what's next, and anything that needs you, such as a game account to link. From there you can set game priorities, skip games, pin campaigns and look back at your history. Optional notifications go to Discord, Telegram, ntfy, Slack, Pushover, Gotify or any webhook. One Twitch account per container. After starting it, open the WebUI to set a page password and sign in to Twitch with a one-time code.</Overview>
   <Category>Tools:Utilities</Category>
   <WebUI>http://[IP]:[PORT:5800]</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/weltern/dropwatch/main/unraid/dropwatch.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/weltern/dropwatch/main/brand/png/icon-256.png</Icon>
+  <TemplateURL>https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/unraid/dropwatch.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/brand/png/icon-256.png</Icon>
   <ExtraParams>--restart unless-stopped --log-opt max-size=10m --log-opt max-file=3</ExtraParams>
   <PostArgs/>
   <CPUset/>
