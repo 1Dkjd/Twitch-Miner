@@ -170,7 +170,7 @@ select.inline-sel option, select.period option { background: var(--surface); col
 .opt .d select.inline-sel { font-size: 12.5px; min-height: 0; padding: 1px 24px 1px 7px; border-radius: 6px;
   background-position: right 12px center, right 7px center; background-size: 4px 4px, 4px 4px; vertical-align: baseline; }
 /* Up next rows can carry three buttons (Pin / Add to Priority / Never mine): on phones they wrap */
-@media (max-width: 720px) { #up-next-list .row-acts { flex-wrap: wrap; row-gap: 4px; } }
+@media (max-width: 720px) { #up-next-list .row-acts, .needs .row-acts { flex-wrap: wrap; row-gap: 4px; } }
 
 /* Settings › About: the running commit */
 .mono { font-family: var(--mono); font-size: 12px; }

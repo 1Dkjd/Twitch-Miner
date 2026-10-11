@@ -314,9 +314,62 @@ function firstReward(c: Campaign) {
   return d ? { name: d.rewards[0]!.name, img: d.rewards[0]!.image_url, at: d.required_minutes, all: d.rewards } : null;
 }
 
+/** Needs you, with Ignore (approved 2026-10-11, docs/design/ignore-mockup.html): Ignore hides one campaign until
+ * it ends, and with it its alert and its weekly-summary mention (the server leaves it out of Needs you). */
 function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) => void }) {
   const { refreshState, say, sayError } = useApp();
-  if (!state.needs_you.length) return null;
+  const [showIgnored, setShowIgnored] = useState(false);
+  const ignored = state.needs_ignored ?? [];
+  if (!state.needs_you.length && !ignored.length) return null;
+
+  async function unignore(c: Campaign, done: { title: string; detail: string }) {
+    try { await api.del(`/needs/ignored/${encodeURIComponent(c.id)}`); say(done); }
+    catch (e) { sayError(e, "Couldn't bring it back"); }
+    void refreshState();
+  }
+  async function ignore(c: Campaign) {
+    try {
+      await api.post(`/needs/ignored/${encodeURIComponent(c.id)}`);
+      say({ title: "Ignored", detail: `${c.name} won't show here or in alerts. It ends ${day(c.ends_at)}.` },
+        () => void unignore(c, { title: "Undone", detail: `${c.name} is back in Needs you.` }));
+    } catch (e) { sayError(e, "Couldn't ignore it"); }
+    void refreshState();
+  }
+
+  const label = `${ignored.length} ignored · ${showIgnored ? "Hide" : "Show"}`;
+  const toggle = (solo: boolean) => (
+    <button className={`ign-foot${solo ? " solo" : ""}`} type="button" aria-expanded={showIgnored} aria-controls="needs-ignored"
+      aria-label={solo ? `Needs you · ${label}` : label} onClick={() => setShowIgnored(!showIgnored)}>
+      {solo && <><b>Needs you</b><span className="sep">·</span></>}
+      {ignored.length} ignored<span className="sep">·</span><u>{showIgnored ? "Hide" : "Show"}</u>
+    </button>
+  );
+  const ignoredRows = showIgnored && (
+    <div id="needs-ignored">
+      {ignored.map((c) => (
+        <div className="row ign" key={c.id}>
+          <img className="box" src={boxArt(c.box_art_url)} alt="" />
+          <div>
+            <div className="row-t">{c.maybe_unlinked ? `${c.game} may need linking` : `Link your ${c.game} account`}</div>
+            <div className="row-s">{c.name}<span className="sep">·</span>ends {day(c.ends_at)}</div>
+          </div>
+          <div className="row-acts">
+            <button className="btn quiet" type="button" aria-label={`Unignore ${c.name}`}
+              onClick={() => void unignore(c, { title: "Back in Needs you", detail: c.name })}>Unignore</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  if (!state.needs_you.length) {
+    return (
+      <section id="sec-needs" aria-label="Needs you" className="ign-only">
+        {toggle(true)}
+        {ignoredRows && <div className="list needs">{ignoredRows}</div>}
+      </section>
+    );
+  }
   return (
     <Sec id="needs" title="Needs you" count={state.needs_you.length} aside="Can't be mined until you act">
       <div className="list needs">
@@ -349,11 +402,14 @@ function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) =>
                     void refreshState();
                   }}>Mine now</button>
                 )}
+                <button className="btn quiet" type="button" aria-label={`Ignore ${c.name}`} onClick={() => void ignore(c)}>Ignore</button>
                 <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={() => onNever(c.game)}>Never mine</button>
               </div>
             </div>
           );
         })}
+        {ignored.length > 0 && toggle(false)}
+        {ignoredRows}
       </div>
     </Sec>
   );

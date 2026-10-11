@@ -248,21 +248,19 @@ class Runner:
         log(now, rows)
 
     def _forget_ended_pins(self, now: datetime) -> None:
-        """A pin lasts as long as its campaign: drop it once the campaign is known to have ended (listed and
-        past its end, or logged as ended). A pin whose campaign is just missing from a short list stays."""
-        get = getattr(self._store, "get_pins", None)
-        if get is None:
-            return
-        pins = get()
-        listed = {c.id: c for c in self.campaigns}
-        ended_in_log = getattr(self._store, "ended_campaign_ids", lambda ids, at: set())(pins, now)
-
-        def ended(cid: str) -> bool:
-            c = listed.get(cid)
-            return c.ends_at <= now if c is not None else cid in ended_in_log
-
-        if (kept := [p for p in pins if not ended(p)]) != pins:
-            self._store.set_pins(kept)
+        """A pin (or an ignored Needs you campaign) lasts as long as its campaign: drop it once the campaign
+        is known to have ended (listed and past its end, or logged as ended). One whose campaign is just
+        missing from a short list stays."""
+        for get_name, set_name in (("get_pins", "set_pins"), ("get_ignored", "set_ignored")):
+            get = getattr(self._store, get_name, None)
+            if get is None:
+                continue
+            ids = get()
+            listed = {c.id: c for c in self.campaigns}
+            in_log = getattr(self._store, "ended_campaign_ids", lambda ids, at: set())(ids, now)
+            kept = [i for i in ids if not (listed[i].ends_at <= now if i in listed else i in in_log)]
+            if kept != ids:
+                getattr(self._store, set_name)(kept)
 
     async def replan(self) -> None:
         """Re-decide from what is already known (lists or an override changed): no Twitch calls."""

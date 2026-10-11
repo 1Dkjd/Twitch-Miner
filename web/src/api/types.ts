@@ -233,6 +233,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/needs/ignored/{campaign_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ignore Needs
+         * @description Needs you > Ignore: stop asking about this campaign (page, alert, weekly summary) until it ends.
+         *     One id per call, so Undo reverses only its own change.
+         */
+        post: operations["ignore_needs_api_needs_ignored__campaign_id__post"];
+        /** Unignore Needs */
+        delete: operations["unignore_needs_api_needs_ignored__campaign_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notify/channels": {
         parameters: {
             query?: never;
@@ -778,6 +800,11 @@ export interface components {
             /** Total Rewards */
             total_rewards: number;
         };
+        /** IgnoredOut */
+        IgnoredOut: {
+            /** Ids */
+            ids: string[];
+        };
         /** ListsIn */
         ListsIn: {
             /** Favourites */
@@ -1093,6 +1120,11 @@ export interface components {
             last_switch?: components["schemas"]["SwitchOut"] | null;
             /** Login */
             login: string | null;
+            /**
+             * Needs Ignored
+             * @default []
+             */
+            needs_ignored: components["schemas"]["CampaignOut"][];
             /** Needs You */
             needs_you: components["schemas"]["CampaignOut"][];
             /**
@@ -1501,6 +1533,68 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ignore_needs_api_needs_ignored__campaign_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IgnoredOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unignore_needs_api_needs_ignored__campaign_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IgnoredOut"];
+                };
             };
             /** @description Validation Error */
             422: {

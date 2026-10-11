@@ -35,6 +35,7 @@ class Plan:
     verdicts: dict[str, str] = field(default_factory=dict)
     also_credited: tuple[str, ...] = ()
     waiting: tuple[str, ...] = ()  # could be mined but nobody qualifying is live, in queue order
+    needs_ignored: tuple[str, ...] = ()  # would be in Needs you, but Ignore was pressed on them
 
 
 def qualifies(c: Campaign, ch: LiveChannel) -> bool:
@@ -68,10 +69,13 @@ def plan(
     current_campaign: str | None = None,
 ) -> Plan:
     considered = [c for c in campaigns if campaign_active(c, now) and c.game.name not in prefs.never]
-    needs_you = tuple(
+    asks = [
         c.id for c in sorted(considered, key=lambda c: (c.ends_at, c.id))
         if c.linked is False and not c.has_badge_or_emote and campaign_minutes_needed(c, now) > 0
-    )
+    ]
+    # ignored ones leave Needs you, and so its alert and the weekly summary, which read plan.needs_you
+    needs_you = tuple(i for i in asks if i not in prefs.ignored)
+    needs_ignored = tuple(i for i in asks if i in prefs.ignored)
     done = tuple(
         c.id for c in sorted(considered, key=lambda c: (c.ends_at, c.id))
         if c.drops and all(d.claimed for d in c.drops)
@@ -112,7 +116,7 @@ def plan(
     eligible.sort(key=order)
     waiting = tuple(c.id for c in sorted(offline, key=order))
     if not eligible:
-        return Plan(None, (), needs_you, done, verdicts, (), waiting)
+        return Plan(None, (), needs_you, done, verdicts, (), waiting, needs_ignored)
 
     chosen = next((c for c in eligible if c.id == override_campaign), eligible[0])
     if chosen.id != override_campaign:
@@ -143,7 +147,7 @@ def plan(
     queue = tuple(c.id for c in eligible if c.id != chosen.id)
     return Plan(
         Choice(chosen.id, channel.login, reason, channel_reason),
-        queue, needs_you, done, verdicts, also, waiting,
+        queue, needs_you, done, verdicts, also, waiting, needs_ignored,
     )
 
 
