@@ -60,6 +60,9 @@ def watch_payload(channel: LiveChannel, user_id: int, now: datetime) -> dict:
             "logged_in": True,
             "minutes_logged": 1,
             "muted": False,
+            # without it Twitch credits drop minutes but no channel points (0 points after 2 h on rainbow6;
+            # with it +10 every 5 min and a chest within 15 min, 2026-10-11)
+            "player": "site",
             "user_id": user_id,
         },
     }]

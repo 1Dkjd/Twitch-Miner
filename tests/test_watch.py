@@ -42,3 +42,10 @@ def test_client_time_matches_reference_format():
     import re
     props = json.loads(base64.b64decode(watch_payload(CH, 42, NOW)["data"]))[0]["properties"]
     assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z", props["client_time"])
+
+
+def test_heartbeat_says_it_comes_from_the_site_player():
+    # 2026-10-11: without player=site the account earned no channel points at all (so no chests); the
+    # reference points miner (rdavydov, same TV client) sends it
+    props = json.loads(base64.b64decode(watch_payload(CH, 42, NOW)["data"]))[0]["properties"]
+    assert props["player"] == "site"
