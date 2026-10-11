@@ -71,6 +71,11 @@ class CatalogOut(BaseModel):
     since: datetime | None
 
 
+class StreakVisitOut(BaseModel):
+    channel: str
+    until: datetime
+
+
 class StateOut(BaseModel):
     state: str
     signed_in: bool
@@ -86,6 +91,7 @@ class StateOut(BaseModel):
     next_check_at: datetime | None = None  # the runner's next Twitch refresh (or retry)
     never: list[CampaignOut] = []  # running campaigns of Never games: never mined, listed for their art
     first_in_line: list[str] = []  # idle: names of the next campaigns to mine once a channel goes live
+    streak_visit: StreakVisitOut | None = None  # watching a favourite for its watch streak; drops wait
 
 
 class ListsIn(BaseModel):

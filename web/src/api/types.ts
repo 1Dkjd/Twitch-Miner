@@ -418,6 +418,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/streak/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * End Streak
+         * @description Stop a watch-streak visit and go back to drops now.
+         */
+        post: operations["end_streak_api_streak_end_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/suggestions": {
         parameters: {
             query?: never;
@@ -970,8 +990,19 @@ export interface components {
             signed_in: boolean;
             /** State */
             state: string;
+            streak_visit?: components["schemas"]["StreakVisitOut"] | null;
             /** Up Next */
             up_next: components["schemas"]["CampaignOut"][];
+        };
+        /** StreakVisitOut */
+        StreakVisitOut: {
+            /** Channel */
+            channel: string;
+            /**
+             * Until
+             * Format: date-time
+             */
+            until: string;
         };
         /** SuggestionsOut */
         SuggestionsOut: {
@@ -1689,6 +1720,24 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["StateOut"];
                 };
+            };
+        };
+    };
+    end_streak_api_streak_end_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

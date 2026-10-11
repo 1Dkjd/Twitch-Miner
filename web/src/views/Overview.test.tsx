@@ -156,3 +156,14 @@ test("ordinals", async () => {
   const { nth } = await import("./Overview");
   expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 103].map(nth)).toEqual(["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "103rd"]);
 });
+
+test("a watch-streak visit replaces the mining card and can be ended", async () => {
+  setPhone(false);
+  const until = new Date(Date.now() + 5 * 60_000);
+  const calls = setup(state({ streak_visit: { channel: "favchan", until: until.toISOString() } }), { "POST /api/streak/end": undefined });
+  expect(await screen.findByText(/for its watch streak/)).toBeInTheDocument();
+  expect(screen.getByText("favchan")).toBeInTheDocument();
+  expect(screen.queryByText("Change channel")).not.toBeInTheDocument();
+  await act(async () => { await userEvent.click(screen.getByRole("button", { name: "Back to drops now" })); });
+  expect(calls.some((c) => c.method === "POST" && c.path === "/api/streak/end")).toBe(true);
+});

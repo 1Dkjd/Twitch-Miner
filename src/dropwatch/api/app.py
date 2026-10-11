@@ -346,6 +346,12 @@ async def events(request: Request) -> StreamingResponse:
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+@api.post("/streak/end", status_code=204)
+async def end_streak(request: Request) -> None:
+    """Stop a watch-streak visit and go back to drops now."""
+    await _runner(_c(request)).end_streak_visit()
+
+
 @api.post("/refresh", status_code=204)
 async def check_now(request: Request) -> None:
     """The idle card's "Check now": re-read campaigns and live channels immediately."""

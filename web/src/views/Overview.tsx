@@ -132,8 +132,29 @@ function NowSlot({ state, lost, lostSince, priorityOf }: { state: State; lost: b
         <div className="empty">Nothing is being mined while you're signed out of Twitch.</div></section>
     );
   }
+  if (state.streak_visit) return <StreakVisit visit={state.streak_visit} next={cur?.campaign.name ?? null} />;
   if (!cur) return <Idle state={state} />;
   return <NowCard state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf} />;
+}
+
+/** A watch-streak visit (Settings > Mining): drops wait a few minutes while a favourite's new stream is watched. */
+function StreakVisit({ visit, next }: { visit: NonNullable<State["streak_visit"]>; next: string | null }) {
+  const { refreshState, say } = useApp();
+  const [busy, setBusy] = useState(false);
+  return (
+    <section className="idle" aria-labelledby="h-streak">
+      <h2 id="h-streak">Mining now</h2>
+      <p>Watching <b>{visit.channel}</b> for its watch streak. Back to drops by {clock(visit.until)}
+        {next ? `, starting with ${next}` : ""}.</p>
+      <div className="acts"><button className="btn" type="button" aria-disabled={busy} onClick={async () => {
+        if (busy) return;
+        setBusy(true);
+        try { await api.post("/streak/end"); say("Back to drops."); }
+        catch (e) { say(e instanceof ApiError ? e.message : "Couldn't stop the visit."); }
+        finally { setBusy(false); void refreshState(); }
+      }}>Back to drops now</button></div>
+    </section>
+  );
 }
 
 const VERDICT: Record<string, [string, string]> = {

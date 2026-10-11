@@ -1516,6 +1516,16 @@
       "title": "State",
       "type": "string"
      },
+     "streak_visit": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/StreakVisitOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
      "up_next": {
       "items": {
        "$ref": "#/components/schemas/CampaignOut"
@@ -1536,6 +1546,25 @@
      "done"
     ],
     "title": "StateOut",
+    "type": "object"
+   },
+   "StreakVisitOut": {
+    "properties": {
+     "channel": {
+      "title": "Channel",
+      "type": "string"
+     },
+     "until": {
+      "format": "date-time",
+      "title": "Until",
+      "type": "string"
+     }
+    },
+    "required": [
+     "channel",
+     "until"
+    ],
+    "title": "StreakVisitOut",
     "type": "object"
    },
    "SuggestionsOut": {
@@ -2316,6 +2345,18 @@
      }
     },
     "summary": "Get State"
+   }
+  },
+  "/api/streak/end": {
+   "post": {
+    "description": "Stop a watch-streak visit and go back to drops now.",
+    "operationId": "end_streak_api_streak_end_post",
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     }
+    },
+    "summary": "End Streak"
    }
   },
   "/api/suggestions": {

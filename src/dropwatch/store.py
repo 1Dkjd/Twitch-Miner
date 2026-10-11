@@ -163,6 +163,12 @@ class Store:
                 "DELETE FROM events WHERE at < ?", ((now - EVENT_RETENTION).isoformat(),)
             )
 
+    def switched_since(self, since: datetime) -> list[dict]:
+        """Channel switches since then, newest first (the chest check's recently watched channels)."""
+        rows = self._db.execute("SELECT data FROM events WHERE kind = 'switched' AND at >= ? "
+                                "ORDER BY at DESC, rowid DESC", (since.astimezone(UTC).isoformat(),))
+        return [json.loads(d) for (d,) in rows]
+
     def recent_events(self, limit: int | None = 100) -> list[tuple[str, str, dict]]:
         """(kind, at, data), newest first; limit None = everything kept (EVENT_RETENTION bounds it)."""
         rows = self._db.execute(

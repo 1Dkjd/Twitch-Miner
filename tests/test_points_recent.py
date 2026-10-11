@@ -2,12 +2,15 @@
 looks at the channels watched in the last 7 days (asked for 2026-10-11; mills and glorious_e each had one
 waiting since Oct 9)."""
 import json
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
-from test_runner import NOW, FakeClient, FakePubSub, FakeWatcher, camp, chan
+from test_runner import FakeClient, FakePubSub, FakeWatcher, camp, chan
 
 from dropwatch.runner import RECENT_CHEST_CHANNELS, Runner
 from dropwatch.store import Store
+
+# relative to the real clock: the store prunes events older than 7 days by real time (review fix)
+NOW = datetime.now(UTC).replace(microsecond=0)
 
 
 class ChestClient(FakeClient):
@@ -52,13 +55,12 @@ async def test_chests_on_recently_watched_channels_are_claimed(tmp_path):
 
 async def test_only_the_last_week_and_at_most_the_cap(tmp_path):
     r, c, st = make(tmp_path, {})
-    watched_before(st, "too_old", 8)
+    watched_before(st, "too_old", 7.5)  # still in the table (nothing logged since): the runner must skip it
     for i in range(RECENT_CHEST_CHANNELS + 5):
         watched_before(st, f"ch{i}", 1 + i / 1000)
-    await r.refresh()
-    asked = c.asked[-1]
-    assert "too_old" not in asked
-    assert len(asked) == RECENT_CHEST_CHANNELS + 1  # + the channel being watched
+    recent = r._recent_channels()
+    assert "too_old" not in recent and len(recent) == RECENT_CHEST_CHANNELS
+    assert recent[0] == "ch0"  # newest first
 
 
 async def test_nothing_is_looked_up_with_channel_points_off(tmp_path):
@@ -66,3 +68,10 @@ async def test_nothing_is_looked_up_with_channel_points_off(tmp_path):
     watched_before(st, "mills", 1)
     await r.refresh()
     assert c.asked == [] and c.claimed == []
+
+
+async def test_channels_watched_more_than_a_week_ago_are_skipped(tmp_path):
+    r, c, st = make(tmp_path, {})
+    watched_before(st, "too_old", 7.5)  # still in the table (nothing logged since): the runner must skip it
+    watched_before(st, "recent", 1)
+    assert r._recent_channels() == ["recent"]

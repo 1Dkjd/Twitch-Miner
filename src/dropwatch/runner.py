@@ -12,6 +12,7 @@ Robustness rules (phase-1 final review):
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import time
 from collections.abc import Callable
@@ -51,6 +52,7 @@ CAMPAIGNS_EVERY = timedelta(hours=1)  # default; Settings' campaigns_every_minut
 CHEST_LOOKBACK = timedelta(days=7)  # channels watched this recently are checked for a waiting chest
 RECENT_CHEST_CHANNELS = 30  # at most this many of them per refresh (one or two batched requests)
 STREAK_VISIT = timedelta(minutes=7)  # a favourite's new stream is watched this long for its watch streak
+STREAK_REMEMBER = 200  # visited broadcast ids kept across restarts
 CLAIM_WAIT = timedelta(hours=1)  # force campaign re-fetches this long; the hourly fetch covers the rest
 BACKOFF_START, BACKOFF_MAX = 60.0, 600.0
 # spec §4 (2026-10-10): an unknown account link that earns nothing for 10 minutes of good playback
@@ -106,7 +108,9 @@ class Runner:
         self.maybe_unlinked: dict[str, datetime] = {}  # campaign -> marked at
         self._mined_on: dict[str, str] = {}  # campaign -> channel last watched for it (History details)
         self._streak: tuple[str, str, datetime] | None = None  # watch-streak visit: (broadcast, login, since)
-        self._streak_done: set[str] = set()  # broadcasts already visited (or mined) for their streak
+        # broadcasts already visited (or mined) for their streak; kept across restarts (review fix)
+        get = getattr(store, "get_setting", None)
+        self._streak_done: set[str] = set(json.loads((get("streak_done") if get else None) or "[]"))
 
     @property
     def next_check_at(self) -> datetime | None:
@@ -140,9 +144,11 @@ class Runner:
         # "Mine now" on a may-need-linking campaign means "I linked it, try again"
         self.maybe_unlinked.pop(campaign_id, None)
         self._link_probe.pop(campaign_id, None)
+        self._end_streak_visit()
 
     def use_channel(self, login: str) -> None:
         self._override_channel = login
+        self._end_streak_visit()  # the user's pick wins over a watch-streak visit
 
     # --- core
     def _set_state(self, state: State, extra: dict | None = None) -> None:
@@ -269,7 +275,9 @@ class Runner:
         self._settle_link_marks(now)
         planned = [replace(c, linked=False) if c.id in self.maybe_unlinked else c for c in self.campaigns]
         self.plan = plan(planned, usable, prefs, now,
-                         watching=previous.login if previous else None,
+                         # during a watch-streak visit, the drop channel is the one to stay on
+                         watching=(self.plan.current.channel_login if self._streak and self.plan
+                                   and self.plan.current else previous.login if previous else None),
                          override_campaign=self._override_campaign,
                          override_channel=self._override_channel,
                          current_campaign=self.plan.current.campaign_id
@@ -317,6 +325,26 @@ class Runner:
             if c is None or c.linked is not None or now - at >= MAYBE_UNLINKED_FOR:
                 del self.maybe_unlinked[cid]
 
+    @property
+    def streak_visit(self) -> tuple[str, datetime] | None:
+        """(channel, ends at) while a watch-streak visit is on, for the page."""
+        return (self._streak[1], self._streak[2] + STREAK_VISIT) if self._streak else None
+
+    def _mark_streak_done(self, broadcast: str) -> None:
+        self._streak_done.add(broadcast)
+        if (put := getattr(self._store, "set_setting", None)) is not None:
+            put("streak_done", json.dumps(sorted(self._streak_done)[-STREAK_REMEMBER:]))
+
+    async def end_streak_visit(self) -> None:
+        """The page's "Back to drops now"."""
+        self._end_streak_visit()
+        await self.replan()
+
+    def _end_streak_visit(self) -> None:
+        if self._streak:
+            self._mark_streak_done(self._streak[0])
+            self._streak = None
+
     def _streak_on(self) -> bool:
         get = getattr(self._store, "get_settings", None)
         return bool(get and get().get("points_watch_streak")) and self._points_on()
@@ -332,15 +360,14 @@ class Runner:
             ch = next((c for c in usable if c.login == lg and c.broadcast_id == b), None)
             if ch is not None and now - since < STREAK_VISIT:
                 return ch
-            self._streak_done.add(b)
-            self._streak = None
+            self._end_streak_visit()
         drop = self.watching
         for lg in prefs.favourites:
             ch = next((c for c in usable if c.login == lg), None)
             if ch is None or ch.broadcast_id in self._streak_done:
                 continue
             if drop is not None and ch.login == drop.login:
-                self._streak_done.add(ch.broadcast_id)  # earned while mining it
+                self._mark_streak_done(ch.broadcast_id)  # earned while mining it
                 continue
             self._streak = (ch.broadcast_id, ch.login, now)
             return ch
@@ -438,6 +465,8 @@ class Runner:
                 self._set_state(State.PAUSED)
                 return
             self.resume()
+        if self._streak and now - self._streak[2] >= STREAK_VISIT:
+            await self.replan()  # a visit ends on time, not at the next refresh (review fix)
         if self.state == State.TWITCH_UNREACHABLE and self._retry_refresh_at is not None:
             due = now >= self._retry_refresh_at  # back off while Twitch is failing
         else:
@@ -521,14 +550,11 @@ class Runner:
 
     def _recent_channels(self) -> list[str]:
         """Channels watched in the last week, newest first (from Activity's switch events), capped."""
-        recent = getattr(self._store, "recent_events", None)
-        if recent is None:
+        switched = getattr(self._store, "switched_since", None)
+        if switched is None:
             return []
-        since = self._clock() - CHEST_LOOKBACK
         out: list[str] = []
-        for kind, at, data in recent(None):
-            if kind != "switched" or datetime.fromisoformat(at) < since:
-                continue
+        for data in switched(self._clock() - CHEST_LOOKBACK):
             for lg in (data.get("to"), data.get("from")):
                 if lg and lg not in out:
                     out.append(lg)
@@ -565,8 +591,7 @@ class Runner:
                 self._store.log_event("points_earned", {"channel": login, "reason": event.reason,
                                                         "points": event.points})
             if event.reason == "WATCH_STREAK" and self._streak and login == self._streak[1]:
-                self._streak_done.add(self._streak[0])
-                self._streak = None
+                self._end_streak_visit()
                 await self.replan()  # back to drops now
             return
         if isinstance(event, DropProgress):
