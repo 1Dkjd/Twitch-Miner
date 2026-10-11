@@ -2,7 +2,7 @@
 #   docker build --build-arg DROPWATCH_COMMIT=main@$(git rev-parse --short HEAD) -t dropwatch .
 #   docker run -d -p 5800:5800 -v /path/to/appdata:/data dropwatch
 
-FROM node:22.11.0-bookworm-slim AS web
+FROM node:24.16.0-bookworm-slim AS web
 WORKDIR /web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci --no-audit --no-fund
