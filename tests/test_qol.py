@@ -97,3 +97,13 @@ def test_sign_ins_from_before_the_list_say_so():
     from dropwatch.api.app import _device
     assert _device("") == "Older sign-in (no details kept)"
     assert _device("Mozilla/5.0 (X11; Linux x86_64) Firefox/131.0") == "Firefox on Linux"
+
+
+
+def test_a_week_with_points_but_no_claims_is_not_called_quiet(tmp_path):
+    from datetime import UTC, datetime
+    sun = datetime(2026, 10, 11, 18, 1, tzinfo=UTC)
+    n, clock, st = notifier(tmp_path, sun, notify_weekly=True)
+    st.add_points(sun - timedelta(days=1), "a", "WATCH", 300)
+    (a,) = n.check(NONE)
+    assert "quiet" not in a.body and "300 channel points" in a.body

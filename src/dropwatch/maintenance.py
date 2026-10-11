@@ -15,28 +15,48 @@ log = logging.getLogger("dropwatch.maintenance")
 BACKUP_KEEP = 2  # copies made before upgrades that are kept (oldest removed first)
 
 
-def backup_on_upgrade(store, build: str) -> Path | None:
-    """When the running build differs from the last one that started on this database, copy the database
-    first (drops.db.before-<build>) so an upgrade can be rolled back. Returns the copy, or None."""
-    last = store.get_setting("last_build")
-    if last == build:
+def backup_on_upgrade(path: Path, build: str) -> Path | None:
+    """Before the Store opens (and migrates) the database: when it was last run by another build, or never
+    recorded one but already holds data, copy it to drops.db.before-<build> so the upgrade can be rolled
+    back, then record this build. Returns the copy, or None (new install, or the same build)."""
+    if not path.exists():
         return None
-    made = None
-    if last is not None:
-        src: Path = store.path
-        made = src.with_name(f"{src.name}.before-{re.sub(r'[^A-Za-z0-9._-]', '_', build)}")
+    db = sqlite3.connect(path)
+    try:
+        tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+        if "settings" not in tables:
+            return None
+        row = db.execute("SELECT value FROM settings WHERE key = 'last_build'").fetchone()
+        last = row[0] if row else None
+        if last == build:
+            return None
+        made = path.with_name(f"{path.name}.before-{re.sub(r'[^A-Za-z0-9._-]', '_', build)}")
         dst = sqlite3.connect(made)
         try:
-            store._db.backup(dst)  # consistent even while the store is open
+            db.backup(dst)
         finally:
             dst.close()
-        log.info("Database copied to %s before running %s (was %s)", made.name, build, last)
-        copies = sorted(src.parent.glob(f"{src.name}.before-*"), key=lambda p: p.stat().st_mtime,
-                        reverse=True)
-        for old in copies[BACKUP_KEEP:]:
-            old.unlink(missing_ok=True)
-    store.set_setting("last_build", build)
+        if os.name == "posix":
+            os.chmod(made, 0o600)  # holds the Twitch token, like drops.db
+        db.execute("INSERT INTO settings VALUES ('last_build', ?) ON CONFLICT(key) DO UPDATE SET value = ?",
+                   (build, build))
+        db.commit()
+    finally:
+        db.close()
+    log.info("Database copied to %s before running %s (was %s)", made.name, build, last or "an older build")
+    copies = sorted(path.parent.glob(f"{path.name}.before-*"), key=lambda p: p.stat().st_mtime, reverse=True)
+    for old in copies[BACKUP_KEEP:]:
+        old.unlink(missing_ok=True)
     return made
+
+
+def safe_backup_on_upgrade(path: Path, build: str) -> Path | None:
+    """backup_on_upgrade that never stops the miner from starting (a full disk, permissions)."""
+    try:
+        return backup_on_upgrade(path, build)
+    except Exception as exc:  # noqa: BLE001 - a missing copy must not mean no mining
+        log.warning("Couldn't copy the database before this upgrade: %s: %s", type(exc).__name__, exc)
+        return None
 
 
 def miner_health(service, now: datetime) -> tuple[bool, str]:
@@ -54,8 +74,9 @@ def miner_health(service, now: datetime) -> tuple[bool, str]:
 
 class Watchdog:
     """Exits the process after two unhealthy checks in a row, so Docker's restart policy starts a fresh
-    miner (Unraid runs no autoheal container). Only on when DROPWATCH_EXIT_WHEN_STUCK=1 (the image sets it);
-    on a PC there is nothing to restart it."""
+    miner (Unraid runs no autoheal container). Needs a restart policy on the container (the Unraid template
+    sets --restart unless-stopped). Only on when DROPWATCH_EXIT_WHEN_STUCK=1 (the image sets it); on a PC
+    there is nothing to restart it."""
 
     STRIKES = 2
 

@@ -30,16 +30,23 @@ test("confirmations show on screen, with Undo when there's something to undo", a
   await waitFor(() => expect(screen.queryByRole("status", { name: "Notice" })).not.toBeInTheDocument());
 });
 
-test("Never mine can be undone from its confirmation", async () => {
-  const lists = { priority: ["Palia"], never: [], favourites: [] };
-  const calls = mockApi({ "GET /api/state": state(), "GET /api/lists": lists, "PUT /api/lists": (b: unknown) => b });
+test("Undo reverses only its own change, on the lists as they are now", async () => {
+  // review fix: Undo re-saved a snapshot from before, wiping anything changed in between
+  let server = { priority: ["Palia"], never: [] as string[], favourites: [] as string[] };
+  const calls = mockApi({ "GET /api/state": state(), "GET /api/lists": () => server,
+    "PUT /api/lists": (b: unknown) => { server = b as typeof server; return b; } });
   vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
   render(<AppProvider initialMe={ME}><OverviewView /><Toast /></AppProvider>);
   const btn = await screen.findAllByRole("button", { name: /^Never mine / });
+  const game = btn[0]!.getAttribute("aria-label")!.replace("Never mine ", "");
   await userEvent.click(btn[0]!);
+  await waitFor(() => expect(server.never).toContain(game));
+  server = { ...server, favourites: ["newfav"] };  // changed elsewhere meanwhile
   const toast = await screen.findByRole("status", { name: "Notice" });
   await userEvent.click(within(toast).getByRole("button", { name: "Undo" }));
-  await waitFor(() => expect(calls.filter((c) => c.method === "PUT").at(-1)?.body).toEqual(lists));
+  await waitFor(() => expect(server.never).not.toContain(game));
+  expect(server.favourites).toEqual(["newfav"]);
+  expect(calls.filter((c) => c.method === "PUT")).toHaveLength(2);
 });
 
 test("a new build behind the page offers a reload", async () => {
@@ -65,11 +72,11 @@ test("History counts channel points for the period", async () => {
 });
 
 test("the tab title carries progress while mining, and the view otherwise", () => {
+  // review fix: drops count the same watch time, so progress is the furthest drop, not the sum (fixture: 22 of 360)
   const s = state();
-  const cur = s.current!.campaign;
-  const done = cur.drops.reduce((n, d) => n + d.current_minutes, 0);
-  expect(titleFor(s, "Overview")).toMatch(new RegExp(`^${done}/\\d+ min · ${cur.name} · Dropwatch$`));
+  expect(titleFor(s, "Overview")).toBe(`22/360 min · ${s.current!.campaign.name} · Dropwatch`);
   expect(titleFor(state({ current: null }), "History")).toBe("History · Dropwatch");
+  expect(titleFor(state({ state: "paused" }), "History")).toBe("History · Dropwatch"); // not mining
 });
 
 test("the next reward says when, not just how long", async () => {

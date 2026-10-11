@@ -167,9 +167,7 @@ async def serve(store: Store, host: str, port: int) -> int:
     keeper = asyncio.create_task(keep_images(store, images))
     stuck_exits = os.environ.get("DROPWATCH_EXIT_WHEN_STUCK") == "1"  # the Docker image sets it
     watchdog = asyncio.create_task(watch_health(service)) if stuck_exits else None
-    from .maintenance import backup_on_upgrade
     from .version import VERSION, build_info
-    backup_on_upgrade(store, f"{VERSION}+{build_info() or 'unknown'}")
     store.log_event("started", {"version": VERSION, "commit": build_info()})
     started = await service.start()
     logging.getLogger("dropwatch").info(
@@ -205,6 +203,10 @@ def main(argv: list[str] | None = None) -> int:
     oa = sub.add_parser("openapi")
     oa.add_argument("--out", type=Path, default=Path("docs/api/openapi.json"))
     args = ap.parse_args(argv)
+    if args.cmd == "serve":  # copy the database before Store() migrates it (a rollback needs the old one)
+        from .maintenance import safe_backup_on_upgrade
+        from .version import VERSION, build_info
+        safe_backup_on_upgrade(data_dir() / "drops.db", f"{VERSION}+{build_info() or 'unknown'}")
     store = Store(data_dir() / "drops.db")
     setup_logging(store)
     if args.cmd == "signin":

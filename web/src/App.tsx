@@ -5,6 +5,7 @@ import { LoginScreen, SetupScreen } from "./screens/PagePassword";
 import { AppProvider, Toast, useApp } from "./store";
 import type { State } from "./api/client";
 import { CheckTwitch } from "./ui/CheckTwitch";
+import { milestones } from "./views/Track";
 import { Icon, IconSprite, Mark, type IconName } from "./ui/Icons";
 import { ActivityView } from "./views/Activity";
 import { HistoryView } from "./views/History";
@@ -79,10 +80,10 @@ function MinerDown() {
 /** The browser tab's title: progress while mining, so a background tab shows how it's going. */
 export function titleFor(state: State | null, viewTitle: string): string {
   const c = state?.current?.campaign;
-  if (!c) return `${viewTitle} · Dropwatch`;
-  const done = c.drops.reduce((n, d) => n + d.current_minutes, 0);
-  const need = c.drops.reduce((n, d) => Math.max(n, d.required_minutes), 0);
-  return `${done}/${need} min · ${c.name} · Dropwatch`;
+  const mining = state?.state === "mining" || state?.state === "switched";
+  if (!c || !mining || state?.streak_visit) return `${viewTitle} · Dropwatch`;
+  const { watched, max } = milestones(c.drops);  // drops share watch time: the furthest one, as the track shows
+  return `${watched}/${max} min · ${c.name} · Dropwatch`;
 }
 
 /** Shown when the server runs a newer build than this page (a tab left open across an update). */

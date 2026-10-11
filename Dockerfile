@@ -26,6 +26,8 @@ COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod 0755 /entrypoint.sh
 
 ARG DROPWATCH_COMMIT=""
+# required: without it every build looks the same (no update notice, no copy before upgrades)
+RUN test -n "$DROPWATCH_COMMIT" || (echo "build with --build-arg DROPWATCH_COMMIT=<branch>@<sha>" && exit 1)
 ENV DROPWATCH_COMMIT=$DROPWATCH_COMMIT \
     DROPWATCH_DATA=/data \
     DROPWATCH_WEB=/app/web/dist \
@@ -36,7 +38,8 @@ ENV DROPWATCH_COMMIT=$DROPWATCH_COMMIT \
 
 EXPOSE 5800
 VOLUME /data
-# fails when mining crashed or stopped ticking (not just when the page is down); autoheal restarts it
+# fails when mining crashed or stopped ticking (not just when the page is down). Unraid shows it; the
+# in-app watchdog (DROPWATCH_EXIT_WHEN_STUCK) exits and the container's restart policy brings it back
 HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=3 \
   CMD python -c "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5800/api/health/miner', timeout=8).status == 200 else 1)"
 ENTRYPOINT ["/entrypoint.sh"]

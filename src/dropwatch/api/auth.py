@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections import deque
 from datetime import datetime, timedelta
 
@@ -77,14 +78,15 @@ async def health() -> dict:
 
 @public.get("/health/miner")
 async def miner_health(request: Request, response: Response) -> dict:
-    """Docker's health check (no sign-in, nothing private): 503 when mining crashed or stopped ticking, so
-    Unraid's autoheal restarts the container. Signed out, paused or idle are healthy."""
+    """Docker's health check, open without sign-in, so it says only ok or not (the reason is logged): 503
+    when mining crashed or stopped ticking. Signed out, paused or idle are healthy."""
     from ..maintenance import miner_health
     ctx = _ctx(request)
     ok, why = miner_health(ctx.service, ctx.clock())
     if not ok:
+        logging.getLogger("dropwatch").warning("Health check: %s", why)
         response.status_code = 503
-    return {"ok": ok, "reason": why}
+    return {"ok": ok}
 
 
 @public.get("/me", response_model=MeOut)

@@ -109,6 +109,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/health/miner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Miner Health
+         * @description Docker's health check, open without sign-in, so it says only ok or not (the reason is logged): 503
+         *     when mining crashed or stopped ticking. Signed out, paused or idle are healthy.
+         */
+        get: operations["miner_health_api_health_miner_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/history": {
         parameters: {
             query?: never;
@@ -1265,6 +1286,28 @@ export interface operations {
         };
     };
     health_api_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    miner_health_api_health_miner_get: {
         parameters: {
             query?: never;
             header?: never;

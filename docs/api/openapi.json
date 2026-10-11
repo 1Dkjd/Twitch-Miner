@@ -1900,7 +1900,7 @@
   },
   "/api/health/miner": {
    "get": {
-    "description": "Docker's health check (no sign-in, nothing private): 503 when mining crashed or stopped ticking, so\nUnraid's autoheal restarts the container. Signed out, paused or idle are healthy.",
+    "description": "Docker's health check, open without sign-in, so it says only ok or not (the reason is logged): 503\nwhen mining crashed or stopped ticking. Signed out, paused or idle are healthy.",
     "operationId": "miner_health_api_health_miner_get",
     "responses": {
      "200": {
