@@ -28,8 +28,11 @@ export function UpNext({ state, priorityOf, onNever }: {
   );
   useEffect(() => {
     api.get<Settings>("/settings").then((s) => setArrange(!!s.arrange_up_next)).catch(() => setArrange(false));
-    api.get<{ pins: string[] }>("/pins").then((p) => setPins(p.pins)).catch(() => undefined);
   }, []);
+  // re-read after every refresh: the server drops pins of campaigns that ended
+  useEffect(() => {
+    api.get<{ pins: string[] }>("/pins").then((p) => setPins(p.pins)).catch(() => undefined);
+  }, [state.last_refresh]);
   if (!state.up_next.length) return null;
 
   async function savePins(next: string[], said: string) {
@@ -43,15 +46,21 @@ export function UpNext({ state, priorityOf, onNever }: {
     catch (e) { setArrange(!on); say(e instanceof ApiError ? e.message : "Couldn't save."); }
     void refreshState();
   }
+  // the pinned campaigns shown in Up next, in order: the one being mined (or one with no live channel)
+  // can be pinned too but isn't shown, so moves work on what is visible and keep the others in place
+  const visiblePins = state.up_next.filter((c) => c.pinned && pins.includes(c.id)).map((c) => c.id);
+  function reorder(from: number, to: number) {
+    const next = arrayMove(visiblePins, from, to);
+    let k = 0;
+    void savePins(pins.map((p) => (visiblePins.includes(p) ? next[k++]! : p)), `Moved to pin ${to + 1} of ${visiblePins.length}`);
+  }
   const move = (id: string, by: number) => {
-    const i = pins.indexOf(id), j = i + by;
-    if (i < 0 || j < 0 || j >= pins.length) return;
-    void savePins(arrayMove(pins, i, j), `Moved to pin ${j + 1} of ${pins.length}`);
+    const i = visiblePins.indexOf(id), j = i + by;
+    if (i >= 0 && j >= 0 && j < visiblePins.length) reorder(i, j);
   };
   function onDragEnd(e: DragEndEvent) {
     const a = String(e.active.id), b = e.over ? String(e.over.id) : null;
-    if (!b || a === b || !pins.includes(b)) return;
-    void savePins(arrayMove(pins, pins.indexOf(a), pins.indexOf(b)), `Moved to pin ${pins.indexOf(b) + 1} of ${pins.length}`);
+    if (b && a !== b && visiblePins.includes(a) && visiblePins.includes(b)) reorder(visiblePins.indexOf(a), visiblePins.indexOf(b));
   }
 
   const needle = filter.trim().toLowerCase();
@@ -64,7 +73,7 @@ export function UpNext({ state, priorityOf, onNever }: {
 
   const row = (c: Campaign) => (
     <UpNextRow key={c.id} c={c} pr={priorityOf(c.game)} arrange={!!arrange} pinned={!!arrange && c.pinned}
-      pinIndex={pins.indexOf(c.id)} pinCount={pins.length}
+      pinIndex={visiblePins.indexOf(c.id)} pinCount={visiblePins.length}
       onMineNow={async () => {
         try { await api.post("/mine-now", { campaign_id: c.id }); say(`Mining ${c.name} now`); }
         catch (e) { say(e instanceof ApiError ? e.message : "Couldn't switch to it."); }
@@ -146,7 +155,7 @@ function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, onMineNow, onNe
           <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={onNever}>Never mine</button>
         </>}
         {arrange && pinned && <>
-          <span className="grip" aria-hidden="true" {...sortable.attributes} {...sortable.listeners}><Icon name="grip" /></span>
+          <span className="grip" {...sortable.attributes} {...sortable.listeners} aria-label={`Drag ${c.name} to reorder`}><Icon name="grip" /></span>
           <button className="btn quiet" type="button" aria-label={`Move ${c.name} up`} disabled={pinIndex <= 0} onClick={() => onMove(-1)}><Icon name="up" /></button>
           <button className="btn quiet" type="button" aria-label={`Move ${c.name} down`} disabled={pinIndex >= pinCount - 1} onClick={() => onMove(1)}><Icon name="down" /></button>
           <button className="btn" type="button" aria-label={`Unpin ${c.name}`} onClick={onUnpin}>Unpin</button>

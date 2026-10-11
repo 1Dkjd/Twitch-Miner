@@ -69,3 +69,91 @@ async def test_history_serves_kept_copies_and_wanted_lists_every_history_image(t
     assert (await c.get("/api/img/..%2Fd.db")).status_code == 404
     assert (await c.get("/api/img/nothere00000000000000000.png")).status_code == 404
     await c.aclose()
+
+
+async def test_reads_the_whole_body_even_in_chunks_and_never_follows_redirects():
+    from dropwatch.images import MAX_BYTES, aiohttp_get
+
+    class Content:
+        def __init__(self, chunks):
+            self.chunks = chunks
+
+        async def read(self, n=-1):  # aiohttp returns only what has arrived, not the whole body
+            return self.chunks[0]
+
+        async def iter_chunked(self, n):
+            for c in self.chunks:
+                yield c
+
+    class Resp:
+        def __init__(self, chunks):
+            self.status, self.headers, self.content = 200, {"Content-Type": "image/png"}, Content(chunks)
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+    class Session:
+        def __init__(self, chunks):
+            self.chunks, self.kw = chunks, None
+
+        def get(self, url, **kw):
+            self.kw = kw
+            return Resp(self.chunks)
+
+    s = Session([b"aaa", b"bbb", b"ccc"])
+    assert await aiohttp_get(s)("https://static-cdn.jtvnw.net/x.png") == (200, "image/png", b"aaabbbccc")
+    assert s.kw["allow_redirects"] is False
+    big = Session([b"x" * MAX_BYTES, b"y"])
+    status, _, body = await aiohttp_get(big)("https://static-cdn.jtvnw.net/x.png")
+    assert len(body) > MAX_BYTES  # over the cap: ensure() refuses it
+
+
+def test_only_exact_hash_names_are_served(tmp_path):
+    cache = ImageCache(tmp_path)
+    good = "0123456789abcdef01234567.png"
+    (tmp_path / good).write_bytes(b"x")
+    (tmp_path / "x.png").write_bytes(b"x")
+    assert cache.file(good) is not None
+    for bad in ["../" + good, good + "\n", "X123456789abcdef01234567.png", "x.png", good + ".part"]:
+        assert cache.file(bad) is None, bad
+
+
+async def test_odd_urls_are_refused_and_dead_links_wait_a_day(tmp_path):
+    get = FakeGet(status=404)
+    clock = [NOW]
+    cache = ImageCache(tmp_path, get, clock=lambda: clock[0])
+    for url in ["https://user@static-cdn.jtvnw.net/x.png", "https://static-cdn.jtvnw.net:8443/x.png"]:
+        assert await cache.ensure([url]) == 0 and get.urls == []
+    url = "https://static-cdn.jtvnw.net/gone.png"
+    await cache.ensure([url])
+    await cache.ensure([url])
+    assert get.urls == [url]  # a failure isn't retried at once
+    clock[0] += timedelta(days=1, minutes=1)
+    await cache.ensure([url])
+    assert get.urls == [url, url]
+
+
+def test_only_images_history_shows_in_full_are_wanted(tmp_path):
+    from dropwatch.store import Store
+
+    st = Store(tmp_path / "d.db")
+
+    def row(cid, **over):
+        cdn = "https://static-cdn.jtvnw.net/"
+        base = {"id": cid, "name": cid, "game": "G", "box_art_url": f"{cdn}{cid}.jpg",
+                "link_url": "", "ends_at": NOW + timedelta(hours=1), "linked": True, "badge": False,
+                "rewards": [{"name": "r", "image_url": f"{cdn}{cid}-r.png", "claimed": False}],
+                "impossible": False, "never": False, "priority": False, "pinned": False, "live": True,
+                "watched": 0}
+        return {**base, **over}
+
+    st.log_campaigns(NOW, [row("started", watched=10), row("prio", priority=True),
+                           row("unlinked", linked=False), row("untouched"),
+                           row("never", never=True, watched=10)])
+    wanted = " ".join(st.history_image_urls(NOW - timedelta(days=1)))
+    for cid in ("started", "prio", "unlinked"):
+        assert f"/{cid}.jpg" in wanted and f"/{cid}-r.png" in wanted
+    assert "untouched" not in wanted and "/never" not in wanted

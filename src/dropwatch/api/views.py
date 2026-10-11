@@ -76,8 +76,10 @@ def state_view(runner, store, now: datetime) -> StateOut:
     # back to back in queue order after what is being mined now: which would end before their turn
     t = now + timedelta(minutes=current.campaign.minutes_needed if current else 0)
     up_next = []
+    alongside = set(plan.also_credited) if plan else set()  # earned on the same stream, at the same time
     for o in keep(plan.queue if plan else ()):
-        t += timedelta(minutes=o.minutes_needed)
+        if o.id not in alongside:
+            t += timedelta(minutes=o.minutes_needed)
         up_next.append(o.model_copy(update={"pinned": o.id in pins, "ends_before_turn": t > o.ends_at}))
     never_games = store.get_prefs().never
     never = sorted((c for c in runner.campaigns if c.game.name in never_games and campaign_active(c, now)),

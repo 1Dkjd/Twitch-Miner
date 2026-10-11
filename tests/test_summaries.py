@@ -58,6 +58,7 @@ def test_weekly_summary_once_at_the_chosen_time(tmp_path):
     assert n.check(needs) == []  # 17:59
     clock[0] = SUN_1801
     (a,) = n.check(needs)
+    n.delivered(a)  # what run() does once a channel delivered it
     assert a.title == "Dropwatch: Your week"
     assert a.body == ("2 rewards claimed from 1 campaign. "
                       "2 need your account linked: Dead by Daylight, 007 First Light.")
@@ -65,7 +66,8 @@ def test_weekly_summary_once_at_the_chosen_time(tmp_path):
     assert n.check(needs) == []  # once a week
     assert Notifier(st, clock=lambda: clock[0], tz=UTC).check(needs) == []  # a restart doesn't repeat it
     clock[0] += timedelta(days=7)
-    assert n.check(NONE)[0].body == "A quiet week: nothing claimed."
+    (quiet,) = n.check(NONE)
+    assert quiet.body == "A quiet week: nothing claimed."
 
 
 def test_weekly_summary_counts_missed_campaigns_that_mattered(tmp_path):

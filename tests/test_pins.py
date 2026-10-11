@@ -60,21 +60,25 @@ async def test_runner_forgets_pins_of_campaigns_that_ended(tmp_path):
     r = Runner(FakeClient([camp(), ended], [chan("a", 7)]), FakeWatcher(), FakePubSub(), st, user_id=42,
                clock=lambda: NOW)
     await r.refresh()
-    assert st.get_pins() == ["c1"]
+    # "old" is listed and past its end: dropped. "gone" was never seen, so it isn't known to have ended:
+    # kept (a short list mustn't wipe pins; review fix 2026-10-10)
+    assert st.get_pins() == ["c1", "gone"]
 
 
 async def test_api_pins_replan_and_state_marks_pinned_and_late(tmp_path):
     from apihelpers import NOW, logged_in, make_app
-    from test_runner import FakeClient, FakePubSub, FakeWatcher, chan
+    from test_runner import FakeClient, FakePubSub, FakeWatcher
 
+    from dropwatch.models import LiveChannel
     from dropwatch.runner import Runner
 
-    G = Game(1, "Palia", "palia")
-    soon = mk(NOW, "soon", G, need=120, end_h=3)  # 2 h of work, 3 h left
-    later = mk(NOW, "later", G, need=120, end_h=200)
-    other = mk(NOW, "other", G, need=120, end_h=300)
+    # three games, so nothing is earned alongside anything else (same-game campaigns share a stream)
+    soon = mk(NOW, "soon", Game(1, "Palia", "palia"), need=120, end_h=3)  # 2 h of work, 3 h left
+    later = mk(NOW, "later", Game(2, "Phas", "phas"), need=120, end_h=200)
+    other = mk(NOW, "other", Game(3, "Albion", "albion"), need=120, end_h=300)
+    live = [LiveChannel(i, f"ch{i}", i, 100, True, f"b{i}") for i in (1, 2, 3)]
     app, ctx = make_app(tmp_path)
-    r = Runner(FakeClient([soon, later, other], [chan("a", 7)]), FakeWatcher(), FakePubSub(), ctx.store,
+    r = Runner(FakeClient([soon, later, other], live), FakeWatcher(), FakePubSub(), ctx.store,
                user_id=42, clock=lambda: NOW)
     await r.refresh()
     ctx.service.runner = r

@@ -116,7 +116,7 @@ async def put_settings(body: SettingsIn, request: Request) -> SettingsOut:
     ctx = _c(request)
     out = SettingsOut(**ctx.store.put_settings(values))
     # settings the planner reads take effect now, not at the next 5-minute refresh
-    if values.keys() & {"arrange_up_next", "mine_badges"} and ctx.service.runner is not None:
+    if values.keys() & {"arrange_up_next", "mine_badges", "claim_points"} and ctx.service.runner is not None:
         await ctx.service.runner.replan()
     return out
 

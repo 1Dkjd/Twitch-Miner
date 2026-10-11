@@ -32,6 +32,7 @@ PREFIX = "Dropwatch: "
 CHECK_EVERY_S = 30
 CLAIM_BATCH = timedelta(minutes=1)
 WEEKLY_LATE = timedelta(hours=6)
+WEEKLY_RETRY = timedelta(minutes=10)
 MINING = {"mining", "switched"}
 
 
@@ -40,6 +41,8 @@ class Alert:
     key: str  # the setting that switches it on
     title: str
     body: str
+    # a setting to store once a channel actually delivered it (the weekly summary's sent week)
+    after_sent: tuple[str, str] | None = None
 
 
 @dataclass(frozen=True)
@@ -52,9 +55,10 @@ class Snapshot:
 class Notifier:
     def __init__(self, store, *, clock: Callable[[], datetime] = lambda: datetime.now(UTC), tz=None):
         self._store, self._clock = store, clock
-        self._tz = tz or datetime.now().astimezone().tzinfo  # the weekly summary's day and hour are local
+        self._tz = tz  # None: the server's local zone, read at each check so DST changes apply
         self._claims: list[dict] = []  # claimed rewards waiting to go out as one message
         self._claims_since: datetime | None = None
+        self._weekly_tried: datetime | None = None
         self._sent: set[str] = set()  # alerts said and not yet cleared
         self._unreachable_since: datetime | None = None
         self._earning_since: datetime | None = None
@@ -185,7 +189,7 @@ class Notifier:
         return [Alert("notify_claimed", f"{PREFIX}Claimed {len(claims)} rewards", body)]
 
     def _weekly(self, now: datetime, s: dict, snap: Snapshot) -> list[Alert]:
-        local = now.astimezone(self._tz)
+        local = now.astimezone(self._tz) if self._tz else now.astimezone()
         due = local.replace(hour=s["notify_weekly_hour"], minute=0, second=0, microsecond=0)
         due -= timedelta(days=(local.weekday() - s["notify_weekly_day"]) % 7)
         if due > local:
@@ -193,7 +197,8 @@ class Notifier:
         key = due.date().isoformat()
         if local - due > WEEKLY_LATE or self._store.get_setting("notify_weekly_sent") == key:
             return []
-        self._store.set_setting("notify_weekly_sent", key)
+        if self._weekly_tried and now - self._weekly_tried < WEEKLY_RETRY:
+            return []  # the last try reached no channel
         week = now - timedelta(days=7)
         claims = self._store.claims_since(week)
         rewards = sum(len(c["rewards"]) for c in claims)
@@ -212,7 +217,9 @@ class Notifier:
         if games:
             parts.append(f"{len(games)} {'needs' if len(games) == 1 else 'need'} your account linked: "
                          f"{', '.join(games)}.")
-        return [Alert("notify_weekly", f"{PREFIX}Your week", " ".join(parts))]
+        self._weekly_tried = now
+        return [Alert("notify_weekly", f"{PREFIX}Your week", " ".join(parts),
+                      after_sent=("notify_weekly_sent", key))]
 
     def _needs_you(self, campaigns: list[tuple[str, str, str]], s: dict) -> list[Alert]:
         if not s.get("notify_needs_you"):
@@ -234,6 +241,19 @@ class Notifier:
         return [Alert("notify_needs_you", f"{PREFIX}{len(new)} campaigns need your account linked",
                       listed + more)]
 
+    def delivered(self, a: Alert) -> None:
+        """A channel delivered it: record what must not be sent twice (the weekly summary's week)."""
+        if a.after_sent:
+            self._store.set_setting(*a.after_sent)
+
+    @staticmethod
+    def _safely(fn, *args) -> list[Alert]:
+        try:
+            return fn(*args)
+        except Exception as exc:  # noqa: BLE001 - one bad check must not end notifications
+            log.warning("Notification check failed: %s: %s", type(exc).__name__, exc)
+            return []
+
     async def run(self, bus, snapshot: Callable[[], Snapshot],
                   send: Callable[[str, str], Awaitable[list[dict]]]) -> None:
         """Until cancelled: the bus's events as they come, the timed checks every 30 s."""
@@ -243,8 +263,8 @@ class Notifier:
                 alerts: list[Alert] = []
                 with contextlib.suppress(TimeoutError):
                     kind, data = await asyncio.wait_for(q.get(), timeout=CHECK_EVERY_S)
-                    alerts += self.handle(kind, data)
-                alerts += self.check(snapshot())
+                    alerts += self._safely(self.handle, kind, data)
+                alerts += self._safely(lambda: self.check(snapshot()))
                 for a in alerts:
                     try:
                         results = await send(a.title, a.body)
@@ -253,6 +273,9 @@ class Notifier:
                         continue
                     got = "; ".join(f"{r['name']} {r['message']}" for r in results)
                     log.info("Notified %r: %s", a.title, got or "no channels set up")
+                    # delivered, or no channel to deliver to: done. All channels failed: retried later
+                    if a.after_sent and (not results or any(r.get("ok") for r in results)):
+                        self.delivered(a)
         finally:
             bus.unsubscribe(q)
 

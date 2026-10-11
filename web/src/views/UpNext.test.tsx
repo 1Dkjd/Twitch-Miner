@@ -80,5 +80,16 @@ test("pinned rows come first with move and unpin controls", async () => {
   await waitFor(() => expect(calls.filter((c) => c.path === "/api/pins" && c.method === "PUT").at(-1)?.body).toEqual({ pins: ["c", "e"] }));
   await u.click(within(sec).getByRole("button", { name: "Unpin Vaultbreakers" }));
   await waitFor(() => expect(calls.filter((c) => c.path === "/api/pins" && c.method === "PUT").at(-1)?.body).toEqual({ pins: ["c"] }));
-  expect(within(sec).getByRole("button", { name: "Move Vaultbreakers up" })).toBeInTheDocument();
+});
+
+test("moving a pin works on the pins you can see, keeping one you can't (the one being mined) in place", async () => {
+  // "now" is pinned and being mined, so it isn't in Up next; Vaultbreakers (e) and Rematch (c) are shown
+  const pinnedQueue = [{ ...QUEUE[4]!, pinned: true }, { ...QUEUE[2]!, pinned: true }, ...QUEUE.filter((c) => !["e", "c"].includes(c.id))];
+  const calls = setup({ up_next: pinnedQueue }, { arrange_up_next: true }, ["now", "e", "c"]);
+  const u = userEvent.setup();
+  const sec = await upNext();
+  await waitFor(() => expect(within(sec).getByRole("button", { name: "Move Vaultbreakers up" })).toBeDisabled());
+  await u.click(within(sec).getByRole("button", { name: "Move Rematch x Blue Lock up" }));
+  await waitFor(() => expect(calls.filter((c) => c.path === "/api/pins" && c.method === "PUT").at(-1)?.body)
+    .toEqual({ pins: ["now", "c", "e"] }));
 });

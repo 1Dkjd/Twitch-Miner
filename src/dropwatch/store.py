@@ -9,6 +9,7 @@ import json
 import os
 import secrets
 import sqlite3
+from collections import Counter
 from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -223,6 +224,18 @@ class Store:
             self._db.execute("DELETE FROM campaign_log WHERE ends_at < ?",
                              ((now - CAMPAIGN_LOG_KEEP).astimezone(UTC).isoformat(),))
 
+    def update_log_rewards(self, cid: str, rewards: list[dict]) -> None:
+        """A campaign that just ended can still be claimed for 24 h: keep its claimed flags current (not
+        last_seen, which says when Dropwatch last saw it running)."""
+        with self._db:
+            self._db.execute("UPDATE campaign_log SET rewards = ? WHERE id = ?", (json.dumps(rewards), cid))
+
+    def ended_campaign_ids(self, ids: Sequence[str], now: datetime) -> set[str]:
+        at = now.astimezone(UTC).isoformat()
+        return {i for (i,) in self._db.execute(
+            f"SELECT id FROM campaign_log WHERE ends_at <= ? AND id IN ({','.join('?' * len(ids))})",
+            (at, *ids))} if ids else set()
+
     def missed_between(self, since: datetime, now: datetime) -> list[dict]:
         """Campaigns that ended in (since, now] with a reward left unclaimed, newest end first, each with
         the reason read from the last look Dropwatch had before it ended."""
@@ -236,6 +249,12 @@ class Store:
             (cid, name, game, art, link, ends, rewards, _first, impossible, last, linked, badge, never,
              priority, pinned, live, watched) = row
             rw = json.loads(rewards)
+            # a reward History recorded as claimed counts as claimed even if the last look predates it
+            have = Counter(r["name"] for (rows,) in self._db.execute(
+                "SELECT rewards FROM claims WHERE campaign_id = ?", (cid,)) for r in json.loads(rows))
+            for r in rw:
+                if not r["claimed"] and have[r["name"]] > 0:
+                    r["claimed"], have[r["name"]] = True, have[r["name"]] - 1
             if all(r["claimed"] for r in rw):
                 continue
             ends_at, last_seen = datetime.fromisoformat(ends), datetime.fromisoformat(last)
@@ -262,8 +281,10 @@ class Store:
         as stored, so the caller sizes it), for the image cache."""
         urls: list[str] = []
         cut = (since.astimezone(UTC).isoformat(),)
+        # campaign_log: only campaigns History would show as a full Missed row (not ~140 catalogue ones)
         for sql in ("SELECT rewards, box_art_url FROM claims WHERE at >= ?",
-                    "SELECT rewards, box_art_url FROM campaign_log WHERE ends_at >= ?"):
+                    "SELECT rewards, box_art_url FROM campaign_log WHERE ends_at >= ? AND never = 0"
+                    " AND (watched > 0 OR priority = 1 OR pinned = 1 OR (linked = 0 AND badge = 0))"):
             for rewards, art in self._db.execute(sql, cut):
                 urls += [r["image_url"] for r in json.loads(rewards)] + [art or ""]
         return [u for u in dict.fromkeys(urls) if u]
