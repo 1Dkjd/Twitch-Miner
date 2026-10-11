@@ -6,8 +6,10 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi import Path as PathParam
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -24,6 +26,7 @@ from .models import (
     ChannelIn,
     ChannelSuggestion,
     HistoryOut,
+    IgnoredOut,
     ListsIn,
     ListsOut,
     MineNowIn,
@@ -301,6 +304,29 @@ async def notify_test(request: Request) -> NotifyTestOut:
     if failed:
         parts.append("Failed: " + "; ".join(failed) + ".")
     return NotifyTestOut(ok=not failed, message=" ".join(parts), results=[NotifyResult(**r) for r in results])
+
+
+CampaignId = Annotated[str, PathParam(max_length=100)]
+
+
+@api.post("/needs/ignored/{campaign_id}", response_model=IgnoredOut)
+async def ignore_needs(campaign_id: CampaignId, request: Request) -> IgnoredOut:
+    """Needs you > Ignore: stop asking about this campaign (page, alert, weekly summary) until it ends.
+    One id per call, so Undo reverses only its own change."""
+    ctx = _c(request)
+    ctx.store.set_ignored([*ctx.store.get_ignored(), campaign_id][-200:])  # ids never seen are never pruned
+    if ctx.service.runner is not None:
+        await ctx.service.runner.replan()
+    return IgnoredOut(ids=ctx.store.get_ignored())
+
+
+@api.delete("/needs/ignored/{campaign_id}", response_model=IgnoredOut)
+async def unignore_needs(campaign_id: CampaignId, request: Request) -> IgnoredOut:
+    ctx = _c(request)
+    ctx.store.set_ignored([i for i in ctx.store.get_ignored() if i != campaign_id])
+    if ctx.service.runner is not None:
+        await ctx.service.runner.replan()
+    return IgnoredOut(ids=ctx.store.get_ignored())
 
 
 @api.get("/pins", response_model=Pins)

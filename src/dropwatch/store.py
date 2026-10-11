@@ -129,7 +129,8 @@ class Store:
             r[0] for r in self._db.execute("SELECT channel_login FROM favourites ORDER BY position")
         )
         s = self.get_settings()
-        return Prefs(pr, nv, fv, s["mine_badges"], tuple(self.get_pins()) if s["arrange_up_next"] else ())
+        return Prefs(pr, nv, fv, s["mine_badges"], tuple(self.get_pins()) if s["arrange_up_next"] else (),
+                     frozenset(self.get_ignored()))
 
     # --- Up next pins (campaign ids, in order); kept while "Arrange myself" is off
     def get_pins(self) -> list[str]:
@@ -137,6 +138,13 @@ class Store:
 
     def set_pins(self, ids: Sequence[str]) -> None:
         self.set_setting("up_next_pins", json.dumps(list(dict.fromkeys(ids))))
+
+    # --- Needs you > Ignore (campaign ids); each lasts until its campaign ends (Runner forgets it then)
+    def get_ignored(self) -> list[str]:
+        return json.loads(self.get_setting("needs_ignored") or "[]")
+
+    def set_ignored(self, ids: Sequence[str]) -> None:
+        self.set_setting("needs_ignored", json.dumps(list(dict.fromkeys(ids))))
 
     def set_lists(
         self, priority: Sequence[str], never: Iterable[str], favourites: Sequence[str]

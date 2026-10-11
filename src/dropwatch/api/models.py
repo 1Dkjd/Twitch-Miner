@@ -90,6 +90,7 @@ class StateOut(BaseModel):
     last_switch: SwitchOut | None = None  # for 10 minutes after the channel changed
     next_check_at: datetime | None = None  # the runner's next Twitch refresh (or retry)
     never: list[CampaignOut] = []  # running campaigns of Never games: never mined, listed for their art
+    needs_ignored: list[CampaignOut] = []  # Needs you campaigns hidden with Ignore, until they end
     first_in_line: list[str] = []  # idle: names of the next campaigns to mine once a channel goes live
     streak_visit: StreakVisitOut | None = None  # watching a favourite for its watch streak; drops wait
     build: str = ""  # version+commit running; the page offers a reload when it changes
@@ -103,6 +104,10 @@ class ListsIn(BaseModel):
 
 class Pins(BaseModel):
     pins: list[Annotated[str, Field(max_length=100)]] = Field(default_factory=list, max_length=200)
+
+
+class IgnoredOut(BaseModel):
+    ids: list[str]
 
 
 class ListsOut(BaseModel):

@@ -569,6 +569,22 @@
     "title": "HistoryOut",
     "type": "object"
    },
+   "IgnoredOut": {
+    "properties": {
+     "ids": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Ids",
+      "type": "array"
+     }
+    },
+    "required": [
+     "ids"
+    ],
+    "title": "IgnoredOut",
+    "type": "object"
+   },
    "ListsIn": {
     "properties": {
      "favourites": {
@@ -1562,6 +1578,14 @@
       ],
       "title": "Login"
      },
+     "needs_ignored": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/CampaignOut"
+      },
+      "title": "Needs Ignored",
+      "type": "array"
+     },
      "needs_you": {
       "items": {
        "$ref": "#/components/schemas/CampaignOut"
@@ -2104,6 +2128,85 @@
      }
     },
     "summary": "Mine Now"
+   }
+  },
+  "/api/needs/ignored/{campaign_id}": {
+   "delete": {
+    "operationId": "unignore_needs_api_needs_ignored__campaign_id__delete",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "campaign_id",
+      "required": true,
+      "schema": {
+       "maxLength": 100,
+       "title": "Campaign Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/IgnoredOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Unignore Needs"
+   },
+   "post": {
+    "description": "Needs you > Ignore: stop asking about this campaign (page, alert, weekly summary) until it ends.\nOne id per call, so Undo reverses only its own change.",
+    "operationId": "ignore_needs_api_needs_ignored__campaign_id__post",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "campaign_id",
+      "required": true,
+      "schema": {
+       "maxLength": 100,
+       "title": "Campaign Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/IgnoredOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Ignore Needs"
    }
   },
   "/api/notify/channels": {

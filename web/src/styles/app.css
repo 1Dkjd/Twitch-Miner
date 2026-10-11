@@ -243,6 +243,17 @@ svg.i { width: 16px; height: 16px; flex: none; }
 .row-acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .needs { border-color: color-mix(in srgb, var(--alert) 40%, var(--line)); }
 .needs .flag { color: var(--alert-text); display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+/* Needs you > Ignore (ignore-mockup.html): the "N ignored · Show" line, dimmed ignored rows, the all-ignored line */
+.ign-foot { display: flex; align-items: center; width: 100%; padding: 10px 16px; border: 0; border-top: 1px solid var(--line);
+  background: none; color: var(--muted); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.ign-foot .sep { opacity: .55; padding-inline: 6px; }
+.ign-foot u { text-decoration: none; color: var(--accent-text); font-weight: 500; }
+.ign-foot:hover u { text-decoration: underline; }
+.ign-foot.solo { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.ign-foot.solo b { color: var(--fg); font-weight: 600; }
+.ign-only { display: grid; gap: 8px; }
+.row.ign { opacity: .62; }
+.row.ign .box { filter: grayscale(.6); }
 .mini { display: grid; gap: 4px; justify-items: end; }
 .mini .rail { position: relative; width: 150px; height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
 .mini .fill { position: absolute; inset: 0 auto 0 0; background: var(--fill); border-radius: 99px; }
