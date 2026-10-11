@@ -48,6 +48,7 @@ class MinerService:
     """One miner at most: start/stop are serialized, and the loop tears itself down when it ends."""
 
     def __init__(self, store, bus: EventBus, build=build_parts):
+        self.crashed: str | None = None  # set when the mining loop died on an error
         self._store, self._bus, self._build = store, bus, build
         self._parts: Parts | None = None
         self._tasks: list[asyncio.Task] = []
@@ -75,6 +76,7 @@ class MinerService:
                 return False
             parts = self._build(self._store, session, self._emit)
             self._parts = parts
+            self.crashed = None
             loop = asyncio.create_task(self._loop(parts))
             loop.add_done_callback(self._loop_ended)
             self._tasks = [loop, asyncio.create_task(self._events(parts))]
@@ -96,6 +98,7 @@ class MinerService:
             return  # stop() did this
         if (exc := task.exception()) is not None:
             log.error("Mining loop crashed; mining stopped", exc_info=exc)
+            self.crashed = type(exc).__name__  # the Docker health check fails, so the container restarts
             self._bus.publish("state", {"state": "idle", "error": type(exc).__name__})
         self._reaper = asyncio.get_running_loop().create_task(self.stop())
 

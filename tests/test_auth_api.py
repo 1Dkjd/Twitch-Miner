@@ -26,7 +26,7 @@ async def test_every_private_route_requires_session(tmp_path):
 async def test_private_route_list_matches_app_routes(tmp_path):
     # read the schema, not app.routes: FastAPI 0.14x keeps included routers as lazy wrappers
     app, _ = make_app(tmp_path)
-    public = {"/api/health", "/api/me", "/api/setup", "/api/login"}
+    public = {"/api/health", "/api/health/miner", "/api/me", "/api/setup", "/api/login"}
     routes = {(m.upper(), path) for path, ops in app.openapi()["paths"].items() for m in ops}
     assert {x for x in routes if x[1] not in public} == set(PRIVATE)
 

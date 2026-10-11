@@ -1,0 +1,13 @@
+.git
+.venv
+.impeccable
+data
+reference
+docs
+tests
+brand
+**/__pycache__
+web/node_modules
+web/dist
+web/tsconfig.tsbuildinfo
+*.log

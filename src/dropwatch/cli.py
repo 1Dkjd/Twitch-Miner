@@ -153,7 +153,9 @@ async def serve(store: Store, host: str, port: int) -> int:
     alerts = asyncio.create_task(notifier.run(
         bus, lambda: snapshot_of(service.runner), lambda t, b: send_all(store.get_channels(), t, b)))
     keeper = asyncio.create_task(keep_images(store, images))
+    from .maintenance import backup_on_upgrade
     from .version import VERSION, build_info
+    backup_on_upgrade(store, f"{VERSION}+{build_info() or 'unknown'}")
     store.log_event("started", {"version": VERSION, "commit": build_info()})
     started = await service.start()
     logging.getLogger("dropwatch").info(
