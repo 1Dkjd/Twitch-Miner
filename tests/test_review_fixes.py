@@ -132,7 +132,9 @@ async def test_i3_live_channels_only_for_minable_campaigns():
     await TwitchClient(g, 42).live_channels([unlinked, acl_only], Prefs(), NOW)
     dirs = [v["slug"] for name, v in g.ops if name == "DirectoryPage_Game"]
     infos = [v["channel"] for name, v in g.ops if name == "VideoPlayerStreamInfoOverlayChannel"]
-    assert dirs == []           # unlinked game skipped; ACL-only game needs no directory
+    # unlinked game skipped. Since 2026-10-10 an ACL-only game gets a directory look too (its allowed
+    # channels are asked about by name only when the directory shows none of them)
+    assert dirs == [G2.slug]
     assert infos == ["dnd"]
 
 
