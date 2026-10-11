@@ -4,6 +4,60 @@
  */
 
 export interface paths {
+    "/api/about": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** About */
+        get: operations["about_api_about_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Activity */
+        get: operations["get_activity_api_activity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/backup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Backup
+         * @description Settings › Backup: a file to keep. Notification secrets only when asked for.
+         */
+        get: operations["get_backup_api_backup_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/channel": {
         parameters: {
             query?: never;
@@ -274,6 +328,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Restore
+         * @description Replaces lists, pins, settings and notification channels with a backup's. The whole file is checked
+         *     before anything is written.
+         */
+        post: operations["post_restore_api_restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/resume": {
         parameters: {
             query?: never;
@@ -400,6 +475,43 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AboutOut */
+        AboutOut: {
+            /** Campaigns At */
+            campaigns_at: string | null;
+            /** Commit */
+            commit: string | null;
+            /** Server Tz */
+            server_tz: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Version */
+            version: string;
+        };
+        /** ActivityEvent */
+        ActivityEvent: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Data */
+            data: {
+                [key: string]: string | boolean | number | string[] | null;
+            };
+            /** Kind */
+            kind: string;
+        };
+        /** ActivityOut */
+        ActivityOut: {
+            /** Events */
+            events: components["schemas"]["ActivityEvent"][];
+            /** Kept Days */
+            kept_days: number;
+        };
         /** CampaignOut */
         CampaignOut: {
             /** Allowed Channels */
@@ -435,6 +547,11 @@ export interface components {
             minutes_needed: number;
             /** Name */
             name: string;
+            /**
+             * New
+             * @default false
+             */
+            new: boolean;
             /**
              * Pinned
              * @default false
@@ -716,6 +833,11 @@ export interface components {
             /** Pins */
             pins?: string[];
         };
+        /** RestoreOut */
+        RestoreOut: {
+            /** Skipped */
+            skipped: string[];
+        };
         /** RewardOut */
         RewardOut: {
             /** Image Url */
@@ -755,6 +877,8 @@ export interface components {
             notify_weekly_day?: number | null;
             /** Notify Weekly Hour */
             notify_weekly_hour?: number | null;
+            /** Notify Weekly Tz */
+            notify_weekly_tz?: string | null;
         };
         /** SettingsOut */
         SettingsOut: {
@@ -788,6 +912,8 @@ export interface components {
             notify_weekly_day: number;
             /** Notify Weekly Hour */
             notify_weekly_hour: number;
+            /** Notify Weekly Tz */
+            notify_weekly_tz: string;
         };
         /** SignInStatus */
         SignInStatus: {
@@ -811,6 +937,11 @@ export interface components {
             current: components["schemas"]["CurrentOut"] | null;
             /** Done */
             done: components["schemas"]["CampaignOut"][];
+            /**
+             * First In Line
+             * @default []
+             */
+            first_in_line: string[];
             /** Last Refresh */
             last_refresh: string | null;
             last_switch?: components["schemas"]["SwitchOut"] | null;
@@ -875,6 +1006,77 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    about_api_about_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AboutOut"];
+                };
+            };
+        };
+    };
+    get_activity_api_activity_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"];
+                };
+            };
+        };
+    };
+    get_backup_api_backup_get: {
+        parameters: {
+            query?: {
+                secrets?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     channel_api_channel_post: {
         parameters: {
             query?: never;
@@ -1337,6 +1539,26 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    post_restore_api_restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestoreOut"];
+                };
             };
         };
     };

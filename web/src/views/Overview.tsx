@@ -240,7 +240,7 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
 function Idle({ state }: { state: State }) {
   const { refreshState, say } = useApp();
   const [busy, setBusy] = useState(false);
-  const line = state.up_next.slice(0, 2).map((c) => c.name);
+  const line = state.first_in_line;
   const next = state.next_check_at ? minutesUntil(state.next_check_at) : null;
   return (
     <section className="idle" aria-labelledby="h-idle">

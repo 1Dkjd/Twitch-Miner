@@ -353,7 +353,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
   .wrap { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   .bar-in { min-height: 52px; gap: 12px; }
   .pill { font-size: 12px; padding: 4px 9px; }
-  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
   .tabs a { flex-direction: column; gap: 3px; font-size: 11px; padding: 6px 4px; min-height: 52px; justify-content: center; }
   .tabs a svg { display: block; width: 20px; height: 20px; }
   .tabs a[aria-current="page"] { background: none; color: var(--accent-text); }

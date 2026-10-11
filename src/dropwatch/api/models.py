@@ -4,7 +4,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
+
+from ..tz import zone_or_none
 
 
 class RewardOut(BaseModel):
@@ -39,6 +41,7 @@ class CampaignOut(BaseModel):
     pinned: bool = False  # Up next "Arrange myself"
     # Up next only: at the queue's order, mined back to back, it would end before its turn (an estimate)
     ends_before_turn: bool = False
+    new: bool = False  # first seen in the last 24 h (and not in Dropwatch's very first look)
 
 
 class ChannelOut(BaseModel):
@@ -82,6 +85,7 @@ class StateOut(BaseModel):
     last_switch: SwitchOut | None = None  # for 10 minutes after the channel changed
     next_check_at: datetime | None = None  # the runner's next Twitch refresh (or retry)
     never: list[CampaignOut] = []  # running campaigns of Never games: never mined, listed for their art
+    first_in_line: list[str] = []  # idle: names of the next campaigns to mine once a channel goes live
 
 
 class ListsIn(BaseModel):
@@ -98,6 +102,12 @@ class ListsOut(BaseModel):
     priority: list[str]
     never: list[str]
     favourites: list[str]
+
+
+def _zone(v: str) -> str:
+    if v and zone_or_none(v) is None:
+        raise ValueError("not a time zone Dropwatch knows")
+    return v
 
 
 class SettingsIn(BaseModel):
@@ -117,6 +127,7 @@ class SettingsIn(BaseModel):
     notify_weekly: StrictBool | None = None
     notify_weekly_day: StrictInt | None = Field(default=None, ge=0, le=6)  # 0 = Monday
     notify_weekly_hour: StrictInt | None = Field(default=None, ge=0, le=23)
+    notify_weekly_tz: Annotated[StrictStr, Field(max_length=64), AfterValidator(_zone)] | None = None
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -136,6 +147,31 @@ class SettingsOut(BaseModel):
     notify_weekly: bool
     notify_weekly_day: int
     notify_weekly_hour: int
+    notify_weekly_tz: str
+
+
+class ActivityEvent(BaseModel):
+    at: datetime
+    kind: str  # started | state | switched | claimed | claim_failed | needs_you | channel_dropped |
+    #            points_claimed | points_claim_failed | notified
+    data: dict[str, str | bool | int | list[str] | None]
+
+
+class ActivityOut(BaseModel):
+    events: list[ActivityEvent]  # newest first
+    kept_days: int
+
+
+class RestoreOut(BaseModel):
+    skipped: list[str]  # what a newer Dropwatch wrote that this one doesn't know
+
+
+class AboutOut(BaseModel):
+    version: str
+    commit: str | None  # "branch@sha", None when unknown
+    started_at: datetime
+    campaigns_at: datetime | None  # when the campaign list was last read from Twitch
+    server_tz: str  # what "" means for the weekly summary's zone
 
 
 class NotifyFieldOut(BaseModel):

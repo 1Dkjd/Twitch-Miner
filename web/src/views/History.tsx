@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { api, type Claim, type History, type State } from "../api/client";
 import type { components } from "../api/types";
 import { useApp } from "../store";
-import { boxArt, clock, day, dur } from "../ui/format";
+import { NB, boxArt, clock, day, dur } from "../ui/format";
 import { Icon } from "../ui/Icons";
 
 export interface DayGroup {
@@ -69,7 +69,8 @@ export function HistoryView() {
         <label className="filter"><input type="search" aria-label="Filter History" placeholder="Filter by game or campaign"
           value={filter} onChange={(e) => setFilter(e.target.value)} /></label>
       </div>
-      {data && (
+      {data && data.total_rewards > 0 && <Stats data={data} label={PERIODS.find(([d]) => d === days)?.[1] ?? ""} />}
+      {data && !data.total_rewards && (
         <div className="hist-lead"><svg aria-hidden="true"><use href="#i-check" /></svg>
           <span>{data.total_rewards
             ? <><b>{data.total_rewards} {data.total_rewards === 1 ? "reward" : "rewards"}</b> claimed from {campaigns} {campaigns === 1 ? "campaign" : "campaigns"}.</>
@@ -186,6 +187,65 @@ const REASON: Record<string, { chip: string; tone: string; why: (m: MissedRow) =
   // no look in its last hour: off, paused, signed out or unable to reach Twitch (review fix 2026-10-10)
   dropwatch_off: { chip: "Dropwatch wasn't mining", tone: "", why: () => "Dropwatch was off, paused or signed out when it ended." },
 };
+
+const TONE: Record<string, string> = { red: "var(--alert)", warn: "var(--warn)", "": "var(--muted)" };
+
+/** Watch time behind the claims: per campaign, its longest claimed drop (Twitch counts every drop's time from
+ * the campaign's start, so adding them up would count the same watching twice). */
+export function watchMinutes(claims: Claim[]): { minutes: number; partial: boolean } {
+  const per = new Map<string, number | null>();
+  for (const c of claims) {
+    const m = c.minutes ?? null;
+    const had = per.get(c.campaign_id);
+    per.set(c.campaign_id, m === null ? had ?? null : Math.max(had ?? 0, m));
+  }
+  let minutes = 0;
+  let partial = false;
+  for (const m of per.values()) { if (m === null) partial = true; else minutes += m; }
+  return { minutes, partial };
+}
+
+/** History stats for the chosen period (approved mockup docs/design/pre-docker-mockup.html, 2026-10-10). */
+function Stats({ data, label }: { data: History; label: string }) {
+  const campaigns = new Set(data.claims.map((c) => c.campaign_id)).size;
+  const { minutes, partial } = watchMinutes(data.claims);
+  const watched = `${minutes >= 60 ? `${Math.round(minutes / 60)}${NB}h` : `${minutes}${NB}min`}${partial ? "+" : ""}`;
+  const byGame = new Map<string, number>();
+  for (const c of data.claims) byGame.set(c.game, (byGame.get(c.game) ?? 0) + c.rewards.length);
+  const games = [...byGame].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const byReason = new Map<string, number>();
+  for (const m of (data.missed ?? []).filter(isNotable)) byReason.set(m.reason, (byReason.get(m.reason) ?? 0) + 1);
+  const reasons = [...byReason].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const bars = (title: string, rows: [string, number][], fill: (key: string) => string | undefined, name: (key: string) => string) => {
+    const top = Math.max(1, ...rows.map(([, n]) => n));
+    return <>
+      <div className="day" aria-hidden="true">{title}</div>
+      <ul className="bars" aria-label={title}>
+        {rows.map(([k, n]) => (
+          <li className="sbar" key={k}><span className="name">{name(k)}</span>
+            <span className="rail" aria-hidden="true"><span className="fill" style={{ width: `${(n / top) * 100}%`, background: fill(k) }} /></span>
+            <span className="v">{n}</span></li>
+        ))}
+      </ul>
+    </>;
+  };
+  return (
+    <section aria-labelledby="h-stats">
+      <div className="sec-h"><h2 id="h-stats">{label}</h2></div>
+      <div className="stats">
+        <div className="stat"><div className="n">{data.total_rewards}</div><div className="l">rewards claimed</div></div>
+        <div className="stat"><div className="n">{campaigns}</div><div className="l">{campaigns === 1 ? "campaign" : "campaigns"}</div></div>
+        <div className="stat"><div className="n">{watched}</div>
+          <div className="l" title={partial ? "Claims from before 10 Oct didn't record their watch time" : undefined}>of watching behind them</div></div>
+      </div>
+      <div className="list stats-list">
+        {bars("Rewards by game", games, () => undefined, (k) => k)}
+        {reasons.length > 0 && bars("Missed, by reason", reasons, (k) => TONE[REASON[k]?.tone ?? ""],
+          (k) => REASON[k]?.chip ?? k)}
+      </div>
+    </section>
+  );
+}
 
 /** History's "Missed" (approved mockup docs/design/next-features-mockup.html, 2026-10-10). */
 function Missed({ missed }: { missed: MissedRow[] }) {

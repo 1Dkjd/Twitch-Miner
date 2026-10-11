@@ -59,13 +59,14 @@ SETTINGS: dict[str, type] = {
     "arrange_up_next": bool,  # Up next "Arrange myself": pins count only while this is on
     # summaries (2026-10-10), off by default: a push per claim, and a weekly summary on a day (0 = Monday)
     "notify_claimed": bool, "notify_weekly": bool, "notify_weekly_day": int, "notify_weekly_hour": int,
+    "notify_weekly_tz": str,  # an IANA zone name; "" = the server's zone (Docker: TZ, often UTC)
 }
 SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "notify_signin": True, "notify_unreachable": True, "notify_not_earning": True,
                     "notify_claim_failed": True, "notify_stopped": True, "notify_needs_you": False,
                     "notify_unreachable_minutes": 15, "notify_not_earning_minutes": 30,
                     "arrange_up_next": False, "notify_claimed": False, "notify_weekly": False,
-                    "notify_weekly_day": 6, "notify_weekly_hour": 18}
+                    "notify_weekly_day": 6, "notify_weekly_hour": 18, "notify_weekly_tz": ""}
 _ph = PasswordHasher()
 
 
@@ -159,9 +160,11 @@ class Store:
                 "DELETE FROM events WHERE at < ?", ((now - EVENT_RETENTION).isoformat(),)
             )
 
-    def recent_events(self, limit: int = 100) -> list[tuple[str, str, dict]]:
+    def recent_events(self, limit: int | None = 100) -> list[tuple[str, str, dict]]:
+        """(kind, at, data), newest first; limit None = everything kept (EVENT_RETENTION bounds it)."""
         rows = self._db.execute(
-            "SELECT at, kind, data FROM events ORDER BY at DESC LIMIT ?", (limit,)
+            "SELECT at, kind, data FROM events ORDER BY at DESC, rowid DESC LIMIT ?",
+            (-1 if limit is None else limit,),
         )
         return [(kind, at, json.loads(data)) for at, kind, data in rows]
 
@@ -196,6 +199,10 @@ class Store:
         channels.setdefault(kind, {}).update(values)
         self.set_setting("notify_channels", json.dumps(channels))
 
+    def set_channels(self, channels: dict[str, dict[str, str]]) -> None:
+        """Replaces every channel at once (restoring a backup)."""
+        self.set_setting("notify_channels", json.dumps(channels))
+
     def delete_channel(self, kind: str) -> None:
         channels = self.get_channels()
         channels.pop(kind, None)
@@ -223,6 +230,12 @@ class Store:
                   **{k: int(r[k]) for k in ("badge", "never", "priority", "pinned", "live")}} for r in rows])
             self._db.execute("DELETE FROM campaign_log WHERE ends_at < ?",
                              ((now - CAMPAIGN_LOG_KEEP).astimezone(UTC).isoformat(),))
+
+    def first_seen(self) -> tuple[datetime | None, dict[str, datetime]]:
+        """(when the log began, {campaign: when Dropwatch first saw it}) for Up next's "New"."""
+        rows = self._db.execute("SELECT id, first_seen FROM campaign_log").fetchall()
+        seen = {cid: datetime.fromisoformat(at) for cid, at in rows}
+        return (min(seen.values()) if seen else None), seen
 
     def update_log_rewards(self, cid: str, rewards: list[dict]) -> None:
         """A campaign that just ended can still be claimed for 24 h: keep its claimed flags current (not

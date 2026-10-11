@@ -56,6 +56,14 @@ test("a campaign that would end before its turn says so; the others say nothing"
   expect(sec.querySelectorAll(".chip.red")).toHaveLength(1);
 });
 
+test("campaigns Dropwatch first saw in the last day are marked New", async () => {
+  setup({ up_next: [q("n1", "CONTROL Resonant launch", "CONTROL Resonant", { new: true }), q("o1", "Old one", "Palia")] });
+  const sec = await upNext();
+  const fresh = within(sec).getByText("CONTROL Resonant launch").closest(".row") as HTMLElement;
+  expect(within(fresh).getByText("New")).toHaveClass("chip", "note");
+  expect(sec.querySelectorAll(".chip.note")).toHaveLength(1);
+});
+
 test("Arrange myself: switch it on, pin, move and unpin", async () => {
   const calls = setup();
   const u = userEvent.setup();

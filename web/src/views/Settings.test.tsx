@@ -54,3 +54,53 @@ test("Also claim channel points is on and saves when switched", async () => {
   await u.click(sw);
   await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ claim_points: false }));
 });
+
+const ABOUT = { version: "0.1.0", commit: "main@abc1234", started_at: "2026-10-10T20:30:00Z",
+  campaigns_at: "2026-10-10T21:30:00Z", server_tz: "UTC" };
+
+test("About names the version and commit that is running", async () => {
+  setup({ "GET /api/about": ABOUT });
+  expect(await screen.findByText("main@abc1234")).toBeInTheDocument();
+  expect(screen.getByText("0.1.0")).toBeInTheDocument();
+  expect(screen.getByText(/Running since/)).toBeInTheDocument();
+});
+
+test("the weekly summary's time zone defaults to the server's and saves a chosen one", async () => {
+  const calls = setup({ "GET /api/about": ABOUT, "PUT /api/settings": { ...SETTINGS, notify_weekly_tz: "America/New_York" } });
+  const zone = await screen.findByRole("combobox", { name: "Time zone" });
+  await screen.findByRole("option", { name: "Server time (UTC)" });
+  await waitFor(() => expect(zone).toBeEnabled());
+  expect(zone).toHaveValue("");
+  await userEvent.selectOptions(zone, "America/New_York");
+  await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ notify_weekly_tz: "America/New_York" }));
+});
+
+test("Backup: save links to the file, with secrets only when ticked", async () => {
+  setup({ "GET /api/about": ABOUT });
+  const save = await screen.findByRole("link", { name: "Save a backup" });
+  expect(save).toHaveAttribute("href", "/api/backup");
+  expect(save).toHaveAttribute("download");
+  await userEvent.click(screen.getByRole("checkbox", { name: /Include notification secrets/ }));
+  expect(save).toHaveAttribute("href", "/api/backup?secrets=true");
+});
+
+test("Backup: restore asks first, then replaces and says what it skipped", async () => {
+  const backup = { dropwatch_backup: 1, made_at: "2026-10-09T12:00:00Z", lists: {}, pins: [], settings: {}, notify_channels: {} };
+  const calls = setup({ "GET /api/about": ABOUT, "POST /api/restore": { skipped: ["channel matrix"] } });
+  const u = userEvent.setup();
+  const input = await screen.findByLabelText("Restore from a backup");
+  await u.upload(input, new File([JSON.stringify(backup)], "dropwatch-backup-2026-10-09.json", { type: "application/json" }));
+  expect(await screen.findByText(/Replace your lists, settings and notification channels/)).toBeInTheDocument();
+  expect(calls.some((c) => c.path === "/api/restore")).toBe(false);
+  await u.click(screen.getByRole("button", { name: "Replace" }));
+  await waitFor(() => expect(calls.find((c) => c.path === "/api/restore")?.body).toEqual(backup));
+  expect(await screen.findByText(/Backup restored.*channel matrix/)).toBeInTheDocument();
+});
+
+test("Backup: a file that isn't JSON is refused before anything is sent", async () => {
+  const calls = setup({ "GET /api/about": ABOUT });
+  const input = await screen.findByLabelText("Restore from a backup");
+  await userEvent.upload(input, new File(["not json"], "x.json", { type: "application/json" }));
+  expect(await screen.findByText("That file isn't a Dropwatch backup.")).toBeInTheDocument();
+  expect(calls.some((c) => c.path === "/api/restore")).toBe(false);
+});

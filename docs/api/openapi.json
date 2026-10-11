@@ -1,6 +1,122 @@
 {
  "components": {
   "schemas": {
+   "AboutOut": {
+    "properties": {
+     "campaigns_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Campaigns At"
+     },
+     "commit": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Commit"
+     },
+     "server_tz": {
+      "title": "Server Tz",
+      "type": "string"
+     },
+     "started_at": {
+      "format": "date-time",
+      "title": "Started At",
+      "type": "string"
+     },
+     "version": {
+      "title": "Version",
+      "type": "string"
+     }
+    },
+    "required": [
+     "version",
+     "commit",
+     "started_at",
+     "campaigns_at",
+     "server_tz"
+    ],
+    "title": "AboutOut",
+    "type": "object"
+   },
+   "ActivityEvent": {
+    "properties": {
+     "at": {
+      "format": "date-time",
+      "title": "At",
+      "type": "string"
+     },
+     "data": {
+      "additionalProperties": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "boolean"
+        },
+        {
+         "type": "integer"
+        },
+        {
+         "items": {
+          "type": "string"
+         },
+         "type": "array"
+        },
+        {
+         "type": "null"
+        }
+       ]
+      },
+      "title": "Data",
+      "type": "object"
+     },
+     "kind": {
+      "title": "Kind",
+      "type": "string"
+     }
+    },
+    "required": [
+     "at",
+     "kind",
+     "data"
+    ],
+    "title": "ActivityEvent",
+    "type": "object"
+   },
+   "ActivityOut": {
+    "properties": {
+     "events": {
+      "items": {
+       "$ref": "#/components/schemas/ActivityEvent"
+      },
+      "title": "Events",
+      "type": "array"
+     },
+     "kept_days": {
+      "title": "Kept Days",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "events",
+     "kept_days"
+    ],
+    "title": "ActivityOut",
+    "type": "object"
+   },
    "CampaignOut": {
     "properties": {
      "allowed_channels": {
@@ -66,6 +182,11 @@
      "name": {
       "title": "Name",
       "type": "string"
+     },
+     "new": {
+      "default": false,
+      "title": "New",
+      "type": "boolean"
      },
      "pinned": {
       "default": false,
@@ -870,6 +991,22 @@
     "title": "Pins",
     "type": "object"
    },
+   "RestoreOut": {
+    "properties": {
+     "skipped": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Skipped",
+      "type": "array"
+     }
+    },
+    "required": [
+     "skipped"
+    ],
+    "title": "RestoreOut",
+    "type": "object"
+   },
    "RewardOut": {
     "properties": {
      "image_url": {
@@ -1063,6 +1200,18 @@
        }
       ],
       "title": "Notify Weekly Hour"
+     },
+     "notify_weekly_tz": {
+      "anyOf": [
+       {
+        "maxLength": 64,
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Weekly Tz"
      }
     },
     "title": "SettingsIn",
@@ -1129,6 +1278,10 @@
      "notify_weekly_hour": {
       "title": "Notify Weekly Hour",
       "type": "integer"
+     },
+     "notify_weekly_tz": {
+      "title": "Notify Weekly Tz",
+      "type": "string"
      }
     },
     "required": [
@@ -1146,7 +1299,8 @@
      "notify_claimed",
      "notify_weekly",
      "notify_weekly_day",
-     "notify_weekly_hour"
+     "notify_weekly_hour",
+     "notify_weekly_tz"
     ],
     "title": "SettingsOut",
     "type": "object"
@@ -1230,6 +1384,14 @@
        "$ref": "#/components/schemas/CampaignOut"
       },
       "title": "Done",
+      "type": "array"
+     },
+     "first_in_line": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "First In Line",
       "type": "array"
      },
      "last_refresh": {
@@ -1426,10 +1588,85 @@
  },
  "info": {
   "title": "Dropwatch",
-  "version": "0.3.0"
+  "version": "0.1.0"
  },
  "openapi": "3.1.0",
  "paths": {
+  "/api/about": {
+   "get": {
+    "operationId": "about_api_about_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AboutOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "About"
+   }
+  },
+  "/api/activity": {
+   "get": {
+    "operationId": "get_activity_api_activity_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ActivityOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Activity"
+   }
+  },
+  "/api/backup": {
+   "get": {
+    "description": "Settings \u203a Backup: a file to keep. Notification secrets only when asked for.",
+    "operationId": "get_backup_api_backup_get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "secrets",
+      "required": false,
+      "schema": {
+       "default": false,
+       "title": "Secrets",
+       "type": "boolean"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Backup"
+   }
+  },
   "/api/channel": {
    "post": {
     "operationId": "channel_api_channel_post",
@@ -1904,6 +2141,25 @@
      }
     },
     "summary": "Check Now"
+   }
+  },
+  "/api/restore": {
+   "post": {
+    "description": "Replaces lists, pins, settings and notification channels with a backup's. The whole file is checked\nbefore anything is written.",
+    "operationId": "post_restore_api_restore_post",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RestoreOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Post Restore"
    }
   },
   "/api/resume": {

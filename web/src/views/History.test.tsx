@@ -32,7 +32,9 @@ test("the view summarises and switches period", async () => {
     "GET /api/history": { total_rewards: 2, claims: [claim("2026-10-10T15:00:00Z", "c1", "a"), claim("2026-10-10T14:00:00Z", "c2", "b")] },
   });
   render(<AppProvider initialMe={{ authenticated: true, setup_required: false }}><HistoryView /></AppProvider>);
-  expect(await screen.findByText(/claimed from 2 campaigns/)).toBeInTheDocument();
+  const stats = await screen.findByRole("region", { name: "Last 30 days" });
+  expect(within(stats).getByText("rewards claimed").previousSibling).toHaveTextContent("2");
+  expect(within(stats).getByText("campaigns").previousSibling).toHaveTextContent("2");
   await userEvent.selectOptions(screen.getByRole("combobox", { name: "Time period" }), "90");
   expect(calls.some((c) => c.path === "/api/history?days=90")).toBe(true);
   vi.unstubAllGlobals();
@@ -129,4 +131,37 @@ test("the History filter narrows claimed and missed alike", async () => {
   expect(screen.queryByText("ER ESPORTS DROPS")).toBeNull();
   expect(screen.getByText("October Drops")).toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: "Claimed" })).toBeNull(); // C-c1 / Palia doesn't match
+});
+
+test("stats: watch time per campaign is its longest claimed drop, rewards by game, missed by reason", async () => {
+  const c = (at: string, cid: string, game: string, minutes: number | null) =>
+    ({ at, campaign_id: cid, campaign: `C-${cid}`, game, rewards: [r(`${cid}-${at}`)], minutes });
+  const missed = (id: string, reason: string) => ({ campaign_id: id, name: id, game: "Palia", box_art_url: "", link_url: "",
+    ends_at: "2026-10-09T12:00:00Z", reason, rewards: [], rewards_total: 3, rewards_claimed: 0, minutes_watched: 30,
+    started: true, priority: false, pinned: false });
+  mockApi({ "GET /api/state": state(), "GET /api/history": { total_rewards: 4, claims: [
+    c("2026-10-10T15:00:00Z", "a", "Escape from Tarkov", 600), c("2026-10-10T14:00:00Z", "a", "Escape from Tarkov", 240),
+    c("2026-10-10T13:00:00Z", "b", "Escape from Tarkov", 60), c("2026-10-09T13:00:00Z", "d", "ARC Raiders", 120),
+  ], missed: [missed("m1", "not_linked"), missed("m2", "outranked"), missed("m3", "not_linked")] } });
+  render(<AppProvider initialMe={{ authenticated: true, setup_required: false }}><HistoryView /></AppProvider>);
+  const stats = await screen.findByRole("region", { name: "Last 30 days" });
+  expect(within(stats).getByText("rewards claimed").previousSibling).toHaveTextContent("4");
+  expect(within(stats).getByText("campaigns").previousSibling).toHaveTextContent("3");
+  // 600 (not 600 + 240: drop times count from the campaign's start) + 60 + 120 = 13 h
+  expect(within(stats).getByText(/of watching/).previousSibling).toHaveTextContent("13 h");
+  const games = within(stats).getByRole("list", { name: "Rewards by game" });
+  expect(within(games).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Escape from Tarkov3", "ARC Raiders1"]);
+  const reasons = within(stats).getByRole("list", { name: "Missed, by reason" });
+  expect(within(reasons).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Account not linked2", "Other campaigns came first1"]);
+  vi.unstubAllGlobals();
+});
+
+test("stats: watch time says so when older claims didn't record it", async () => {
+  mockApi({ "GET /api/state": state(), "GET /api/history": { total_rewards: 2, claims: [
+    { ...claim("2026-10-10T15:00:00Z", "a", "x"), minutes: 120 }, { ...claim("2026-10-01T15:00:00Z", "b", "y"), minutes: null },
+  ] } });
+  render(<AppProvider initialMe={{ authenticated: true, setup_required: false }}><HistoryView /></AppProvider>);
+  const stats = await screen.findByRole("region", { name: "Last 30 days" });
+  expect(within(stats).getByText(/of watching/).previousSibling).toHaveTextContent("2 h+");
+  vi.unstubAllGlobals();
 });

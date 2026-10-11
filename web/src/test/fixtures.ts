@@ -7,7 +7,7 @@ export function campaign(over: Partial<Campaign> & { id: string }): Campaign {
   return {
     name: "Frights & Delights", game: "Palia", box_art_url: "https://static-cdn.jtvnw.net/ttv-boxart/1.jpg",
     ends_at: inDays(3), linked: true, maybe_unlinked: false, link_url: "https://link.example", allowed_channels: [],
-    minutes_needed: 338, verdict: "plenty", pinned: false, ends_before_turn: false,
+    minutes_needed: 338, verdict: "plenty", pinned: false, ends_before_turn: false, new: false,
     drops: [
       { id: "d1", name: "a", required_minutes: 60, current_minutes: 22, claimed: false, starts_at: inDays(-1), ends_at: inDays(3), rewards: [reward("10× Ectoplasm")] },
       { id: "d2", name: "b", required_minutes: 180, current_minutes: 22, claimed: false, starts_at: inDays(-1), ends_at: inDays(3), rewards: [reward("Fancypod Prize Bag")] },
@@ -28,7 +28,7 @@ export function state(over: Partial<State> = {}): State {
     },
     needs_you: [campaign({ id: "n1", name: "Extended Operations", game: "007 First Light", linked: false })],
     up_next: [campaign({ id: "u1", name: "Crimson Eye 2026", game: "Phasmophobia", minutes_needed: 111 })],
-    done: [], catalog: null, last_switch: null, next_check_at: null, never: [],
+    done: [], catalog: null, last_switch: null, next_check_at: null, never: [], first_in_line: [],
     ...over,
   };
 }

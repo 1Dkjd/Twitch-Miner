@@ -80,6 +80,18 @@ test("a closed stream is reopened after 5 s", () => {
   expect(FakeES.last).not.toBe(first);
 });
 
+test("a closed stream asks whether the page is still signed in", () => {
+  // the browser closes an EventSource on a 401 without saying why: an expired page session must
+  // end at the sign-in screen, not 15 s later at "Can't reach the miner"
+  const onClosed = vi.fn();
+  connectLive({ onRefetch: vi.fn(), onConnection: vi.fn(), onClosed, open });
+  FakeES.last.onerror?.();
+  expect(onClosed).not.toHaveBeenCalled(); // a blip the browser retries itself
+  FakeES.last.readyState = 2;
+  FakeES.last.onerror?.();
+  expect(onClosed).toHaveBeenCalledOnce();
+});
+
 test("stop closes the stream and cancels timers", () => {
   const onRefetch = vi.fn();
   const stop = connectLive({ onRefetch, onConnection: vi.fn(), open });

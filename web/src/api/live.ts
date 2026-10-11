@@ -8,6 +8,8 @@ export interface LiveOptions {
   onRefetch: () => void;
   onConnection: (live: boolean) => void;
   onEvent?: (kind: EventKind, data: unknown) => void;
+  /** The browser gave up on the stream (it does on a 401, without saying so): check the page session. */
+  onClosed?: () => void;
   debounceMs?: number;
   lostAfterMs?: number;
   retryMs?: number;
@@ -58,6 +60,7 @@ export function connectLive(o: LiveOptions): () => void {
       }
       if (es && es.readyState === 2 /* CLOSED: the browser gave up (e.g. a 401) */) {
         es = null;
+        o.onClosed?.();
         clearTimeout(retryTimer);
         retryTimer = setTimeout(connect, retryMs);
       }

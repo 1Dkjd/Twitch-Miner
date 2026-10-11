@@ -1,19 +1,26 @@
 """FastAPI application: public auth routes plus the session-protected API (spec §8)."""
 from __future__ import annotations
 
-from collections.abc import Callable
+import ipaddress
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
+from ..backup import BadBackup, make_backup, restore_backup
 from ..notify import CHANNELS, configured, send_all, summary
 from ..runner import State
-from .auth import private_auth, public, require_session
+from ..store import EVENT_RETENTION
+from ..version import VERSION, build_info, server_tz
+from .auth import LoginLimiter, private_auth, public, require_session
 from .models import (
+    AboutOut,
+    ActivityEvent,
+    ActivityOut,
     ChannelIn,
     ChannelSuggestion,
     HistoryOut,
@@ -29,6 +36,7 @@ from .models import (
     NotifyTestOut,
     PauseIn,
     Pins,
+    RestoreOut,
     SettingsIn,
     SettingsOut,
     SignInStatus,
@@ -50,6 +58,7 @@ class AppContext:
     clock: Callable[[], datetime] = lambda: datetime.now(UTC)
     post: object = None  # notify's HTTP post; None = a real aiohttp session per send (tests inject a fake)
     images: object = None  # images.ImageCache: History's kept copies (None: Twitch's links only)
+    started_at: datetime | None = None  # set by create_app
 
 
 
@@ -103,6 +112,68 @@ async def get_suggestions(request: Request) -> SuggestionsOut:
     known = {c.login for c in out}
     out += [ChannelSuggestion(login=f, live=False, game=None, last_seen=None) for f in favs if f not in known]
     return SuggestionsOut(games=games, channels=out)
+
+
+# what Activity shows of each logged event: anything else stays in the database
+ACTIVITY_FIELDS = {
+    "started": ("version", "commit"),
+    "state": ("state", "error"),
+    "switched": ("from", "to", "campaign", "game", "reason", "channel_reason", "from_live"),
+    "claimed": ("campaign", "reward", "game"),
+    "claim_failed": ("campaign",),
+    "needs_you": ("campaign", "reason"),
+    "channel_dropped": ("channel",),
+    "points_claimed": ("channel",),
+    "points_claim_failed": ("channel",),
+    "notified": ("title", "sent", "failed"),
+}
+
+
+@api.get("/activity", response_model=ActivityOut)
+async def get_activity(request: Request) -> ActivityOut:
+    rows = _c(request).store.recent_events(None)  # the whole kept week: the page says "Kept for 7 days"
+    return ActivityOut(kept_days=EVENT_RETENTION.days, events=[
+        ActivityEvent(at=at, kind=kind, data={k: data[k] for k in ACTIVITY_FIELDS[kind] if k in data})
+        for kind, at, data in rows if kind in ACTIVITY_FIELDS])
+
+
+@api.get("/backup")
+async def get_backup(request: Request, secrets: bool = False) -> JSONResponse:
+    """Settings › Backup: a file to keep. Notification secrets only when asked for."""
+    ctx = _c(request)
+    now = ctx.clock()
+    return JSONResponse(make_backup(ctx.store, now, secrets=secrets), headers={
+        "Content-Disposition": f'attachment; filename="dropwatch-backup-{now:%Y-%m-%d}.json"',
+        "Cache-Control": "no-store"})
+
+
+@api.post("/restore", response_model=RestoreOut)
+async def post_restore(request: Request) -> RestoreOut:
+    """Replaces lists, pins, settings and notification channels with a backup's. The whole file is checked
+    before anything is written."""
+    ctx = _c(request)
+    # JSON only: a text/plain POST needs no CORS preflight, so another web app on this host could send one
+    if request.headers.get("content-type", "").split(";")[0].strip().lower() != "application/json":
+        raise HTTPException(415, "Send the backup as application/json.")
+    try:
+        data = await request.json()
+    except ValueError as e:
+        raise HTTPException(422, "That file isn't a Dropwatch backup.") from e
+    try:
+        skipped = restore_backup(ctx.store, data)
+    except BadBackup as e:
+        raise HTTPException(422, str(e)) from e
+    if ctx.service.runner is not None:
+        await ctx.service.runner.replan()
+    return RestoreOut(skipped=skipped)
+
+
+@api.get("/about", response_model=AboutOut)
+async def about(request: Request) -> AboutOut:
+    ctx = _c(request)
+    runner = ctx.service.runner
+    return AboutOut(version=VERSION, commit=build_info(), started_at=ctx.started_at,
+                    campaigns_at=runner.campaigns_at if runner else None, server_tz=server_tz())
 
 
 @api.get("/settings", response_model=SettingsOut)
@@ -305,9 +376,58 @@ async def signout(request: Request) -> None:
     ctx.bus.publish("signin", {"status": "signed_out", "message": ""})
 
 
-def create_app(ctx: AppContext, web_dir: Path | None = None) -> FastAPI:
-    app = FastAPI(title="Dropwatch", version="0.3.0", docs_url=None, redoc_url=None)
+class HostCheck:
+    """Answer only to an IP address, localhost, or a name listed in DROPWATCH_HOSTS.
+
+    A web page elsewhere can point its own domain at this box's LAN address (DNS rebinding) and then
+    talk to it as same-origin; the one thing it can't fake is the Host header, which still carries
+    its domain. Refusing unknown names keeps first-run setup and the login out of its reach."""
+
+    def __init__(self, app, hosts: Iterable[str]) -> None:
+        self.app = app
+        self.hosts = {h.strip().lower().rstrip(".") for h in hosts if h.strip()}
+
+    def allowed(self, host: str) -> bool:
+        if "*" in self.hosts:
+            return True
+        host = host.strip().lower()
+        if host.startswith("["):  # [v6]:port
+            name = host[1:host.find("]")] if "]" in host else ""
+        else:
+            name = host.rsplit(":", 1)[0] if host.count(":") == 1 else host
+        name = name.rstrip(".")
+        if not name:
+            return False
+        try:
+            ipaddress.ip_address(name)
+            return True
+        except ValueError:
+            pass
+        return name == "localhost" or name.endswith(".localhost") or name in self.hosts
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] in ("http", "websocket"):
+            host = next((v.decode("latin-1") for k, v in scope["headers"] if k == b"host"), "")
+            if not self.allowed(host):
+                name = host.rsplit(":", 1)[0] if host.count(":") == 1 else host
+                body = (f"Dropwatch doesn't answer to the name '{name}'. To use it, add the name to "
+                        "DROPWATCH_HOSTS (comma-separated) and restart, or open it by IP address.\n").encode()
+                await send({"type": "http.response.start", "status": 400,
+                            "headers": [(b"content-type", b"text/plain; charset=utf-8"),
+                                        (b"content-length", str(len(body)).encode())]})
+                await send({"type": "http.response.body", "body": body})
+                return
+        await self.app(scope, receive, send)
+
+
+def create_app(ctx: AppContext, web_dir: Path | None = None, hosts: Iterable[str] = ()) -> FastAPI:
+    # the schema isn't served: `dropwatch openapi` builds it from app.openapi() for the page's types
+    app = FastAPI(title="Dropwatch", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
+    app.add_middleware(HostCheck, hosts=list(hosts))
     app.state.ctx = ctx
+    if ctx.started_at is None and ctx.store is not None:
+        ctx.started_at = ctx.clock()
+    app.state.login_limiter = LoginLimiter()
     app.include_router(public)
     app.include_router(private_auth)
     app.include_router(api)

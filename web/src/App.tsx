@@ -4,6 +4,7 @@ import { ConnectScreen } from "./screens/Connect";
 import { LoginScreen, SetupScreen } from "./screens/PagePassword";
 import { AppProvider, useApp } from "./store";
 import { Icon, IconSprite, Mark, type IconName } from "./ui/Icons";
+import { ActivityView } from "./views/Activity";
 import { HistoryView } from "./views/History";
 import { OverviewView } from "./views/Overview";
 import { PrioritiesView } from "./views/Priorities";
@@ -22,7 +23,7 @@ export function App({ retryMs }: { retryMs?: number } = {}) {
 }
 
 const TABS: [Exclude<View, "connect">, string, IconName][] = [
-  ["overview", "Overview", "home"], ["priorities", "Priorities", "list"], ["history", "History", "clock"], ["settings", "Settings", "gear"],
+  ["overview", "Overview", "home"], ["priorities", "Priorities", "list"], ["history", "History", "clock"], ["activity", "Activity", "pulse"], ["settings", "Settings", "gear"],
 ];
 
 /** The status pill: what the miner is doing, never contradicting the banner below it. */
@@ -87,7 +88,7 @@ function Shell() {
   else if (view === "connect") body = <ConnectScreen />;
   else {
     tabs = true;
-    body = view === "priorities" ? <PrioritiesView /> : view === "history" ? <HistoryView />
+    body = view === "priorities" ? <PrioritiesView /> : view === "history" ? <HistoryView /> : view === "activity" ? <ActivityView />
       : view === "settings" ? <SettingsView /> : <OverviewView />;
   }
   return (

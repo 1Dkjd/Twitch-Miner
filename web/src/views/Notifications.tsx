@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ApiError, api, type NotifyChannel, type NotifyChannels, type NotifyTest, type Settings } from "../api/client";
 import { useApp } from "../store";
+import { zones } from "../ui/zones";
 import { MenuButton } from "./Menu";
 
 type Toggle = { key: keyof Settings & `notify_${string}`; label: string; d: string; minutes?: { key: keyof Settings; min: number; max: number; before: string; after: string } };
@@ -18,11 +19,13 @@ const TOGGLES: Toggle[] = [
   { key: "notify_needs_you", label: "A campaign needs you", d: "A campaign's game account isn't linked, so it can't be mined." },
 ];
 
-/** The weekly summary's day (0 = Monday, as the server counts) and hour, in the server's local time. */
+/** The weekly summary's day (0 = Monday, as the server counts) and hour, in the chosen zone ("" = the server's). */
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
-export function Notifications({ settings, put }: { settings: Settings | null; put: (c: Partial<Settings>) => Promise<void> }) {
+export function Notifications({ settings, put, serverTz }: {
+  settings: Settings | null; put: (c: Partial<Settings>) => Promise<void>; serverTz?: string;
+}) {
   const { say } = useApp();
   const [chans, setChans] = useState<NotifyChannels | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
@@ -68,7 +71,13 @@ export function Notifications({ settings, put }: { settings: Settings | null; pu
             onChange={(e) => void put({ notify_weekly_day: Number(e.target.value) })}>
             {DAYS.map((d, i) => <option key={d} value={i}>{d}</option>)}</select> at <select className="inline-sel" aria-label="Time"
             disabled={!settings} value={settings?.notify_weekly_hour ?? 18} onChange={(e) => void put({ notify_weekly_hour: Number(e.target.value) })}>
-            {HOURS.map((h) => <option key={h} value={h}>{String(h).padStart(2, "0")}:00</option>)}</select>: what was claimed, what was
+            {HOURS.map((h) => <option key={h} value={h}>{String(h).padStart(2, "0")}:00</option>)}</select> in <select className="inline-sel"
+            aria-label="Time zone" disabled={!settings} value={settings?.notify_weekly_tz ?? ""}
+            onChange={(e) => void put({ notify_weekly_tz: e.target.value })}>
+            <option value="">{serverTz ? `Server time (${serverTz})` : "Server time"}</option>
+            {settings?.notify_weekly_tz && !zones().some((z) => z.id === settings.notify_weekly_tz) && (
+              <option value={settings.notify_weekly_tz}>{settings.notify_weekly_tz}</option>)}
+            {zones().map((z) => <option key={z.id} value={z.id}>{z.label}</option>)}</select>: what was claimed, what was
             missed, and anything that needs you.</div></div>
         <input type="checkbox" className="sw" id="notify_weekly" disabled={!settings} checked={!!settings?.notify_weekly}
           onChange={(e) => void put({ notify_weekly: e.target.checked })} />

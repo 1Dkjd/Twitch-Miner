@@ -108,6 +108,10 @@ class Runner:
         return self.last_refresh + REFRESH_EVERY if self.last_refresh else None
 
     @property
+    def campaigns_at(self) -> datetime | None:
+        return self._campaigns_at
+
+    @property
     def catalog_status(self):
         """(ok|stale|unreachable, since) when campaigns come from the catalogue, else None."""
         catalog = getattr(self._client, "catalog", None)
@@ -273,7 +277,7 @@ class Runner:
                 info = {"from": previous.login, "to": self.watching.login}
                 self.last_switch = {**info, "at": now}
                 self._emit("switched", info)
-                self._store.log_event("switched", info)
+                self._store.log_event("switched", {**info, **self._switch_why(previous.login)})
                 self._set_state(State.SWITCHED, info)
             else:
                 self._set_state(State.MINING)
@@ -354,7 +358,7 @@ class Runner:
             # game, watch time and channel only for the "a reward is claimed" push
             self._emit("claimed", {**info, "game": c.game.name, "minutes": d.required_minutes if d else None,
                                    "channel": self._mined_on.get(c.id)})
-            self._store.log_event("claimed", info)
+            self._store.log_event("claimed", {**info, "game": c.game.name})
             if hasattr(self._store, "add_claim"):
                 self._store.add_claim(self._clock(), c.id, c.name, c.game.name,
                                       [(r.name, r.image_url) for r in (d.rewards if d else ())],
@@ -423,6 +427,16 @@ class Runner:
         elapsed = (self._clock() - started).total_seconds()
         return max(0.0, PLAY_INTERVAL - elapsed)  # keep a steady 10 s period like the reference
 
+    def _switch_why(self, previous: str) -> dict:
+        """For Activity: what is mined now and why the channel changed."""
+        choice = self.plan.current if self.plan else None
+        c = next((x for x in self.campaigns if choice and x.id == choice.campaign_id), None)
+        return {"campaign": c.name if c else None, "game": c.game.name if c else None,
+                "reason": choice.reason if choice else None,
+                "channel_reason": choice.channel_reason if choice else None,
+                # the directory lists a stream for minutes after it ends: an excluded channel is gone
+                "from_live": previous not in self._excluded and any(ch.login == previous for ch in self.live)}
+
     def _points_on(self) -> bool:
         """Settings' "Also claim channel points" (claim_points; on by default)."""
         get = getattr(self._store, "get_settings", None)
@@ -434,7 +448,9 @@ class Runner:
         except Exception as exc:  # noqa: BLE001 - points are a bonus: never let them break mining
             log.info("Points claim raised %s", type(exc).__name__)
             ok = False
-        self._store.log_event("points_claimed" if ok else "points_claim_failed", {"channel_id": channel_id})
+        login = next((ch.login for ch in self.live if ch.id == channel_id), None)
+        self._store.log_event("points_claimed" if ok else "points_claim_failed",
+                              {"channel_id": channel_id, "channel": login})
 
     async def _claim_waiting_points(self) -> None:
         """A chest that was already waiting when we started watching never arrives over PubSub: look once
