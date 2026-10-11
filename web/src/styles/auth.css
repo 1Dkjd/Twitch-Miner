@@ -160,3 +160,22 @@ button.row.hx { width: 100%; text-align: left; background: none; border: 0; colo
 
 /* Settings › About: the running commit */
 .mono { font-family: var(--mono); font-size: 12px; }
+
+/* History stats (approved mockup docs/design/pre-docker-mockup.html, 2026-10-10) */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.stat { padding: 14px 16px; }
+.stat + .stat { border-left: 1px solid var(--line); }
+.stat .n { font-family: var(--display); font-stretch: 80%; font-weight: 750; font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat .l { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.stats-list { margin-top: 10px; }
+.bars { display: grid; gap: 8px; padding: 14px 16px; margin: 0; list-style: none; }
+.sbar { display: grid; grid-template-columns: minmax(0, 180px) minmax(0, 1fr) 32px; gap: 10px; align-items: center; font-size: 13px; }
+.sbar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sbar .rail { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.sbar .fill { display: block; height: 100%; border-radius: 99px; background: var(--fill); }
+.sbar .v { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+@media (max-width: 720px) {
+  .stats { grid-template-columns: 1fr; }
+  .stat + .stat { border-left: 0; border-top: 1px solid var(--line); }
+  .sbar { grid-template-columns: minmax(0, 110px) minmax(0, 1fr) 28px; }
+}
