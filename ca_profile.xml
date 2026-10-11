@@ -3,4 +3,5 @@
   <Profile>KernelPanic Studios makes Dropwatch, a Twitch Drops miner for Unraid. It earns drops and channel points in the background for one Twitch account and has a web dashboard for priorities, history and notifications. Questions and bug reports go to the support thread or GitHub issues.</Profile>
   <Icon>https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/brand/png/icon-256.png</Icon>
   <WebPage>https://github.com/KernelPanic-Studios/dropwatch</WebPage>
+  <Forum>https://forums.unraid.net/topic/200875-support-kernelpanic-studios-dropwatch/</Forum>
 </CommunityApplications>

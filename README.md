@@ -97,7 +97,7 @@ One Twitch account per container. Don't run another drops miner on the same acco
 
 ## Support
 
-Questions and bug reports: [GitHub issues](https://github.com/KernelPanic-Studios/dropwatch/issues).
+Questions: the [Unraid forum support thread](https://forums.unraid.net/topic/200875-support-kernelpanic-studios-dropwatch/). Bug reports: [GitHub issues](https://github.com/KernelPanic-Studios/dropwatch/issues).
 
 ## Credits and license
 
