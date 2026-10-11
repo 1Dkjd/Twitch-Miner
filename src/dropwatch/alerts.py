@@ -275,6 +275,10 @@ class Notifier:
                         log.warning("Notifying %r failed: %s", a.title, type(exc).__name__)
                         continue
                     got = "; ".join(f"{r['name']} {r['message']}" for r in results)
+                    if results:  # Activity: where it went (names only; never a target or a secret)
+                        self._safely(lambda a=a, results=results: self._store.log_event("notified", {
+                            "title": a.title, "sent": [r["name"] for r in results if r.get("ok")],
+                            "failed": [r["name"] for r in results if not r.get("ok")]}))
                     log.info("Notified %r: %s", a.title, got or "no channels set up")
                     # delivered, or no channel to deliver to: done. All channels failed: retried later
                     if a.after_sent and (not results or any(r.get("ok") for r in results)):

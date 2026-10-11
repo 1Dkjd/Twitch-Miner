@@ -153,6 +153,8 @@ async def serve(store: Store, host: str, port: int) -> int:
     alerts = asyncio.create_task(notifier.run(
         bus, lambda: snapshot_of(service.runner), lambda t, b: send_all(store.get_channels(), t, b)))
     keeper = asyncio.create_task(keep_images(store, images))
+    from .version import VERSION, build_info
+    store.log_event("started", {"version": VERSION, "commit": build_info()})
     started = await service.start()
     logging.getLogger("dropwatch").info(
         "Serving on http://%s:%s (%s)", host, port, "mining" if started else "not signed in to Twitch")

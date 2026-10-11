@@ -14,10 +14,13 @@ from fastapi.staticfiles import StaticFiles
 from ..backup import BadBackup, make_backup, restore_backup
 from ..notify import CHANNELS, configured, send_all, summary
 from ..runner import State
+from ..store import EVENT_RETENTION
 from ..version import VERSION, build_info, server_tz
 from .auth import LoginLimiter, private_auth, public, require_session
 from .models import (
     AboutOut,
+    ActivityEvent,
+    ActivityOut,
     ChannelIn,
     ChannelSuggestion,
     HistoryOut,
@@ -109,6 +112,30 @@ async def get_suggestions(request: Request) -> SuggestionsOut:
     known = {c.login for c in out}
     out += [ChannelSuggestion(login=f, live=False, game=None, last_seen=None) for f in favs if f not in known]
     return SuggestionsOut(games=games, channels=out)
+
+
+# what Activity shows of each logged event: anything else stays in the database
+ACTIVITY_FIELDS = {
+    "started": ("version", "commit"),
+    "state": ("state", "error"),
+    "switched": ("from", "to", "campaign", "game", "reason", "channel_reason", "from_live"),
+    "claimed": ("campaign", "reward", "game"),
+    "claim_failed": ("campaign",),
+    "needs_you": ("campaign", "reason"),
+    "channel_dropped": ("channel",),
+    "points_claimed": ("channel",),
+    "points_claim_failed": ("channel",),
+    "notified": ("title", "sent", "failed"),
+}
+ACTIVITY_LIMIT = 1000
+
+
+@api.get("/activity", response_model=ActivityOut)
+async def get_activity(request: Request) -> ActivityOut:
+    rows = _c(request).store.recent_events(ACTIVITY_LIMIT)
+    return ActivityOut(kept_days=EVENT_RETENTION.days, events=[
+        ActivityEvent(at=at, kind=kind, data={k: data[k] for k in ACTIVITY_FIELDS[kind] if k in data})
+        for kind, at, data in rows if kind in ACTIVITY_FIELDS])
 
 
 @api.get("/backup")

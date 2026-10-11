@@ -50,6 +50,73 @@
     "title": "AboutOut",
     "type": "object"
    },
+   "ActivityEvent": {
+    "properties": {
+     "at": {
+      "format": "date-time",
+      "title": "At",
+      "type": "string"
+     },
+     "data": {
+      "additionalProperties": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "boolean"
+        },
+        {
+         "type": "integer"
+        },
+        {
+         "items": {
+          "type": "string"
+         },
+         "type": "array"
+        },
+        {
+         "type": "null"
+        }
+       ]
+      },
+      "title": "Data",
+      "type": "object"
+     },
+     "kind": {
+      "title": "Kind",
+      "type": "string"
+     }
+    },
+    "required": [
+     "at",
+     "kind",
+     "data"
+    ],
+    "title": "ActivityEvent",
+    "type": "object"
+   },
+   "ActivityOut": {
+    "properties": {
+     "events": {
+      "items": {
+       "$ref": "#/components/schemas/ActivityEvent"
+      },
+      "title": "Events",
+      "type": "array"
+     },
+     "kept_days": {
+      "title": "Kept Days",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "events",
+     "kept_days"
+    ],
+    "title": "ActivityOut",
+    "type": "object"
+   },
    "CampaignOut": {
     "properties": {
      "allowed_channels": {
@@ -1541,6 +1608,24 @@
      }
     },
     "summary": "About"
+   }
+  },
+  "/api/activity": {
+   "get": {
+    "operationId": "get_activity_api_activity_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ActivityOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Activity"
    }
   },
   "/api/backup": {

@@ -150,6 +150,18 @@ class SettingsOut(BaseModel):
     notify_weekly_tz: str
 
 
+class ActivityEvent(BaseModel):
+    at: datetime
+    kind: str  # started | state | switched | claimed | claim_failed | needs_you | channel_dropped |
+    #            points_claimed | points_claim_failed | notified
+    data: dict[str, str | bool | int | list[str] | None]
+
+
+class ActivityOut(BaseModel):
+    events: list[ActivityEvent]  # newest first
+    kept_days: int
+
+
 class RestoreOut(BaseModel):
     skipped: list[str]  # what a newer Dropwatch wrote that this one doesn't know
 

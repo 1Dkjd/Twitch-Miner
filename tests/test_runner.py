@@ -103,7 +103,9 @@ async def test_claim_on_event_and_logged():
     r = runner(c)
     await r.refresh()  # catch-up claim happens here
     assert c.claims == ["inst"]
-    assert ("claimed", {"campaign": "Frights", "reward": "Palcat Glasses"}) in r._store.events
+    # game added 2026-10-10 for Activity
+    want = ("claimed", {"campaign": "Frights", "reward": "Palcat Glasses", "game": "Palia"})
+    assert want in r._store.events
     c2 = FakeClient([camp(cur=50)], [chan("a", 7)])
     r2 = runner(c2)
     await r2.refresh()

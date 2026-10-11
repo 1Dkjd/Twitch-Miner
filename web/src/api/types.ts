@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Activity */
+        get: operations["get_activity_api_activity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/backup": {
         parameters: {
             query?: never;
@@ -472,6 +489,27 @@ export interface components {
             started_at: string;
             /** Version */
             version: string;
+        };
+        /** ActivityEvent */
+        ActivityEvent: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Data */
+            data: {
+                [key: string]: string | boolean | number | string[] | null;
+            };
+            /** Kind */
+            kind: string;
+        };
+        /** ActivityOut */
+        ActivityOut: {
+            /** Events */
+            events: components["schemas"]["ActivityEvent"][];
+            /** Kept Days */
+            kept_days: number;
         };
         /** CampaignOut */
         CampaignOut: {
@@ -983,6 +1021,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AboutOut"];
+                };
+            };
+        };
+    };
+    get_activity_api_activity_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"];
                 };
             };
         };
