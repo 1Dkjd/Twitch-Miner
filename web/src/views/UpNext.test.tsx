@@ -93,3 +93,19 @@ test("moving a pin works on the pins you can see, keeping one you can't (the one
   await waitFor(() => expect(calls.filter((c) => c.path === "/api/pins" && c.method === "PUT").at(-1)?.body)
     .toEqual({ pins: ["now", "c", "e"] }));
 });
+
+test("Add to Priority puts the game at the end of Priority, and isn't offered for games already there", async () => {
+  const calls = mockApi({
+    "GET /api/state": state({ up_next: QUEUE }), "GET /api/settings": { arrange_up_next: false }, "GET /api/pins": { pins: [] },
+    "GET /api/lists": { priority: ["Palia", "REMATCH"], never: ["Albion Online"], favourites: [] },
+    "PUT /api/lists": (b: unknown) => b,
+  });
+  vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  render(<AppProvider initialMe={ME}><OverviewView /></AppProvider>);
+  const u = userEvent.setup();
+  const sec = await upNext();
+  await waitFor(() => expect(within(sec).queryByRole("button", { name: "Add REMATCH to Priority" })).toBeNull());
+  await u.click(within(sec).getByRole("button", { name: "Add CONTROL Resonant to Priority" }));
+  await waitFor(() => expect(calls.find((c) => c.path === "/api/lists" && c.method === "PUT")?.body)
+    .toEqual({ priority: ["Palia", "REMATCH", "CONTROL Resonant"], never: ["Albion Online"], favourites: [] }));
+});

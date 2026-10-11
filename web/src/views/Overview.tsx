@@ -33,6 +33,12 @@ export function OverviewView() {
     const msg = await save({ ...lists, priority: lists.priority.filter((g) => g !== game), never: [...lists.never, game] });
     say(msg ?? `${game} moved to Never`);
   }
+  async function prioritise(game: string) {
+    if (!lists) return;
+    const priority = [...lists.priority.filter((g) => g !== game), game];
+    const msg = await save({ ...lists, priority, never: lists.never.filter((g) => g !== game) });
+    say(msg ?? `${game} added to Priority, position ${priority.length}`);
+  }
   const needs = <NeedsYou key="needs" state={state} onNever={never} />;
   const now = <NowSlot key="now" state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf} />;
   return (
@@ -40,7 +46,7 @@ export function OverviewView() {
       <h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1>
       <Banner state={state} lost={lost} lostSince={lostSince} />
       {phone ? [needs, now] : [now, needs]}
-      <UpNext state={state} priorityOf={priorityOf} onNever={never} />
+      <UpNext state={state} priorityOf={priorityOf} onNever={never} onPriority={prioritise} />
       <Done state={state} />
     </section>
   );
