@@ -44,14 +44,50 @@ test("events read as sentences with their reasons, newest first", async () => {
   vi.unstubAllGlobals();
 });
 
-test("the filter chips narrow it to one kind", async () => {
-  setup();
+const pressed = (name: string) => screen.getByRole("button", { name }).getAttribute("aria-pressed");
+const CHECK = ev("2026-10-10T18:50:00Z", "checked", { manual: true, campaigns: 143, new: 0, linked: [], seconds: 4.8 });
+
+test("every kind starts on; turning kinds off hides only those, and All brings everything back", async () => {
+  try { localStorage.clear(); } catch { /* none */ }
+  mockApi({ "GET /api/state": state(), "GET /api/activity": { events: [CHECK, ...EVENTS], kept_days: 7 } });
+  render(<AppProvider initialMe={{ authenticated: true, setup_required: false }}><ActivityView /></AppProvider>);
   await screen.findByText("Kept for 7 days.");
-  await userEvent.click(screen.getByRole("button", { name: "Rewards" }));
-  expect(screen.getByRole("button", { name: "Rewards" })).toHaveAttribute("aria-pressed", "true");
-  expect(sentences()).toEqual(["Opened a channel points chest on lvndmark", "Claimed Oxygen Respirator from Frozen Trail"]);
-  await userEvent.click(screen.getByRole("button", { name: "Problems" }));
-  expect(sentences()).toEqual(["Couldn't reach Twitch"]);
+  for (const k of ["All", "Mining", "Twitch", "Rewards", "Problems", "Notifications"]) expect(pressed(k)).toBe("true");
+  expect(sentences()).toContain("You checked Twitch");
+  await userEvent.click(screen.getByRole("button", { name: "Mining" }));
+  await userEvent.click(screen.getByRole("button", { name: "Twitch" }));
+  expect(pressed("Mining")).toBe("false");
+  expect(pressed("All")).toBe("false");
+  expect(sentences()).toEqual([
+    "Opened a channel points chest on lvndmark",
+    "Claimed Oxygen Respirator from Frozen Trail",
+    "Couldn't reach Twitch",
+    "Sent “Twitch sign-in stopped working” to ntfy",
+  ]);
+  await userEvent.click(screen.getByRole("button", { name: "Twitch" }));  // back on
+  expect(sentences()[0]).toBe("You checked Twitch");
+  await userEvent.click(screen.getByRole("button", { name: "All" }));
+  expect(pressed("Mining")).toBe("true");
+  expect(sentences()).toHaveLength(7);
+  vi.unstubAllGlobals();
+});
+
+test("the choice is remembered in this browser, and turning everything off says so", async () => {
+  try { localStorage.clear(); } catch { /* none */ }
+  const show = () => {
+    mockApi({ "GET /api/state": state(), "GET /api/activity": { events: [CHECK, ...EVENTS], kept_days: 7 } });
+    return render(<AppProvider initialMe={{ authenticated: true, setup_required: false }}><ActivityView /></AppProvider>);
+  };
+  const first = show();
+  await screen.findByText("Kept for 7 days.");
+  await userEvent.click(screen.getByRole("button", { name: "Twitch" }));
+  first.unmount();
+  show();
+  await screen.findByText("Kept for 7 days.");
+  expect(pressed("Twitch")).toBe("false");
+  expect(sentences()).not.toContain("You checked Twitch");
+  for (const k of ["Mining", "Rewards", "Problems", "Notifications"]) await userEvent.click(screen.getByRole("button", { name: k }));
+  expect(screen.getByText("Turn on at least one kind to see activity.")).toBeInTheDocument();
   vi.unstubAllGlobals();
 });
 
@@ -73,7 +109,7 @@ test("check-ins read as clicked or automatic, with what they found", () => {
   const clicked = describe(ev("2026-10-10T23:02:51Z", "checked", { manual: true, campaigns: 143, new: 2, linked: ["Riders Republic"], seconds: 1.3 }), undefined);
   expect(clicked?.text).toBe("You checked Twitch");
   expect(clicked?.d).toBe("143 campaigns · 2 new · Riders Republic now linked · took 1.3 s");
-  expect(clicked?.group).toBe("mining");
+  expect(clicked?.group).toBe("twitch");
   const auto = describe(ev("2026-10-10T22:01:00Z", "checked", { manual: false, campaigns: 143, new: 0, linked: [], seconds: 0.9 }), undefined);
   expect(auto?.text).toBe("Checked Twitch for campaign changes");
   expect(auto?.d).toBe("143 campaigns · took 0.9 s");
