@@ -64,9 +64,13 @@ class TwitchClient:
                    and any(drop_earnable_now(c, d, now) for d in c.drops)]
         open_games = {c.game.id: c.game for c in minable if not c.allowed_logins}
         seen: dict[str, LiveChannel] = {}
-        for game in open_games.values():
-            resp = await self._gql.run(op("GameDirectory", slug=game.slug,
-                                          options={"systemFilters": ["DROPS_ENABLED"]}))
+        # batched (GQL_BATCH per request, posts in parallel under the rate limit): one request per game
+        # took 13-38 s for ~57 games on 2026-10-10, batched ~1 s with the same channels
+        games = list(open_games.values())
+        drops_on = {"systemFilters": ["DROPS_ENABLED"]}
+        lookups = [op("GameDirectory", slug=g.slug, options=drops_on) for g in games]
+        resps = await self._gql.run_many(lookups) if lookups else []
+        for game, resp in zip(games, resps, strict=True):
             for ch in parse.directory_channels(resp, game):
                 seen.setdefault(ch.login, ch)
         acl = {lg for c in minable for lg in c.allowed_logins} - set(seen)
