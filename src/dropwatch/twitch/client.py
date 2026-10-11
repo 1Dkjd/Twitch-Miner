@@ -12,6 +12,7 @@ from ..models import (
     campaign_active,
     drop_earnable_now,
 )
+from ..planner import qualifies
 from . import parse
 from .gql import GqlError, op
 
@@ -56,24 +57,30 @@ class TwitchClient:
         self, campaigns: list[Campaign], prefs: Prefs, now: datetime
     ) -> list[LiveChannel]:
         # Only campaigns the planner could actually pick: active, not Never, account-eligible,
-        # with a drop earnable now. Games whose minable campaigns are all channel-restricted
-        # need no directory lookup, only their allowed channels (reference twitch.py ~760-800).
+        # with a drop earnable now.
         minable = [c for c in campaigns
                    if campaign_active(c, now) and c.game.name not in prefs.never
                    and account_eligible(c, prefs)
                    and any(drop_earnable_now(c, d, now) for d in c.drops)]
-        open_games = {c.game.id: c.game for c in minable if not c.allowed_logins}
         seen: dict[str, LiveChannel] = {}
-        # batched (GQL_BATCH per request, posts in parallel under the rate limit): one request per game
-        # took 13-38 s for ~57 games on 2026-10-10, batched ~1 s with the same channels
-        games = list(open_games.values())
+        # Every minable game's directory (drops on), batched: GQL_BATCH per request, posts in parallel under
+        # the rate limit. One request per game took 13-38 s for ~57 games on 2026-10-10; batched ~1 s.
+        games = list({c.game.id: c.game for c in minable}.values())
         drops_on = {"systemFilters": ["DROPS_ENABLED"]}
         lookups = [op("GameDirectory", slug=g.slug, options=drops_on) for g in games]
         resps = await self._gql.run_many(lookups) if lookups else []
         for game, resp in zip(games, resps, strict=True):
             for ch in parse.directory_channels(resp, game):
                 seen.setdefault(ch.login, ch)
-        acl = {lg for c in minable for lg in c.allowed_logins} - set(seen)
+        # A channel-restricted campaign can only be mined on an allowed channel streaming its game with drops
+        # on, which that game's directory lists (top channels by viewers, so its best pick is there too). Ask
+        # by name only for campaigns the directory found none for, and always for special-event campaigns,
+        # whose channels may stream any game. 2026-10-10: every allowed name (2,430 in 122 requests) took
+        # 24 s; this took 3.5 s and left the same 65 campaigns minable.
+        found = list(seen.values())
+        ask = [c for c in minable if c.allowed_logins
+               and (c.game.special or not any(qualifies(c, ch) for ch in found))]
+        acl = {lg for c in ask for lg in c.allowed_logins} - set(seen)
         acl |= set(prefs.favourites) - set(seen)
         if acl:
             for resp in await self._gql.run_many([op("GetStreamInfo", channel=lg) for lg in sorted(acl)]):
