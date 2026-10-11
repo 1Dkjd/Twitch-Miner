@@ -43,7 +43,8 @@ test("the view summarises and switches period", async () => {
 const detailed = (at: string, name: string, minutes: number | null, channel: string | null) => ({
   at, campaign_id: "c9", campaign: "EXFIL Brothers Day 2", game: "Escape from Tarkov", rewards: [r(name)],
   minutes, channel, campaign_rewards: minutes === null && channel === null ? null : 10,
-  campaign_ends: minutes === null && channel === null ? null : "2026-10-11T12:00:00Z",
+  // relative to now: an absolute date here went stale on 2026-10-11 and flipped "ends" to "ended"
+  campaign_ends: minutes === null && channel === null ? null : new Date(Date.now() + 3 * 86_400_000).toISOString(),
 });
 
 function renderHistory(claims: unknown[]) {
@@ -63,7 +64,7 @@ test("tapping a campaign opens each reward with its watch time and channel", asy
   expect(btn).toHaveAttribute("aria-expanded", "true");
   expect(body).toBeVisible();
   expect(body).toHaveTextContent("2 of 10 rewards in this campaign");
-  expect(body).toHaveTextContent(/campaign ends Sun 11 Oct/);
+  expect(body).toHaveTextContent(/campaign ends \w{3} \d{1,2} \w{3}, /);
   const lines = [...body.querySelectorAll("li")].map((li) => li.textContent);
   expect(lines[0]).toMatch(/^Common 1after 1\sh watched·on honeyxxo\d\d:\d\d$/); // oldest first
   expect(lines[1]).toMatch(/^Rare 1after 2\sh watched·on honeyxxo/);

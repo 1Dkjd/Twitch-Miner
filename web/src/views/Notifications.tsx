@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ApiError, api, type NotifyChannel, type NotifyChannels, type NotifyTest, type Settings } from "../api/client";
+import { api, type NotifyChannel, type NotifyChannels, type NotifyTest, type Settings } from "../api/client";
 import { useApp } from "../store";
 import { zones } from "../ui/zones";
 import { MenuButton } from "./Menu";
@@ -26,7 +26,7 @@ const HOURS = Array.from({ length: 24 }, (_, h) => h);
 export function Notifications({ settings, put, serverTz }: {
   settings: Settings | null; put: (c: Partial<Settings>) => Promise<void>; serverTz?: string;
 }) {
-  const { say } = useApp();
+  const { say, sayError } = useApp();
   const [chans, setChans] = useState<NotifyChannels | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [test, setTest] = useState<NotifyTest | null>(null);
@@ -35,19 +35,19 @@ export function Notifications({ settings, put, serverTz }: {
 
   async function change(kind: string, values: Record<string, string>) {
     try { setChans(await api.put<NotifyChannels>(`/notify/channels/${kind}`, { values })); return true; }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't save."); return false; }
+    catch (e) { sayError(e, "Couldn't save"); return false; }
   }
   async function add(kind: string, name: string) {
     if (await change(kind, {})) { setEditing(kind); say(`${name} added`); }
   }
   async function remove(c: NotifyChannel) {
     try { setChans(await api.del<NotifyChannels>(`/notify/channels/${c.type}`)); say(`${c.name} removed`); }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't remove it."); }
+    catch (e) { sayError(e, "Couldn't remove it"); }
   }
   async function sendTest() {
     setTesting(true);
     try { const r = await api.post<NotifyTest>("/notify/test"); setTest(r); say(r.message); }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't send."); }
+    catch (e) { sayError(e, "Couldn't send"); }
     finally { setTesting(false); }
   }
 
@@ -117,7 +117,7 @@ function Minutes({ t, settings, put }: { t: Toggle; settings: Settings | null; p
   function commit() {
     const n = Number(draft);
     if (draft === "" || !Number.isInteger(n) || n < m.min || n > m.max) {
-      say(`Pick ${m.min} to ${m.max} minutes.`);
+      say({ title: "Not saved", detail: `Pick ${m.min} to ${m.max} minutes.`, tone: "bad" });
       if (saved != null) setDraft(String(saved));
       return;
     }

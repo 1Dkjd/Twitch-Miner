@@ -3,7 +3,7 @@
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { titleFor, UpdateNotice } from "./App";
-import { AppProvider, Toast, useApp } from "./store";
+import { AppProvider, Toasts, useApp } from "./store";
 import { mockApi } from "./test/fetch";
 import { campaign, state } from "./test/fixtures";
 import { HistoryView } from "./views/History";
@@ -13,22 +13,7 @@ import { SettingsView } from "./views/Settings";
 const ME = { authenticated: true, setup_required: false };
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
-function Sayer({ undo }: { undo?: () => void }) {
-  const { say } = useApp();
-  return <button type="button" onClick={() => say("Vaultbreakers moved to Never", undo)}>go</button>;
-}
-
-test("confirmations show on screen, with Undo when there's something to undo", async () => {
-  mockApi({ "GET /api/state": state() });
-  const undo = vi.fn();
-  render(<AppProvider initialMe={ME}><Sayer undo={undo} /><Toast /></AppProvider>);
-  await userEvent.click(screen.getByRole("button", { name: "go" }));
-  const toast = await screen.findByRole("status", { name: "Notice" });
-  expect(toast).toHaveTextContent("Vaultbreakers moved to Never");
-  await userEvent.click(within(toast).getByRole("button", { name: "Undo" }));
-  expect(undo).toHaveBeenCalledOnce();
-  await waitFor(() => expect(screen.queryByRole("status", { name: "Notice" })).not.toBeInTheDocument());
-});
+// The toast itself (title, detail, Undo, timing) is covered in toast.test.tsx.
 
 test("Undo reverses only its own change, on the lists as they are now", async () => {
   // review fix: Undo re-saved a snapshot from before, wiping anything changed in between
@@ -36,15 +21,17 @@ test("Undo reverses only its own change, on the lists as they are now", async ()
   const calls = mockApi({ "GET /api/state": state(), "GET /api/lists": () => server,
     "PUT /api/lists": (b: unknown) => { server = b as typeof server; return b; } });
   vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
-  render(<AppProvider initialMe={ME}><OverviewView /><Toast /></AppProvider>);
+  render(<AppProvider initialMe={ME}><OverviewView /><Toasts /></AppProvider>);
   const btn = await screen.findAllByRole("button", { name: /^Never mine / });
   const game = btn[0]!.getAttribute("aria-label")!.replace("Never mine ", "");
   await userEvent.click(btn[0]!);
   await waitFor(() => expect(server.never).toContain(game));
   server = { ...server, favourites: ["newfav"] };  // changed elsewhere meanwhile
-  const toast = await screen.findByRole("status", { name: "Notice" });
+  const toast = await screen.findByRole("group", { name: "Moved to Never" });
+  expect(toast).toHaveTextContent(`${game} won't be mined.`);
   await userEvent.click(within(toast).getByRole("button", { name: "Undo" }));
   await waitFor(() => expect(server.never).not.toContain(game));
+  expect(await screen.findByRole("group", { name: "Undone" })).toHaveTextContent(`${game} can be mined again.`);
   expect(server.favourites).toEqual(["newfav"]);
   expect(calls.filter((c) => c.method === "PUT")).toHaveLength(2);
 });

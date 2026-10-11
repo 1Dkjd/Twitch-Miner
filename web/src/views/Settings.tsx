@@ -9,7 +9,7 @@ import { Notifications } from "./Notifications";
 /** Settings (approved mockup), limited to what works today. Notifications follow their own approved mockup
  * (docs/design/notifications-mockup.html); channel points and the password off-switch arrive with their features. */
 export function SettingsView() {
-  const { state, refreshState, refreshMe, say } = useApp();
+  const { state, refreshState, refreshMe, say, sayError } = useApp();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [about, setAbout] = useState<About | null>(null);
   const [restored, setRestored] = useState(0); // remounts Notifications so it re-reads its channels
@@ -22,13 +22,13 @@ export function SettingsView() {
   useEffect(() => { if (confirm) stayBtn.current?.focus(); }, [confirm]);
 
   async function put(change: Partial<Settings>) {
-    try { setSettings(await api.put<Settings>("/settings", change)); say("Saved"); }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't save."); }
+    try { setSettings(await api.put<Settings>("/settings", change)); say("Setting saved"); }
+    catch (e) { sayError(e, "Couldn't save"); }
   }
   async function twitchSignOut() {
     setConfirm(false);
     try { await api.post("/twitch/signout"); say("Signed out of Twitch"); }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't sign out."); }
+    catch (e) { sayError(e, "Couldn't sign out"); }
     void refreshState();
   }
 
@@ -98,7 +98,7 @@ export function SettingsView() {
         <div className="opt">
           <div><div>Sign out of this page</div><div className="d">This browser will ask for the page password again. Mining carries on.</div></div>
           <button className="btn" type="button" onClick={async () => {
-            try { await api.post("/logout"); } catch (e) { say(e instanceof ApiError ? e.message : "Couldn't sign out."); }
+            try { await api.post("/logout"); } catch (e) { sayError(e, "Couldn't sign out"); }
             await refreshMe().catch(() => undefined);
           }}>Sign out</button>
         </div>
@@ -183,7 +183,7 @@ const EVERY: [number, string][] = [[15, "Every 15 min"], [30, "Every 30 min"], [
 
 /** Settings > This page: the browsers signed in to this page (asked for 2026-10-11). */
 function Browsers() {
-  const { say } = useApp();
+  const { say, sayError } = useApp();
   const [rows, setRows] = useState<Sessions["sessions"] | null>(null);
   const load = () => api.get<Sessions>("/sessions").then((s) => setRows(s.sessions)).catch(() => undefined);
   useEffect(() => { void load(); }, []);
@@ -191,7 +191,7 @@ function Browsers() {
     try {
       if (id) await api.del(`/sessions/${id}`); else await api.post("/sessions/sign-out-others");
       say(label);
-    } catch (e) { say(e instanceof ApiError ? e.message : "Couldn't sign it out."); }
+    } catch (e) { sayError(e, "Couldn't sign it out"); }
     void load();
   }
   if (!rows) return null;
