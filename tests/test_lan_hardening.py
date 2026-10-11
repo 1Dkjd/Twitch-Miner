@@ -74,8 +74,22 @@ async def test_named_hosts_are_allowed(tmp_path):
     for host in ("tower:5810", "dropwatch.home.lan"):
         async with hosted(app, host) as c:
             assert (await c.get("/api/health")).status_code == 200, host
-    async with hosted(app, "other.lan") as c:
+    async with hosted(app, "other.example") as c:
         assert (await c.get("/api/health")).status_code == 400
+
+
+async def test_local_names_work_without_listing_them(tmp_path):
+    # rebinding needs a public domain the attacker owns, and those always have a dot and a real top-level
+    # domain; a bare server name or a private suffix can't be one (asked for 2026-10-11: the
+    # "Extra host names" field was a chore for a protection this keeps)
+    app, _ = make_app(tmp_path)
+    for host in ("nhomeserver:5800", "Tower", "tower.local", "tower.lan", "nas.home.arpa", "box.internal",
+                 "box.home", "box.localdomain:5800", "tower.local."):
+        async with hosted(app, host) as c:
+            assert (await c.get("/api/health")).status_code == 200, host
+    for host in ("evil.example", "dropwatch.mydomain.com:5800", "local.evil.com", "lan.attacker.net"):
+        async with hosted(app, host) as c:
+            assert (await c.get("/api/health")).status_code == 400, host
 
 
 async def test_star_turns_the_host_check_off(tmp_path):

@@ -456,12 +456,20 @@ async def signout(request: Request) -> None:
     ctx.bus.publish("signin", {"status": "signed_out", "message": ""})
 
 
+# Private names nobody can own in public DNS: reserved (.local mDNS, .home.arpa, .internal, .localhost) or
+# never delegated and commonly used by home routers (.lan, .home, .localdomain)
+LOCAL_SUFFIXES = (".local", ".home.arpa", ".internal", ".localhost", ".lan", ".home", ".localdomain")
+
+
 class HostCheck:
-    """Answer only to an IP address, localhost, or a name listed in DROPWATCH_HOSTS.
+    """Answer to an IP address, a local name, or a name listed in DROPWATCH_HOSTS.
 
     A web page elsewhere can point its own domain at this box's LAN address (DNS rebinding) and then
     talk to it as same-origin; the one thing it can't fake is the Host header, which still carries
-    its domain. Refusing unknown names keeps first-run setup and the login out of its reach."""
+    its domain. That domain is a public one the attacker owns, so it has a dot and a real top-level
+    domain: bare server names (tower, nhomeserver) and private suffixes can't be it and need no listing
+    (2026-10-11). Refusing other names keeps first-run setup and the login out of its reach; a reverse
+    proxy's public name is the one thing DROPWATCH_HOSTS is still for."""
 
     def __init__(self, app, hosts: Iterable[str]) -> None:
         self.app = app
@@ -483,15 +491,16 @@ class HostCheck:
             return True
         except ValueError:
             pass
-        return name == "localhost" or name.endswith(".localhost") or name in self.hosts
+        return "." not in name or name.endswith(LOCAL_SUFFIXES) or name == "localhost" or name in self.hosts
 
     async def __call__(self, scope, receive, send):
         if scope["type"] in ("http", "websocket"):
             host = next((v.decode("latin-1") for k, v in scope["headers"] if k == b"host"), "")
             if not self.allowed(host):
                 name = host.rsplit(":", 1)[0] if host.count(":") == 1 else host
-                body = (f"Dropwatch doesn't answer to the name '{name}'. To use it, add the name to "
-                        "DROPWATCH_HOSTS (comma-separated) and restart, or open it by IP address.\n").encode()
+                body = (f"Dropwatch doesn't answer to the name '{name}' unless it's listed. Add it to "
+                        "DROPWATCH_HOSTS (comma-separated) and restart, or open Dropwatch by IP address or "
+                        "its local name.\n").encode()
                 await send({"type": "http.response.start", "status": 400,
                             "headers": [(b"content-type", b"text/plain; charset=utf-8"),
                                         (b"content-length", str(len(body)).encode())]})
