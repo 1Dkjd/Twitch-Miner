@@ -30,7 +30,7 @@ After changing the API: `uv run dropwatch openapi --out docs/api/openapi.json`, 
 
 ## Releasing
 
-Push a tag like `v0.2.0`. The `docker` workflow builds the image and publishes `ghcr.io/weltern/dropwatch:<version>` and `:latest`.
+Push a tag like `v0.2.0`. The `docker` workflow builds the image and publishes `ghcr.io/kernelpanic-studios/dropwatch:<version>` and `:latest`.
 
 ## Early live runs (2026-10-09)
 

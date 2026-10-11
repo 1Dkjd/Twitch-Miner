@@ -1,4 +1,4 @@
-# Publishes the image on a version tag (v0.2.0 -> ghcr.io/weltern/dropwatch:0.2.0 and :latest).
+# Publishes the image on a version tag (v0.2.0 -> ghcr.io/kernelpanic-studios/dropwatch:0.2.0 and :latest).
 # Tests run first; nothing is published if they fail.
 name: docker
 
@@ -53,9 +53,9 @@ jobs:
           push: true
           build-args: DROPWATCH_COMMIT=${{ steps.meta.outputs.commit }}
           labels: |
-            org.opencontainers.image.source=https://github.com/weltern/dropwatch
+            org.opencontainers.image.source=https://github.com/KernelPanic-Studios/dropwatch
             org.opencontainers.image.description=Earns Twitch Drops and channel points for one account, with a web dashboard.
             org.opencontainers.image.licenses=MIT
           tags: |
-            ghcr.io/weltern/dropwatch:${{ steps.meta.outputs.version }}
-            ghcr.io/weltern/dropwatch:latest
+            ghcr.io/kernelpanic-studios/dropwatch:${{ steps.meta.outputs.version }}
+            ghcr.io/kernelpanic-studios/dropwatch:latest
