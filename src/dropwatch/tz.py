@@ -9,5 +9,5 @@ def zone_or_none(name: str) -> ZoneInfo | None:
         return None
     try:
         return ZoneInfo(name)
-    except (ZoneInfoNotFoundError, ValueError):
+    except (ZoneInfoNotFoundError, ValueError, OSError):  # OSError: a region such as "Europe" is a folder
         return None

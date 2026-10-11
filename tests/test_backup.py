@@ -96,3 +96,12 @@ async def test_backup_and_restore_need_the_page_password(tmp_path):
     async with client(app) as c:
         assert (await c.get("/api/backup")).status_code == 401
         assert (await c.post("/api/restore", json={})).status_code == 401
+
+
+async def test_restore_takes_only_a_json_body(tmp_path):
+    # review fix: a text/plain POST needs no CORS preflight, so a sibling app on the same host could send one
+    _, ctx, c = await seeded(tmp_path)
+    backup = (await c.get("/api/backup")).json()
+    import json
+    r = await c.post("/api/restore", content=json.dumps(backup), headers={"Content-Type": "text/plain"})
+    assert r.status_code == 415

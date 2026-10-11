@@ -127,12 +127,11 @@ ACTIVITY_FIELDS = {
     "points_claim_failed": ("channel",),
     "notified": ("title", "sent", "failed"),
 }
-ACTIVITY_LIMIT = 1000
 
 
 @api.get("/activity", response_model=ActivityOut)
 async def get_activity(request: Request) -> ActivityOut:
-    rows = _c(request).store.recent_events(ACTIVITY_LIMIT)
+    rows = _c(request).store.recent_events(None)  # the whole kept week: the page says "Kept for 7 days"
     return ActivityOut(kept_days=EVENT_RETENTION.days, events=[
         ActivityEvent(at=at, kind=kind, data={k: data[k] for k in ACTIVITY_FIELDS[kind] if k in data})
         for kind, at, data in rows if kind in ACTIVITY_FIELDS])
@@ -150,8 +149,12 @@ async def get_backup(request: Request, secrets: bool = False) -> JSONResponse:
 
 @api.post("/restore", response_model=RestoreOut)
 async def post_restore(request: Request) -> RestoreOut:
-    """Replaces lists, pins, settings and notification channels with a backup's (all or nothing)."""
+    """Replaces lists, pins, settings and notification channels with a backup's. The whole file is checked
+    before anything is written."""
     ctx = _c(request)
+    # JSON only: a text/plain POST needs no CORS preflight, so another web app on this host could send one
+    if request.headers.get("content-type", "").split(";")[0].strip().lower() != "application/json":
+        raise HTTPException(415, "Send the backup as application/json.")
     try:
         data = await request.json()
     except ValueError as e:

@@ -98,11 +98,11 @@ export function ActivityView() {
   });
   const rows: ReactNode[] = [];
   let lastDay = "";
-  for (const { e, line } of lines) {
+  for (const [i, { e, line }] of lines.entries()) {
     const label = day(e.at);
     if (label !== lastDay) { rows.push(<div className="day" key={`d-${label}`}>{label}</div>); lastDay = label; }
     rows.push(
-      <div className="act" key={`${e.at}-${e.kind}`}>
+      <div className="act" key={`${i}-${e.at}-${e.kind}`}>
         <span className="t">{clock(e.at)}</span><span className={`adot ${line.tone}`} aria-hidden="true" />
         <div><div className="s">{line.text}</div>{line.d && <div className="d">{line.d}</div>}</div>
       </div>,

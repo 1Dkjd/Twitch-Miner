@@ -434,7 +434,8 @@ class Runner:
         return {"campaign": c.name if c else None, "game": c.game.name if c else None,
                 "reason": choice.reason if choice else None,
                 "channel_reason": choice.channel_reason if choice else None,
-                "from_live": any(ch.login == previous for ch in self.live)}
+                # the directory lists a stream for minutes after it ends: an excluded channel is gone
+                "from_live": previous not in self._excluded and any(ch.login == previous for ch in self.live)}
 
     def _points_on(self) -> bool:
         """Settings' "Also claim channel points" (claim_points; on by default)."""

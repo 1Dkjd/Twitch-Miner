@@ -339,7 +339,8 @@ export interface paths {
         put?: never;
         /**
          * Post Restore
-         * @description Replaces lists, pins, settings and notification channels with a backup's (all or nothing).
+         * @description Replaces lists, pins, settings and notification channels with a backup's. The whole file is checked
+         *     before anything is written.
          */
         post: operations["post_restore_api_restore_post"];
         delete?: never;

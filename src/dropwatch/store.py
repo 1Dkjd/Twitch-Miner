@@ -160,9 +160,11 @@ class Store:
                 "DELETE FROM events WHERE at < ?", ((now - EVENT_RETENTION).isoformat(),)
             )
 
-    def recent_events(self, limit: int = 100) -> list[tuple[str, str, dict]]:
+    def recent_events(self, limit: int | None = 100) -> list[tuple[str, str, dict]]:
+        """(kind, at, data), newest first; limit None = everything kept (EVENT_RETENTION bounds it)."""
         rows = self._db.execute(
-            "SELECT at, kind, data FROM events ORDER BY at DESC LIMIT ?", (limit,)
+            "SELECT at, kind, data FROM events ORDER BY at DESC, rowid DESC LIMIT ?",
+            (-1 if limit is None else limit,),
         )
         return [(kind, at, json.loads(data)) for at, kind, data in rows]
 

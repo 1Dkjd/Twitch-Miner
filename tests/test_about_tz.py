@@ -39,7 +39,7 @@ async def test_api_accepts_real_zones_and_refuses_others(tmp_path):
         r = await c.put("/api/settings", json={"notify_weekly_tz": "Europe/London"})
         assert r.status_code == 200 and r.json()["notify_weekly_tz"] == "Europe/London"
         assert (await c.put("/api/settings", json={"notify_weekly_tz": ""})).json()["notify_weekly_tz"] == ""
-        for bad in ("Mars/Olympus_Mons", "../../etc/passwd", "x" * 80):
+        for bad in ("Mars/Olympus_Mons", "../../etc/passwd", "x" * 80, "Europe", "America"):
             assert (await c.put("/api/settings", json={"notify_weekly_tz": bad})).status_code == 422, bad
     assert ctx.store.get_settings()["notify_weekly_tz"] == ""
 

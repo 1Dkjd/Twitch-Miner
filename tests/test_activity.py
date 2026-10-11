@@ -79,3 +79,24 @@ async def test_activity_lists_known_events_newest_first_with_only_their_known_fi
     assert r["kept_days"] == 7
     async with client(app) as anon:
         assert (await anon.get("/api/activity")).status_code == 401
+
+
+async def test_a_stream_that_ended_but_is_still_listed_counts_as_offline(tmp_path):
+    # review fix: Twitch's directory lists a stream for minutes after it ends (runner.handle StreamDown)
+    st = Store(tmp_path / "d.db")
+    c = FakeClient([camp()], [chan("a", 7), chan("b", 8)])
+    r = Runner(c, FakeWatcher(), FakePubSub(), st, user_id=42)
+    await r.refresh()
+    first = r.watching.login
+    await r.handle(StreamDown(r.watching.id))  # still in c.live
+    (sw,) = events(st, "switched")
+    assert sw["from"] == first and sw["from_live"] is False
+
+
+async def test_activity_shows_the_whole_week_however_busy(tmp_path):
+    # review fix: a 1000-row cap cut a busy week short while the page said "Kept for 7 days"
+    app, ctx = make_app(tmp_path)
+    for i in range(1200):
+        ctx.store.log_event("points_claimed", {"channel": f"c{i}"})
+    c = await logged_in(app)
+    assert len((await c.get("/api/activity")).json()["events"]) == 1200
