@@ -22,6 +22,10 @@ class PointsClient(FakeClient):
         self.context_calls.append(login)
         return self.waiting
 
+    async def waiting_points_claims(self, logins):  # the batched check the runner uses since 2026-10-11
+        self.context_calls.extend(logins)
+        return [(logins[0], *self.waiting)] if self.waiting and logins else []
+
 
 def make(tmp_path, on=True, waiting=None):
     st = Store(tmp_path / "d.db")

@@ -106,6 +106,19 @@ class TwitchClient:
         claim = (((ch.get("self") or {}).get("communityPoints") or {}).get("availableClaim") or {})
         return (int(ch["id"]), claim["id"]) if claim.get("id") and ch.get("id") else None
 
+    async def waiting_points_claims(self, logins: list[str]) -> list[tuple[str, int, str]]:
+        """(login, channel id, claim id) for each of these channels with a bonus chest waiting; one batch."""
+        if not logins:
+            return []
+        out = []
+        for lg, resp in zip(logins, await self._gql.run_many(
+                [op("ChannelPointsContext", channelLogin=lg) for lg in logins]), strict=True):
+            ch = ((resp.get("data") or {}).get("community") or {}).get("channel") or {}
+            claim = (((ch.get("self") or {}).get("communityPoints") or {}).get("availableClaim") or {})
+            if claim.get("id") and ch.get("id"):
+                out.append((lg, int(ch["id"]), claim["id"]))
+        return out
+
     async def claim_points(self, channel_id: int, claim_id: str) -> bool:
         try:
             resp = await self._gql.run(op("ClaimCommunityPoints",

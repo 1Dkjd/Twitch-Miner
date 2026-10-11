@@ -47,6 +47,8 @@ STALL_TICKS = 18  # ticks are PLAY_INTERVAL (10 s) apart: resync after ~3 min of
 EXCLUDE_FOR = timedelta(minutes=10)
 REFRESH_EVERY = timedelta(minutes=5)
 CAMPAIGNS_EVERY = timedelta(hours=1)  # default; Settings' campaigns_every_minutes overrides it
+CHEST_LOOKBACK = timedelta(days=7)  # channels watched this recently are checked for a waiting chest
+RECENT_CHEST_CHANNELS = 30  # at most this many of them per refresh (one or two batched requests)
 CLAIM_WAIT = timedelta(hours=1)  # force campaign re-fetches this long; the hourly fetch covers the rest
 BACKOFF_START, BACKOFF_MAX = 60.0, 600.0
 # spec §4 (2026-10-10): an unknown account link that earns nothing for 10 minutes of good playback
@@ -465,28 +467,50 @@ class Runner:
         get = getattr(self._store, "get_settings", None)
         return bool(get and get().get("claim_points"))
 
-    async def _claim_points(self, channel_id: int, claim_id: str) -> None:
+    async def _claim_points(self, channel_id: int, claim_id: str, login: str | None = None) -> None:
         try:
             ok = await self._client.claim_points(channel_id, claim_id)
         except Exception as exc:  # noqa: BLE001 - points are a bonus: never let them break mining
             log.info("Points claim raised %s", type(exc).__name__)
             ok = False
-        login = next((ch.login for ch in self.live if ch.id == channel_id), None)
+        login = login or next((ch.login for ch in self.live if ch.id == channel_id), None)
         self._store.log_event("points_claimed" if ok else "points_claim_failed",
                               {"channel_id": channel_id, "channel": login})
 
+    def _recent_channels(self) -> list[str]:
+        """Channels watched in the last week, newest first (from Activity's switch events), capped."""
+        recent = getattr(self._store, "recent_events", None)
+        if recent is None:
+            return []
+        since = self._clock() - CHEST_LOOKBACK
+        out: list[str] = []
+        for kind, at, data in recent(None):
+            if kind != "switched" or datetime.fromisoformat(at) < since:
+                continue
+            for lg in (data.get("to"), data.get("from")):
+                if lg and lg not in out:
+                    out.append(lg)
+            if len(out) >= RECENT_CHEST_CHANNELS:
+                break
+        return out[:RECENT_CHEST_CHANNELS]
+
     async def _claim_waiting_points(self) -> None:
-        """A chest that was already waiting when we started watching never arrives over PubSub: look once
-        per refresh on the channel being watched."""
-        if not self.watching or not self._points_on():
+        """Bonus chests stay claimable after we stop watching a channel, and one already waiting when we
+        start watching never arrives over PubSub: once per refresh, look on the channel being watched and
+        on those watched in the last week (asked for 2026-10-11), in one batch."""
+        if not self._points_on():
+            return
+        logins = [self.watching.login] if self.watching else []
+        logins += [lg for lg in self._recent_channels() if lg not in logins]
+        if not logins:
             return
         try:
-            waiting = await self._client.waiting_points_claim(self.watching.login)
+            waiting = await self._client.waiting_points_claims(logins)
         except Exception as exc:  # noqa: BLE001 - points are a bonus: never let them break a refresh
             log.info("Points check raised %s", type(exc).__name__)
             return
-        if waiting:
-            await self._claim_points(*waiting)
+        for login, channel_id, claim_id in waiting:
+            await self._claim_points(channel_id, claim_id, login)
 
     async def handle(self, event: object) -> None:
         if isinstance(event, PointsClaimable):
