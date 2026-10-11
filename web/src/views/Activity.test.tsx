@@ -114,3 +114,11 @@ test("check-ins read as clicked or automatic, with what they found", () => {
   expect(auto?.text).toBe("Checked Twitch for campaign changes");
   expect(auto?.d).toBe("143 campaigns · took 0.9 s");
 });
+
+test("watch-streak visits and streak points have their own lines", () => {
+  const visit = describe(ev("2026-10-11T06:00:00Z", "switched", { from: "a", to: "favchan", reason: "watch streak", game: "Just Chatting", from_live: true }), undefined);
+  expect(visit?.d).toBe("Watch-streak visit to a favourite · Just Chatting");
+  const earned = describe(ev("2026-10-11T06:04:00Z", "points_earned", { channel: "favchan", reason: "WATCH_STREAK", points: 350 }), undefined);
+  expect(earned?.text).toBe("Earned 350 watch-streak points on favchan");
+  expect(earned?.group).toBe("rewards");
+});

@@ -881,6 +881,8 @@ export interface components {
             notify_weekly_hour?: number | null;
             /** Notify Weekly Tz */
             notify_weekly_tz?: string | null;
+            /** Points Watch Streak */
+            points_watch_streak?: boolean | null;
         };
         /** SettingsOut */
         SettingsOut: {
@@ -918,6 +920,8 @@ export interface components {
             notify_weekly_hour: number;
             /** Notify Weekly Tz */
             notify_weekly_tz: string;
+            /** Points Watch Streak */
+            points_watch_streak: boolean;
         };
         /** SignInStatus */
         SignInStatus: {

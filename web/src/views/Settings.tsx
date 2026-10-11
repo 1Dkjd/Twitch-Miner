@@ -71,6 +71,13 @@ export function SettingsView() {
             onChange={(e) => void put({ claim_points: e.target.checked })} />
         </div>
         <div className="opt">
+          <div><label htmlFor="m-streak">Collect watch-streak bonuses on favourite channels</label>
+            <div className="d">When a favourite starts a new stream, Dropwatch watches it for about 7 minutes first. Drops wait meanwhile.</div></div>
+          <input type="checkbox" className="sw" id="m-streak" disabled={!settings || !settings.claim_points}
+            checked={!!settings?.points_watch_streak && !!settings?.claim_points}
+            onChange={(e) => void put({ points_watch_streak: e.target.checked })} />
+        </div>
+        <div className="opt">
           <div><label htmlFor="m-every">Check Twitch for campaign changes</label>
             <div className="d">How often Dropwatch re-reads the campaign list, so new campaigns and accounts you've just linked can take this long (plus a few minutes) to show up. Check Twitch at the top checks now.</div></div>
           <select id="m-every" className="inline-sel" disabled={!settings} value={settings?.campaigns_every_minutes ?? 60}

@@ -1233,6 +1233,17 @@
        }
       ],
       "title": "Notify Weekly Tz"
+     },
+     "points_watch_streak": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Points Watch Streak"
      }
     },
     "title": "SettingsIn",
@@ -1307,6 +1318,10 @@
      "notify_weekly_tz": {
       "title": "Notify Weekly Tz",
       "type": "string"
+     },
+     "points_watch_streak": {
+      "title": "Points Watch Streak",
+      "type": "boolean"
      }
     },
     "required": [
@@ -1326,7 +1341,8 @@
      "notify_weekly_day",
      "notify_weekly_hour",
      "notify_weekly_tz",
-     "campaigns_every_minutes"
+     "campaigns_every_minutes",
+     "points_watch_streak"
     ],
     "title": "SettingsOut",
     "type": "object"

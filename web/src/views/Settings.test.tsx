@@ -113,3 +113,11 @@ test("how often campaigns are re-read is chosen in Mining and saves straight awa
   await userEvent.selectOptions(sel, "15");
   await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ campaigns_every_minutes: 15 }));
 });
+
+test("the watch-streak switch saves straight away", async () => {
+  const calls = setup({ "GET /api/settings": { ...SETTINGS, points_watch_streak: true }, "PUT /api/settings": { ...SETTINGS, points_watch_streak: false } });
+  const sw = await screen.findByRole("checkbox", { name: "Collect watch-streak bonuses on favourite channels" });
+  await waitFor(() => expect(sw).toBeEnabled());
+  await userEvent.click(sw);
+  await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ points_watch_streak: false }));
+});

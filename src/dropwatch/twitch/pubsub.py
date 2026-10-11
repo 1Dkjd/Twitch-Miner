@@ -56,6 +56,14 @@ class PointsClaimable:
     claim_id: str
 
 
+@dataclass(frozen=True)
+class PointsEarned:
+    """Channel points arrived: WATCH (every 5 min), CLAIM (a chest), WATCH_STREAK, RAID, ..."""
+    channel_id: int
+    reason: str
+    points: int
+
+
 def topic(key: str, target_id: int) -> str:
     return f"{TOPICS[key]}.{target_id}"
 
@@ -79,6 +87,10 @@ def parse_message(topic_name: str, message: dict) -> object | None:
             return Viewers(cid, message.get("viewers", 0))
     elif prefix == TOPICS["stream_update"]:
         return StreamChanged(int(target))
+    elif prefix == TOPICS["user_points"] and kind == "points-earned":
+        gain = data.get("point_gain") or {}
+        return PointsEarned(int(gain.get("channel_id") or data.get("channel_id") or 0),
+                            str(gain.get("reason_code", "")), int(gain.get("total_points") or 0))
     elif prefix == TOPICS["user_points"] and kind == "claim-available":
         claim = data.get("claim") or {}
         return PointsClaimable(int(claim.get("channel_id", 0)), claim.get("id", ""))

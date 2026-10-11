@@ -129,6 +129,7 @@ class SettingsIn(BaseModel):
     notify_weekly_hour: StrictInt | None = Field(default=None, ge=0, le=23)
     notify_weekly_tz: Annotated[StrictStr, Field(max_length=64), AfterValidator(_zone)] | None = None
     campaigns_every_minutes: Literal[15, 30, 60, 120, 240] | None = None  # the choices Settings offers
+    points_watch_streak: StrictBool | None = None
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -150,6 +151,7 @@ class SettingsOut(BaseModel):
     notify_weekly_hour: int
     notify_weekly_tz: str
     campaigns_every_minutes: int
+    points_watch_streak: bool
 
 
 class ActivityEvent(BaseModel):
