@@ -1,7 +1,7 @@
 [project]
 name = "dropwatch"
 version = "0.1.0"
-description = "Headless Twitch drops miner (private)"
+description = "Earns Twitch Drops and channel points for one account, with a web dashboard"
 requires-python = ">=3.12"
 dependencies = [
   "aiohttp>=3.10",
