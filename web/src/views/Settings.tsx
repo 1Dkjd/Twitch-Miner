@@ -60,6 +60,12 @@ export function SettingsView() {
           <input type="checkbox" className="sw" id="m-badges" disabled={!settings} checked={!!settings?.mine_badges}
             onChange={(e) => void put({ mine_badges: e.target.checked })} />
         </div>
+        <div className="opt">
+          <div><label htmlFor="m-points">Also claim channel points</label>
+            <div className="d">Opens the bonus chest on whichever channel is being watched.</div></div>
+          <input type="checkbox" className="sw" id="m-points" disabled={!settings} checked={!!settings?.claim_points}
+            onChange={(e) => void put({ claim_points: e.target.checked })} />
+        </div>
       </Set>
       <Set title="This page">
         <div className="opt"><div>Theme</div>

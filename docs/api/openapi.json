@@ -26,6 +26,11 @@
       "title": "Ends At",
       "type": "string"
      },
+     "ends_before_turn": {
+      "default": false,
+      "title": "Ends Before Turn",
+      "type": "boolean"
+     },
      "game": {
       "title": "Game",
       "type": "string"
@@ -61,6 +66,11 @@
      "name": {
       "title": "Name",
       "type": "string"
+     },
+     "pinned": {
+      "default": false,
+      "title": "Pinned",
+      "type": "boolean"
      },
      "verdict": {
       "anyOf": [
@@ -408,6 +418,14 @@
       "title": "Claims",
       "type": "array"
      },
+     "missed": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/MissedOut"
+      },
+      "title": "Missed",
+      "type": "array"
+     },
      "total_rewards": {
       "title": "Total Rewards",
       "type": "integer"
@@ -513,6 +531,111 @@
      "campaign_id"
     ],
     "title": "MineNowIn",
+    "type": "object"
+   },
+   "MissedOut": {
+    "properties": {
+     "box_art_url": {
+      "title": "Box Art Url",
+      "type": "string"
+     },
+     "campaign_id": {
+      "title": "Campaign Id",
+      "type": "string"
+     },
+     "ends_at": {
+      "format": "date-time",
+      "title": "Ends At",
+      "type": "string"
+     },
+     "game": {
+      "title": "Game",
+      "type": "string"
+     },
+     "link_url": {
+      "title": "Link Url",
+      "type": "string"
+     },
+     "minutes_watched": {
+      "title": "Minutes Watched",
+      "type": "integer"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "pinned": {
+      "title": "Pinned",
+      "type": "boolean"
+     },
+     "priority": {
+      "title": "Priority",
+      "type": "boolean"
+     },
+     "reason": {
+      "title": "Reason",
+      "type": "string"
+     },
+     "rewards": {
+      "items": {
+       "$ref": "#/components/schemas/MissedReward"
+      },
+      "title": "Rewards",
+      "type": "array"
+     },
+     "rewards_claimed": {
+      "title": "Rewards Claimed",
+      "type": "integer"
+     },
+     "rewards_total": {
+      "title": "Rewards Total",
+      "type": "integer"
+     },
+     "started": {
+      "title": "Started",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "campaign_id",
+     "name",
+     "game",
+     "box_art_url",
+     "link_url",
+     "ends_at",
+     "reason",
+     "rewards",
+     "rewards_total",
+     "rewards_claimed",
+     "minutes_watched",
+     "started",
+     "priority",
+     "pinned"
+    ],
+    "title": "MissedOut",
+    "type": "object"
+   },
+   "MissedReward": {
+    "properties": {
+     "claimed": {
+      "title": "Claimed",
+      "type": "boolean"
+     },
+     "image_url": {
+      "title": "Image Url",
+      "type": "string"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "image_url",
+     "claimed"
+    ],
+    "title": "MissedReward",
     "type": "object"
    },
    "NotifyChannelIn": {
@@ -732,6 +855,21 @@
     "title": "PauseIn",
     "type": "object"
    },
+   "Pins": {
+    "properties": {
+     "pins": {
+      "items": {
+       "maxLength": 100,
+       "type": "string"
+      },
+      "maxItems": 200,
+      "title": "Pins",
+      "type": "array"
+     }
+    },
+    "title": "Pins",
+    "type": "object"
+   },
    "RewardOut": {
     "properties": {
      "image_url": {
@@ -753,6 +891,17 @@
    "SettingsIn": {
     "additionalProperties": false,
     "properties": {
+     "arrange_up_next": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Arrange Up Next"
+     },
      "claim_points": {
       "anyOf": [
        {
@@ -785,6 +934,17 @@
        }
       ],
       "title": "Notify Claim Failed"
+     },
+     "notify_claimed": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Claimed"
      },
      "notify_needs_you": {
       "anyOf": [
@@ -866,6 +1026,43 @@
        }
       ],
       "title": "Notify Unreachable Minutes"
+     },
+     "notify_weekly": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Weekly"
+     },
+     "notify_weekly_day": {
+      "anyOf": [
+       {
+        "maximum": 6.0,
+        "minimum": 0.0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Weekly Day"
+     },
+     "notify_weekly_hour": {
+      "anyOf": [
+       {
+        "maximum": 23.0,
+        "minimum": 0.0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Weekly Hour"
      }
     },
     "title": "SettingsIn",
@@ -873,6 +1070,10 @@
    },
    "SettingsOut": {
     "properties": {
+     "arrange_up_next": {
+      "title": "Arrange Up Next",
+      "type": "boolean"
+     },
      "claim_points": {
       "title": "Claim Points",
       "type": "boolean"
@@ -883,6 +1084,10 @@
      },
      "notify_claim_failed": {
       "title": "Notify Claim Failed",
+      "type": "boolean"
+     },
+     "notify_claimed": {
+      "title": "Notify Claimed",
       "type": "boolean"
      },
      "notify_needs_you": {
@@ -912,6 +1117,18 @@
      "notify_unreachable_minutes": {
       "title": "Notify Unreachable Minutes",
       "type": "integer"
+     },
+     "notify_weekly": {
+      "title": "Notify Weekly",
+      "type": "boolean"
+     },
+     "notify_weekly_day": {
+      "title": "Notify Weekly Day",
+      "type": "integer"
+     },
+     "notify_weekly_hour": {
+      "title": "Notify Weekly Hour",
+      "type": "integer"
      }
     },
     "required": [
@@ -924,7 +1141,12 @@
      "notify_stopped",
      "notify_needs_you",
      "notify_unreachable_minutes",
-     "notify_not_earning_minutes"
+     "notify_not_earning_minutes",
+     "arrange_up_next",
+     "notify_claimed",
+     "notify_weekly",
+     "notify_weekly_day",
+     "notify_weekly_hour"
     ],
     "title": "SettingsOut",
     "type": "object"
@@ -1615,6 +1837,61 @@
      }
     },
     "summary": "Pause"
+   }
+  },
+  "/api/pins": {
+   "get": {
+    "operationId": "get_pins_api_pins_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Pins"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Pins"
+   },
+   "put": {
+    "description": "Up next \"Arrange myself\": the pinned campaigns, in order (they count while the switch is on).",
+    "operationId": "put_pins_api_pins_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Pins"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Pins"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Put Pins"
    }
   },
   "/api/refresh": {

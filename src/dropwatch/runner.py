@@ -18,11 +18,27 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
-from .models import Campaign, LiveChannel, claimable, with_drop
-from .planner import Plan, plan
+from .models import (
+    CLAIM_GRACE,
+    Campaign,
+    LiveChannel,
+    campaign_active,
+    campaign_minutes_needed,
+    claimable,
+    with_drop,
+)
+from .planner import Plan, plan, qualifies
 from .twitch.constants import PLAY_INTERVAL
 from .twitch.gql import AuthExpired, GqlError
-from .twitch.pubsub import DropClaimable, DropProgress, StreamChanged, StreamDown, StreamUp, topic
+from .twitch.pubsub import (
+    DropClaimable,
+    DropProgress,
+    PointsClaimable,
+    StreamChanged,
+    StreamDown,
+    StreamUp,
+    topic,
+)
 
 log = logging.getLogger("dropwatch.runner")
 FAILS_BEFORE_SWITCH = 9  # ticks are 10 s apart: ~90 s of failed playback before excluding
@@ -157,7 +173,61 @@ class Runner:
             return
         self.last_refresh = now
         self._refresh_backoff, self._retry_refresh_at = 0.0, None
+        self._bookkeeping(now, prefs)
         self._plan(now, prefs)
+        await self._claim_waiting_points()
+
+    def _bookkeeping(self, now: datetime, prefs) -> None:
+        """History's campaign log and pin pruning: a failure is logged, never a reason to stop planning."""
+        for step in (self._forget_ended_pins, lambda n: self._log_campaigns(n, prefs)):
+            try:
+                step(now)
+            except Exception as exc:  # noqa: BLE001 - bookkeeping must never stop mining
+                log.warning("History bookkeeping failed: %s: %s", type(exc).__name__, exc)
+
+    def _log_campaigns(self, now: datetime, prefs) -> None:
+        """Keep History's "Missed" able to say why: the latest view of every active campaign."""
+        log = getattr(self._store, "log_campaigns", None)
+        if log is None:
+            return
+        rows = []
+        for c in self.campaigns:
+            if not campaign_active(c, now):
+                if c.ends_at <= now < c.ends_at + CLAIM_GRACE and hasattr(self._store, "update_log_rewards"):
+                    self._store.update_log_rewards(c.id, [{"name": r.name, "image_url": r.image_url,
+                                                           "claimed": d.claimed}
+                                                          for d in c.drops for r in d.rewards])
+                continue
+            left = (c.ends_at - now).total_seconds() / 60
+            rows.append({
+                "id": c.id, "name": c.name, "game": c.game.name, "box_art_url": c.game.box_art_url,
+                "link_url": c.link_url, "ends_at": c.ends_at, "linked": c.linked,
+                "badge": c.has_badge_or_emote,
+                "rewards": [{"name": r.name, "image_url": r.image_url, "claimed": d.claimed}
+                            for d in c.drops for r in d.rewards],
+                "impossible": campaign_minutes_needed(c, now) > left,
+                "never": c.game.name in prefs.never, "priority": c.game.name in prefs.priority,
+                "pinned": c.id in prefs.pins, "live": any(qualifies(c, ch) for ch in self.live),
+                "watched": max((d.current_minutes for d in c.drops), default=0),
+            })
+        log(now, rows)
+
+    def _forget_ended_pins(self, now: datetime) -> None:
+        """A pin lasts as long as its campaign: drop it once the campaign is known to have ended (listed and
+        past its end, or logged as ended). A pin whose campaign is just missing from a short list stays."""
+        get = getattr(self._store, "get_pins", None)
+        if get is None:
+            return
+        pins = get()
+        listed = {c.id: c for c in self.campaigns}
+        ended_in_log = getattr(self._store, "ended_campaign_ids", lambda ids, at: set())(pins, now)
+
+        def ended(cid: str) -> bool:
+            c = listed.get(cid)
+            return c.ends_at <= now if c is not None else cid in ended_in_log
+
+        if (kept := [p for p in pins if not ended(p)]) != pins:
+            self._store.set_pins(kept)
 
     async def replan(self) -> None:
         """Re-decide from what is already known (lists or an override changed): no Twitch calls."""
@@ -190,6 +260,8 @@ class Runner:
             for cid in (cur.campaign_id, *self.plan.also_credited):
                 self._mined_on[cid] = self.watching.login
         topics = {topic("user_drops", self._user_id), topic("user_notifications", self._user_id)}
+        if self._points_on():
+            topics.add(topic("user_points", self._user_id))
         if self.watching:
             topics |= {topic("stream_state", self.watching.id), topic("stream_update", self.watching.id)}
         self._pubsub.set_topics(topics)
@@ -279,7 +351,9 @@ class Runner:
         if ok:
             self._claimed.add(claim_id)
             info = {"campaign": c.name, "reward": ", ".join(r.name for r in d.rewards) if d else drop_id}
-            self._emit("claimed", info)
+            # game, watch time and channel only for the "a reward is claimed" push
+            self._emit("claimed", {**info, "game": c.game.name, "minutes": d.required_minutes if d else None,
+                                   "channel": self._mined_on.get(c.id)})
             self._store.log_event("claimed", info)
             if hasattr(self._store, "add_claim"):
                 self._store.add_claim(self._clock(), c.id, c.name, c.game.name,
@@ -349,7 +423,37 @@ class Runner:
         elapsed = (self._clock() - started).total_seconds()
         return max(0.0, PLAY_INTERVAL - elapsed)  # keep a steady 10 s period like the reference
 
+    def _points_on(self) -> bool:
+        """Settings' "Also claim channel points" (claim_points; on by default)."""
+        get = getattr(self._store, "get_settings", None)
+        return bool(get and get().get("claim_points"))
+
+    async def _claim_points(self, channel_id: int, claim_id: str) -> None:
+        try:
+            ok = await self._client.claim_points(channel_id, claim_id)
+        except Exception as exc:  # noqa: BLE001 - points are a bonus: never let them break mining
+            log.info("Points claim raised %s", type(exc).__name__)
+            ok = False
+        self._store.log_event("points_claimed" if ok else "points_claim_failed", {"channel_id": channel_id})
+
+    async def _claim_waiting_points(self) -> None:
+        """A chest that was already waiting when we started watching never arrives over PubSub: look once
+        per refresh on the channel being watched."""
+        if not self.watching or not self._points_on():
+            return
+        try:
+            waiting = await self._client.waiting_points_claim(self.watching.login)
+        except Exception as exc:  # noqa: BLE001 - points are a bonus: never let them break a refresh
+            log.info("Points check raised %s", type(exc).__name__)
+            return
+        if waiting:
+            await self._claim_points(*waiting)
+
     async def handle(self, event: object) -> None:
+        if isinstance(event, PointsClaimable):
+            if self._points_on() and event.channel_id and event.claim_id:
+                await self._claim_points(event.channel_id, event.claim_id)
+            return
         if isinstance(event, DropProgress):
             self._ticks_since_progress = 0
             for i, c in enumerate(self.campaigns):

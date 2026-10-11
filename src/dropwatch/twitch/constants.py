@@ -55,6 +55,11 @@ GQL_OPS: dict[str, tuple[str, str, dict]] = {
     "ClaimCommunityPoints": ("ClaimCommunityPoints",
                              "46aaeebe02c99afdf4fc97c7c0cba964124bf6b0af229395f1f6d1feed05b3d0",
                              {"input": {"claimID": None, "channelID": None}}),
+    # a channel's points state for the signed-in user: balance and any bonus chest waiting (reference
+    # journeydocker constants.py; answered for the TV session, probed 2026-10-10)
+    "ChannelPointsContext": ("ChannelPointsContext",
+                             "374314de591e69925fce3ddc2bcf085796f56ebb8cad67a0daa3165c03adc345",
+                             {"channelLogin": None}),
     "ClaimDrop": ("DropsPage_ClaimDropRewards",
                   "a455deea71bdc9015b78eb49f4acfbce8baa7ccbedd28e549bb025bd0f751930",
                   {"input": {"dropInstanceID": None}}),

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 
@@ -35,6 +36,9 @@ class CampaignOut(BaseModel):
     minutes_needed: int
     verdict: str | None
     drops: list[DropOut]
+    pinned: bool = False  # Up next "Arrange myself"
+    # Up next only: at the queue's order, mined back to back, it would end before its turn (an estimate)
+    ends_before_turn: bool = False
 
 
 class ChannelOut(BaseModel):
@@ -86,6 +90,10 @@ class ListsIn(BaseModel):
     favourites: list[str] = Field(default_factory=list, max_length=200)
 
 
+class Pins(BaseModel):
+    pins: list[Annotated[str, Field(max_length=100)]] = Field(default_factory=list, max_length=200)
+
+
 class ListsOut(BaseModel):
     priority: list[str]
     never: list[str]
@@ -104,6 +112,11 @@ class SettingsIn(BaseModel):
     notify_needs_you: StrictBool | None = None
     notify_unreachable_minutes: StrictInt | None = Field(default=None, ge=5, le=240)
     notify_not_earning_minutes: StrictInt | None = Field(default=None, ge=10, le=240)
+    arrange_up_next: StrictBool | None = None
+    notify_claimed: StrictBool | None = None
+    notify_weekly: StrictBool | None = None
+    notify_weekly_day: StrictInt | None = Field(default=None, ge=0, le=6)  # 0 = Monday
+    notify_weekly_hour: StrictInt | None = Field(default=None, ge=0, le=23)
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -118,6 +131,11 @@ class SettingsOut(BaseModel):
     notify_needs_you: bool
     notify_unreachable_minutes: int
     notify_not_earning_minutes: int
+    arrange_up_next: bool
+    notify_claimed: bool
+    notify_weekly: bool
+    notify_weekly_day: int
+    notify_weekly_hour: int
 
 
 class NotifyFieldOut(BaseModel):
@@ -194,9 +212,34 @@ class ClaimOut(BaseModel):
     box_art_url: str | None = None  # saved with the claim: History keeps it after the campaign ends
 
 
+class MissedReward(BaseModel):
+    name: str
+    image_url: str
+    claimed: bool
+
+
+class MissedOut(BaseModel):
+    campaign_id: str
+    name: str
+    game: str
+    box_art_url: str
+    link_url: str
+    ends_at: datetime
+    # never_list | dropwatch_off | not_linked | ran_out_of_time | no_live_channels | outranked
+    reason: str
+    rewards: list[MissedReward]
+    rewards_total: int
+    rewards_claimed: int
+    minutes_watched: int
+    started: bool  # earned any minutes: shown as a full row; the rest fold away with the Never ones
+    priority: bool
+    pinned: bool
+
+
 class HistoryOut(BaseModel):
     total_rewards: int
     claims: list[ClaimOut]  # newest first; the page groups by the viewer's local day
+    missed: list[MissedOut] = []  # campaigns that ended in the period with rewards left, newest first
 
 
 class SignInStatus(BaseModel):

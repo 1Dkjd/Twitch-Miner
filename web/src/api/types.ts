@@ -233,6 +233,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/pins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Pins */
+        get: operations["get_pins_api_pins_get"];
+        /**
+         * Put Pins
+         * @description Up next "Arrange myself": the pinned campaigns, in order (they count while the switch is on).
+         */
+        put: operations["put_pins_api_pins_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/refresh": {
         parameters: {
             query?: never;
@@ -392,6 +413,11 @@ export interface components {
              * Format: date-time
              */
             ends_at: string;
+            /**
+             * Ends Before Turn
+             * @default false
+             */
+            ends_before_turn: boolean;
             /** Game */
             game: string;
             /** Id */
@@ -409,6 +435,11 @@ export interface components {
             minutes_needed: number;
             /** Name */
             name: string;
+            /**
+             * Pinned
+             * @default false
+             */
+            pinned: boolean;
             /** Verdict */
             verdict: string | null;
         };
@@ -520,6 +551,11 @@ export interface components {
         HistoryOut: {
             /** Claims */
             claims: components["schemas"]["ClaimOut"][];
+            /**
+             * Missed
+             * @default []
+             */
+            missed: components["schemas"]["MissedOut"][];
             /** Total Rewards */
             total_rewards: number;
         };
@@ -552,6 +588,49 @@ export interface components {
         MineNowIn: {
             /** Campaign Id */
             campaign_id: string;
+        };
+        /** MissedOut */
+        MissedOut: {
+            /** Box Art Url */
+            box_art_url: string;
+            /** Campaign Id */
+            campaign_id: string;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /** Game */
+            game: string;
+            /** Link Url */
+            link_url: string;
+            /** Minutes Watched */
+            minutes_watched: number;
+            /** Name */
+            name: string;
+            /** Pinned */
+            pinned: boolean;
+            /** Priority */
+            priority: boolean;
+            /** Reason */
+            reason: string;
+            /** Rewards */
+            rewards: components["schemas"]["MissedReward"][];
+            /** Rewards Claimed */
+            rewards_claimed: number;
+            /** Rewards Total */
+            rewards_total: number;
+            /** Started */
+            started: boolean;
+        };
+        /** MissedReward */
+        MissedReward: {
+            /** Claimed */
+            claimed: boolean;
+            /** Image Url */
+            image_url: string;
+            /** Name */
+            name: string;
         };
         /** NotifyChannelIn */
         NotifyChannelIn: {
@@ -632,6 +711,11 @@ export interface components {
             /** Minutes */
             minutes?: number | null;
         };
+        /** Pins */
+        Pins: {
+            /** Pins */
+            pins?: string[];
+        };
         /** RewardOut */
         RewardOut: {
             /** Image Url */
@@ -641,12 +725,16 @@ export interface components {
         };
         /** SettingsIn */
         SettingsIn: {
+            /** Arrange Up Next */
+            arrange_up_next?: boolean | null;
             /** Claim Points */
             claim_points?: boolean | null;
             /** Mine Badges */
             mine_badges?: boolean | null;
             /** Notify Claim Failed */
             notify_claim_failed?: boolean | null;
+            /** Notify Claimed */
+            notify_claimed?: boolean | null;
             /** Notify Needs You */
             notify_needs_you?: boolean | null;
             /** Notify Not Earning */
@@ -661,15 +749,25 @@ export interface components {
             notify_unreachable?: boolean | null;
             /** Notify Unreachable Minutes */
             notify_unreachable_minutes?: number | null;
+            /** Notify Weekly */
+            notify_weekly?: boolean | null;
+            /** Notify Weekly Day */
+            notify_weekly_day?: number | null;
+            /** Notify Weekly Hour */
+            notify_weekly_hour?: number | null;
         };
         /** SettingsOut */
         SettingsOut: {
+            /** Arrange Up Next */
+            arrange_up_next: boolean;
             /** Claim Points */
             claim_points: boolean;
             /** Mine Badges */
             mine_badges: boolean;
             /** Notify Claim Failed */
             notify_claim_failed: boolean;
+            /** Notify Claimed */
+            notify_claimed: boolean;
             /** Notify Needs You */
             notify_needs_you: boolean;
             /** Notify Not Earning */
@@ -684,6 +782,12 @@ export interface components {
             notify_unreachable: boolean;
             /** Notify Unreachable Minutes */
             notify_unreachable_minutes: number;
+            /** Notify Weekly */
+            notify_weekly: boolean;
+            /** Notify Weekly Day */
+            notify_weekly_day: number;
+            /** Notify Weekly Hour */
+            notify_weekly_hour: number;
         };
         /** SignInStatus */
         SignInStatus: {
@@ -1153,6 +1257,59 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_pins_api_pins_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pins"];
+                };
+            };
+        };
+    };
+    put_pins_api_pins_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Pins"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pins"];
+                };
             };
             /** @description Validation Error */
             422: {

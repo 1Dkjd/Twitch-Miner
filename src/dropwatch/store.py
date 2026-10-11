@@ -9,6 +9,7 @@ import json
 import os
 import secrets
 import sqlite3
+from collections import Counter
 from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -33,7 +34,15 @@ CREATE TABLE IF NOT EXISTS claims (at TEXT NOT NULL, campaign_id TEXT NOT NULL, 
 CREATE TABLE IF NOT EXISTS web_sessions (token_hash TEXT PRIMARY KEY, expires_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS seen_channels (login TEXT PRIMARY KEY, game TEXT NOT NULL,
   last_seen TEXT NOT NULL);
+-- History "Missed" (2026-10-10): the last thing Dropwatch knew about each campaign, kept after it ends
+CREATE TABLE IF NOT EXISTS campaign_log (id TEXT PRIMARY KEY, name TEXT NOT NULL, game TEXT NOT NULL,
+  box_art_url TEXT NOT NULL, link_url TEXT NOT NULL, ends_at TEXT NOT NULL, rewards TEXT NOT NULL,
+  first_seen TEXT NOT NULL, impossible_at_first INTEGER NOT NULL, last_seen TEXT NOT NULL,
+  linked INTEGER, badge INTEGER NOT NULL, never INTEGER NOT NULL, priority INTEGER NOT NULL,
+  pinned INTEGER NOT NULL, live INTEGER NOT NULL, watched INTEGER NOT NULL);
 """
+CAMPAIGN_LOG_KEEP = timedelta(days=400)  # History's longest period is a year
+MISSED_OFF_AFTER = timedelta(hours=1)  # no look in the last hour before it ended: Dropwatch was off
 CLAIM_DETAIL_COLUMNS = (("minutes", "INTEGER"), ("channel", "TEXT"), ("campaign_rewards", "INTEGER"),
                         ("campaign_ends", "TEXT"), ("box_art_url", "TEXT"))
 EVENT_RETENTION = timedelta(days=7)
@@ -47,11 +56,16 @@ SETTINGS: dict[str, type] = {
     "notify_signin": bool, "notify_unreachable": bool, "notify_not_earning": bool,
     "notify_claim_failed": bool, "notify_stopped": bool, "notify_needs_you": bool,
     "notify_unreachable_minutes": int, "notify_not_earning_minutes": int,
+    "arrange_up_next": bool,  # Up next "Arrange myself": pins count only while this is on
+    # summaries (2026-10-10), off by default: a push per claim, and a weekly summary on a day (0 = Monday)
+    "notify_claimed": bool, "notify_weekly": bool, "notify_weekly_day": int, "notify_weekly_hour": int,
 }
 SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "notify_signin": True, "notify_unreachable": True, "notify_not_earning": True,
                     "notify_claim_failed": True, "notify_stopped": True, "notify_needs_you": False,
-                    "notify_unreachable_minutes": 15, "notify_not_earning_minutes": 30}
+                    "notify_unreachable_minutes": 15, "notify_not_earning_minutes": 30,
+                    "arrange_up_next": False, "notify_claimed": False, "notify_weekly": False,
+                    "notify_weekly_day": 6, "notify_weekly_hour": 18}
 _ph = PasswordHasher()
 
 
@@ -100,7 +114,15 @@ class Store:
         fv = tuple(
             r[0] for r in self._db.execute("SELECT channel_login FROM favourites ORDER BY position")
         )
-        return Prefs(pr, nv, fv, self.get_settings()["mine_badges"])
+        s = self.get_settings()
+        return Prefs(pr, nv, fv, s["mine_badges"], tuple(self.get_pins()) if s["arrange_up_next"] else ())
+
+    # --- Up next pins (campaign ids, in order); kept while "Arrange myself" is off
+    def get_pins(self) -> list[str]:
+        return json.loads(self.get_setting("up_next_pins") or "[]")
+
+    def set_pins(self, ids: Sequence[str]) -> None:
+        self.set_setting("up_next_pins", json.dumps(list(dict.fromkeys(ids))))
 
     def set_lists(
         self, priority: Sequence[str], never: Iterable[str], favourites: Sequence[str]
@@ -178,6 +200,94 @@ class Store:
         channels = self.get_channels()
         channels.pop(kind, None)
         self.set_setting("notify_channels", json.dumps(channels))
+
+    # --- the campaign log behind History's "Missed"
+    def log_campaigns(self, now: datetime, rows: list[dict]) -> None:
+        """Upsert the latest view of each active campaign. first_seen and impossible_at_first keep the
+        values from the first time Dropwatch saw the campaign."""
+        at = now.astimezone(UTC).isoformat()
+        with self._db:
+            self._db.executemany(
+                "INSERT INTO campaign_log VALUES (:id, :name, :game, :box_art_url, :link_url, :ends_at,"
+                " :rewards, :at, :impossible, :at, :linked, :badge, :never, :priority, :pinned, :live,"
+                " :watched)"
+                " ON CONFLICT(id) DO UPDATE SET name = excluded.name, game = excluded.game,"
+                " box_art_url = excluded.box_art_url, link_url = excluded.link_url,"
+                " ends_at = excluded.ends_at,"
+                " rewards = excluded.rewards, last_seen = excluded.last_seen, linked = excluded.linked,"
+                " badge = excluded.badge, never = excluded.never, priority = excluded.priority,"
+                " pinned = excluded.pinned, live = excluded.live, watched = excluded.watched",
+                [{**r, "at": at, "ends_at": r["ends_at"].astimezone(UTC).isoformat(),
+                  "rewards": json.dumps(r["rewards"]), "impossible": int(r["impossible"]),
+                  "linked": None if r["linked"] is None else int(r["linked"]),
+                  **{k: int(r[k]) for k in ("badge", "never", "priority", "pinned", "live")}} for r in rows])
+            self._db.execute("DELETE FROM campaign_log WHERE ends_at < ?",
+                             ((now - CAMPAIGN_LOG_KEEP).astimezone(UTC).isoformat(),))
+
+    def update_log_rewards(self, cid: str, rewards: list[dict]) -> None:
+        """A campaign that just ended can still be claimed for 24 h: keep its claimed flags current (not
+        last_seen, which says when Dropwatch last saw it running)."""
+        with self._db:
+            self._db.execute("UPDATE campaign_log SET rewards = ? WHERE id = ?", (json.dumps(rewards), cid))
+
+    def ended_campaign_ids(self, ids: Sequence[str], now: datetime) -> set[str]:
+        at = now.astimezone(UTC).isoformat()
+        return {i for (i,) in self._db.execute(
+            f"SELECT id FROM campaign_log WHERE ends_at <= ? AND id IN ({','.join('?' * len(ids))})",
+            (at, *ids))} if ids else set()
+
+    def missed_between(self, since: datetime, now: datetime) -> list[dict]:
+        """Campaigns that ended in (since, now] with a reward left unclaimed, newest end first, each with
+        the reason read from the last look Dropwatch had before it ended."""
+        out = []
+        for row in self._db.execute(
+                "SELECT id, name, game, box_art_url, link_url, ends_at, rewards, first_seen,"
+                " impossible_at_first,"
+                " last_seen, linked, badge, never, priority, pinned, live, watched FROM campaign_log"
+                " WHERE ends_at > ? AND ends_at <= ? ORDER BY ends_at DESC",
+                (since.astimezone(UTC).isoformat(), now.astimezone(UTC).isoformat())):
+            (cid, name, game, art, link, ends, rewards, _first, impossible, last, linked, badge, never,
+             priority, pinned, live, watched) = row
+            rw = json.loads(rewards)
+            # a reward History recorded as claimed counts as claimed even if the last look predates it
+            have = Counter(r["name"] for (rows,) in self._db.execute(
+                "SELECT rewards FROM claims WHERE campaign_id = ?", (cid,)) for r in json.loads(rows))
+            for r in rw:
+                if not r["claimed"] and have[r["name"]] > 0:
+                    r["claimed"], have[r["name"]] = True, have[r["name"]] - 1
+            if all(r["claimed"] for r in rw):
+                continue
+            ends_at, last_seen = datetime.fromisoformat(ends), datetime.fromisoformat(last)
+            if never:
+                reason = "never_list"
+            elif ends_at - last_seen > MISSED_OFF_AFTER:
+                reason = "dropwatch_off"
+            elif linked == 0 and not badge:
+                reason = "not_linked"
+            elif impossible:
+                reason = "ran_out_of_time"
+            elif not live:
+                reason = "no_live_channels"
+            else:
+                reason = "outranked"
+            out.append({"campaign_id": cid, "name": name, "game": game, "box_art_url": art, "link_url": link,
+                        "ends_at": ends_at, "reason": reason, "rewards": rw, "rewards_total": len(rw),
+                        "rewards_claimed": sum(1 for r in rw if r["claimed"]), "minutes_watched": watched,
+                        "started": watched > 0, "priority": bool(priority), "pinned": bool(pinned)})
+        return out
+
+    def history_image_urls(self, since: datetime) -> list[str]:
+        """Every image History can show for claims since then and campaigns that ended since then (box art
+        as stored, so the caller sizes it), for the image cache."""
+        urls: list[str] = []
+        cut = (since.astimezone(UTC).isoformat(),)
+        # campaign_log: only campaigns History would show as a full Missed row (not ~140 catalogue ones)
+        for sql in ("SELECT rewards, box_art_url FROM claims WHERE at >= ?",
+                    "SELECT rewards, box_art_url FROM campaign_log WHERE ends_at >= ? AND never = 0"
+                    " AND (watched > 0 OR priority = 1 OR pinned = 1 OR (linked = 0 AND badge = 0))"):
+            for rewards, art in self._db.execute(sql, cut):
+                urls += [r["image_url"] for r in json.loads(rewards)] + [art or ""]
+        return [u for u in dict.fromkeys(urls) if u]
 
     # --- claims
     def add_claim(self, at: datetime, campaign_id: str, campaign: str, game: str,

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AppProvider } from "../store";
 import { mockApi } from "../test/fetch";
@@ -85,4 +85,48 @@ test("a row uses the art saved with its claim, even when the miner knows no camp
     box_art_url: "https://static-cdn.jtvnw.net/ttv-boxart/491931_IGDB-{width}x{height}.jpg" }]);
   const btn = await screen.findByRole("button", { name: /EXFIL Brothers Day 2/ });
   expect(btn.querySelector("img.box")?.getAttribute("src")).toBe("https://static-cdn.jtvnw.net/ttv-boxart/491931_IGDB-144x192.jpg");
+});
+
+const miss = (id: string, name: string, game: string, reason: string, over = {}) => ({
+  campaign_id: id, name, game, box_art_url: "", link_url: `https://link/${id}`, ends_at: "2026-10-10T14:59:00Z", reason,
+  rewards: [{ name: `${name} reward`, image_url: `u/${id}`, claimed: false }], rewards_total: 3, rewards_claimed: 0,
+  minutes_watched: 0, started: false, priority: false, pinned: false, ...over,
+});
+
+function renderMissed(missed: unknown[], claims: unknown[] = []) {
+  mockApi({ "GET /api/state": state(), "GET /api/history": { total_rewards: claims.length, claims, missed } });
+  render(<AppProvider initialMe={{ authenticated: true, setup_required: false }}><HistoryView /></AppProvider>);
+}
+
+test("Missed lists campaigns that mattered with their reason, and folds the rest away", async () => {
+  renderMissed([
+    miss("er", "ER ESPORTS DROPS", "Eternal Return", "not_linked", { minutes_watched: 60, started: true }),
+    miss("q", "October Drops", "The Quinfall", "ran_out_of_time", { started: true, rewards_total: 2 }),
+    miss("albion", "Dragonfire 6 - #6/7", "Albion Online", "outranked", { priority: true }),
+    miss("rise", "Mobile Drop 183", "Rise Online", "never_list"),
+    miss("x", "Some campaign", "Some game", "outranked"),
+    miss("y", "Another one", "Other game", "no_live_channels"),
+  ]);
+  const sec = (await screen.findByRole("heading", { name: "Missed" })).closest("section") as HTMLElement;
+  expect([...sec.querySelectorAll(".list > .row .row-t")].map((e) => e.textContent)).toEqual(
+    ["ER ESPORTS DROPS", "October Drops", "Dragonfire 6 - #6/7"]);
+  const er = within(sec).getByText("ER ESPORTS DROPS").closest(".row") as HTMLElement;
+  expect(within(er).getByText("Account not linked")).toHaveClass("chip", "red");
+  expect(er).toHaveTextContent(/Twitch counted 1\sh but won't give rewards until Eternal Return is linked/);
+  expect(within(er).getByRole("link", { name: "Link account" })).toHaveAttribute("href", "https://link/er");
+  expect(within(sec).getByRole("button", { name: /Skipped on purpose · 1/ })).toBeInTheDocument();
+  expect(within(sec).getByRole("button", { name: /Never started · 2/ })).toBeInTheDocument();
+  expect(screen.getByText(/3 campaigns/)).toBeInTheDocument(); // the lead counts the full rows
+});
+
+test("the History filter narrows claimed and missed alike", async () => {
+  renderMissed([miss("er", "ER ESPORTS DROPS", "Eternal Return", "not_linked", { started: true }),
+    miss("q", "October Drops", "The Quinfall", "ran_out_of_time", { started: true })],
+  [claim("2026-10-10T15:00:00Z", "c1", "Palcat Glasses")]);
+  const u = userEvent.setup();
+  await screen.findByRole("heading", { name: "Missed" });
+  await u.type(screen.getByRole("searchbox", { name: "Filter History" }), "quinfall");
+  expect(screen.queryByText("ER ESPORTS DROPS")).toBeNull();
+  expect(screen.getByText("October Drops")).toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "Claimed" })).toBeNull(); // C-c1 / Palia doesn't match
 });

@@ -8,6 +8,7 @@ PRIVATE = [
     ("POST", "/api/twitch/signout"), ("POST", "/api/logout"), ("POST", "/api/refresh"),
     ("GET", "/api/notify/channels"), ("PUT", "/api/notify/channels/{kind}"),
     ("DELETE", "/api/notify/channels/{kind}"), ("POST", "/api/notify/test"),
+    ("GET", "/api/pins"), ("PUT", "/api/pins"),
 ]
 
 
