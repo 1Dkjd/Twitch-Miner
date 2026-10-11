@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { AppProvider } from "../store";
+import { AppProvider, Toasts } from "../store";
 import { mockApi } from "../test/fetch";
 import { state } from "../test/fixtures";
 import { SettingsView } from "./Settings";
@@ -12,7 +12,7 @@ afterEach(() => vi.unstubAllGlobals());
 function setup(section: string, extra: Record<string, unknown> = {}) {
   location.hash = `#settings/${section}`;
   const calls = mockApi({ "GET /api/state": state(), "GET /api/settings": SETTINGS, ...extra });
-  render(<AppProvider initialMe={{ authenticated: true, setup_required: false }}><SettingsView /></AppProvider>);
+  render(<AppProvider initialMe={{ authenticated: true, setup_required: false }}><SettingsView /><Toasts /></AppProvider>);
   return calls;
 }
 
@@ -97,14 +97,16 @@ test("Backup: restore asks first, then replaces and says what it skipped", async
   expect(calls.some((c) => c.path === "/api/restore")).toBe(false);
   await u.click(screen.getByRole("button", { name: "Replace" }));
   await waitFor(() => expect(calls.find((c) => c.path === "/api/restore")?.body).toEqual(backup));
-  expect(await screen.findByText(/Backup restored.*channel matrix/)).toBeInTheDocument();
+  expect(await screen.findByText(/Backup restored.*channel matrix/, { selector: ".d" })).toBeInTheDocument();
+  expect(screen.getByRole("group", { name: /Backup restored/ })).toHaveClass("ok");
 });
 
 test("Backup: a file that isn't JSON is refused before anything is sent", async () => {
   const calls = setup("backup", { "GET /api/about": ABOUT });
   const input = await screen.findByLabelText("Restore from a backup");
   await userEvent.upload(input, new File(["not json"], "x.json", { type: "application/json" }));
-  expect(await screen.findByText("That file isn't a Dropwatch backup.")).toBeInTheDocument();
+  expect(await screen.findByText("That file isn't a Dropwatch backup.", { selector: ".d" })).toBeInTheDocument();
+  expect(screen.getByRole("group", { name: "That file isn't a Dropwatch backup." })).toHaveClass("bad"); // review fix: was a green tick
   expect(calls.some((c) => c.path === "/api/restore")).toBe(false);
 });
 

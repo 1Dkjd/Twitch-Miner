@@ -84,6 +84,19 @@ test("closing the last notice while pointing at it doesn't leave the next one pa
   expect(screen.getByRole("region", { name: "Notices" })).not.toHaveAttribute("data-paused");
 });
 
+test("dismissing from the keyboard lets the other notices carry on closing", async () => {
+  // review fix: the focused button is removed, so no blur arrives and the deck stayed paused for good
+  setup(<><Sayer spec="One" /><Sayer spec="Two" /></>);
+  for (const b of screen.getAllByRole("button", { name: "go" })) await userEvent.click(b);
+  const deck = screen.getByRole("region", { name: "Notices" });
+  const dismiss = within(screen.getByRole("group", { name: "Two" })).getByRole("button", { name: "Dismiss" });
+  act(() => dismiss.focus());
+  expect(deck).toHaveAttribute("data-paused");
+  await userEvent.keyboard("{Enter}");
+  expect(screen.queryByRole("group", { name: "Two" })).not.toBeInTheDocument();
+  expect(deck).not.toHaveAttribute("data-paused");
+});
+
 test("they stack newest first, three at most", async () => {
   setup(<><Sayer spec="One" /><Sayer spec="Two" /><Sayer spec="Three" /><Sayer spec="Four" /></>);
   for (const b of screen.getAllByRole("button", { name: "go" })) await userEvent.click(b);

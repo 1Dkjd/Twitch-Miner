@@ -143,14 +143,19 @@ export function AppProvider({ children, initialMe = null, retryMs = 5000 }: { ch
  * pauses every line. Not a live region: the store's announcement already speaks each one once. */
 export function Toasts() {
   const { toasts, dismissToast } = useApp();
-  const [paused, setPaused] = useState(false);
-  // the deck unmounts under the pointer or focus when its last notice closes, so no leave/blur arrives
-  useEffect(() => { if (!toasts.length) setPaused(false); }, [toasts.length]);
+  // pointer and focus pause separately: a button that closes its notice takes focus with it and no blur
+  // arrives, so closing counts as focus leaving; the pointer still has its own leave event
+  const [hover, setHover] = useState(false);
+  const [focus, setFocus] = useState(false);
+  const paused = hover || focus;
+  const close = (id: number) => { setFocus(false); dismissToast(id); };
+  // the deck unmounts under the pointer when its last notice closes, so no leave arrives either
+  useEffect(() => { if (!toasts.length) setHover(false); }, [toasts.length]);
   if (!toasts.length) return null;
   return (
     <div className="toasts" role="region" aria-label="Notices" data-paused={paused || undefined}
-      onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setPaused(false); }}>
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      onFocus={() => setFocus(true)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setFocus(false); }}>
       {toasts.map((t, i) => (
         <div key={t.id} className={`toast ${t.tone}`} role="group" aria-label={t.title} data-depth={i}>
           <svg className="toast-i" viewBox="0 0 24 24" aria-hidden="true">
@@ -158,9 +163,9 @@ export function Toasts() {
           </svg>
           <div className="toast-t"><b>{t.title}</b>{t.detail && <span className="toast-d">{t.detail}</span>}</div>
           {t.action && (
-            <button className="toast-a" type="button" onClick={() => { t.action!.run(); dismissToast(t.id); }}>{t.action.label}</button>
+            <button className="toast-a" type="button" onClick={() => { t.action!.run(); close(t.id); }}>{t.action.label}</button>
           )}
-          <button className="toast-x" type="button" aria-label="Dismiss" onClick={() => dismissToast(t.id)}>×</button>
+          <button className="toast-x" type="button" aria-label="Dismiss" onClick={() => close(t.id)}>×</button>
           <DrainBar ms={t.ms} onDone={() => dismissToast(t.id)} />
         </div>
       ))}

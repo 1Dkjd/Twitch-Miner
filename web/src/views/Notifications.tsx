@@ -47,7 +47,7 @@ export function Notifications({ settings, put, serverTz, chans, setChans }: {
   }
   async function sendTest() {
     setTesting(true);
-    try { const r = await api.post<NotifyTest>("/notify/test"); setTest(r); say(r.message); }
+    try { const r = await api.post<NotifyTest>("/notify/test"); setTest(r); say({ title: r.message, tone: r.ok ? "ok" : "bad" }); }
     catch (e) { sayError(e, "Couldn't send"); }
     finally { setTesting(false); }
   }

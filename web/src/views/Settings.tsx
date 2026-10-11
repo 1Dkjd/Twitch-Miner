@@ -199,13 +199,13 @@ function Backup({ onRestored }: { onRestored: () => void }) {
   const [pending, setPending] = useState<{ data: unknown; made: string | null } | null>(null);
   const [note, setNote] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-  const tell = (text: string) => { setNote(text); say(text); };
+  const tell = (text: string, tone: "ok" | "bad" = "ok") => { setNote(text); say({ title: text, tone }); };
 
   async function pick(file: File | undefined) {
     if (!file) return;
     if (fileRef.current) fileRef.current.value = ""; // the same file can be picked again
     let data: unknown;
-    try { data = JSON.parse(await file.text()); } catch { tell("That file isn't a Dropwatch backup."); return; }
+    try { data = JSON.parse(await file.text()); } catch { tell("That file isn't a Dropwatch backup.", "bad"); return; }
     const made = data && typeof data === "object" && "made_at" in data && typeof data.made_at === "string" ? data.made_at : null;
     setNote("");
     setPending({ data, made });
@@ -218,7 +218,7 @@ function Backup({ onRestored }: { onRestored: () => void }) {
       const r = await api.post<{ skipped: string[] }>("/restore", data);
       tell(r.skipped.length ? `Backup restored. Skipped what this version doesn't know: ${r.skipped.join(", ")}.` : "Backup restored.");
       onRestored();
-    } catch (e) { tell(e instanceof ApiError ? e.message : "Couldn't restore it."); }
+    } catch (e) { tell(e instanceof ApiError ? e.message : "Couldn't restore it.", "bad"); }
   }
 
   return (
