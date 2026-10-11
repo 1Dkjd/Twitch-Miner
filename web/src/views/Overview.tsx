@@ -30,14 +30,19 @@ export function OverviewView() {
   };
   async function never(game: string) {
     if (!lists) return;
+    const before = lists;
     const msg = await save({ ...lists, priority: lists.priority.filter((g) => g !== game), never: [...lists.never, game] });
-    say(msg ?? `${game} moved to Never`);
+    if (msg) say(msg);
+    else say(`${game} moved to Never`, () => void save(before).then((m) => say(m ?? `${game} is back`)));
   }
   async function prioritise(game: string) {
     if (!lists) return;
+    const before = lists;
     const priority = [...lists.priority.filter((g) => g !== game), game];
     const msg = await save({ ...lists, priority, never: lists.never.filter((g) => g !== game) });
-    say(msg ?? `${game} added to Priority, position ${priority.length}`);
+    if (msg) say(msg);
+    else say(`${game} added to Priority, position ${priority.length}`,
+      () => void save(before).then((m) => say(m ?? `${game} taken off Priority`)));
   }
   const needs = <NeedsYou key="needs" state={state} onNever={never} />;
   const now = <NowSlot key="now" state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf} />;
@@ -227,7 +232,7 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
         {nx && (
           <div className="next-card">
             <div className="arts">{nx.items.map((it, i) => <img key={i} src={it.image} alt="" />)}</div>
-            <div><div className="next-when">{mining ? `Next reward in ${dur(nx.at - w)}` : `${dur(nx.at - w)} of watching to the next reward`}</div>
+            <div><div className="next-when">{mining ? `Next reward in ${dur(nx.at - w)} (~${clock(new Date(Date.now() + (nx.at - w) * 60_000))})` : `${dur(nx.at - w)} of watching to the next reward`}</div>
               <div className="next-what">{nx.items.map((i) => i.name).join(", ")}</div></div>
           </div>
         )}

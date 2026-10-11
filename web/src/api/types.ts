@@ -366,6 +366,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Sessions
+         * @description Settings: the browsers signed in to this page.
+         */
+        get: operations["get_sessions_api_sessions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sessions/sign-out-others": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign Out Others */
+        post: operations["sign_out_others_api_sessions_sign_out_others_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sessions/{session_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Session */
+        delete: operations["delete_session_api_sessions__session_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings": {
         parameters: {
             query?: never;
@@ -693,6 +747,13 @@ export interface components {
              * @default []
              */
             missed: components["schemas"]["MissedOut"][];
+            /**
+             * @default {
+             *       "chests": 0,
+             *       "points": 0
+             *     }
+             */
+            points: components["schemas"]["PointsOut"];
             /** Total Rewards */
             total_rewards: number;
         };
@@ -853,6 +914,19 @@ export interface components {
             /** Pins */
             pins?: string[];
         };
+        /** PointsOut */
+        PointsOut: {
+            /**
+             * Chests
+             * @default 0
+             */
+            chests: number;
+            /**
+             * Points
+             * @default 0
+             */
+            points: number;
+        };
         /** RestoreOut */
         RestoreOut: {
             /** Skipped */
@@ -864,6 +938,24 @@ export interface components {
             image_url: string;
             /** Name */
             name: string;
+        };
+        /** SessionOut */
+        SessionOut: {
+            /** Created At */
+            created_at: string | null;
+            /** Current */
+            current: boolean;
+            /** Device */
+            device: string;
+            /** Id */
+            id: string;
+            /** Last Seen At */
+            last_seen_at: string | null;
+        };
+        /** SessionsOut */
+        SessionsOut: {
+            /** Sessions */
+            sessions: components["schemas"]["SessionOut"][];
         };
         /** SettingsIn */
         SettingsIn: {
@@ -961,6 +1053,11 @@ export interface components {
         };
         /** StateOut */
         StateOut: {
+            /**
+             * Build
+             * @default
+             */
+            build: string;
             catalog?: components["schemas"]["CatalogOut"] | null;
             current: components["schemas"]["CurrentOut"] | null;
             /** Done */
@@ -1616,6 +1713,73 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    get_sessions_api_sessions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionsOut"];
+                };
+            };
+        };
+    };
+    sign_out_others_api_sessions_sign_out_others_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    delete_session_api_sessions__session_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };

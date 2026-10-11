@@ -69,8 +69,8 @@ export function HistoryView() {
         <label className="filter"><input type="search" aria-label="Filter History" placeholder="Filter by game or campaign"
           value={filter} onChange={(e) => setFilter(e.target.value)} /></label>
       </div>
-      {data && data.total_rewards > 0 && <Stats data={data} label={PERIODS.find(([d]) => d === days)?.[1] ?? ""} />}
-      {data && !data.total_rewards && (
+      {data && (data.total_rewards > 0 || (data.points?.points ?? 0) > 0) && <Stats data={data} label={PERIODS.find(([d]) => d === days)?.[1] ?? ""} />}
+      {data && !data.total_rewards && !(data.points?.points ?? 0) && (
         <div className="hist-lead"><svg aria-hidden="true"><use href="#i-check" /></svg>
           <span>{data.total_rewards
             ? <><b>{data.total_rewards} {data.total_rewards === 1 ? "reward" : "rewards"}</b> claimed from {campaigns} {campaigns === 1 ? "campaign" : "campaigns"}.</>
@@ -237,6 +237,9 @@ function Stats({ data, label }: { data: History; label: string }) {
         <div className="stat"><div className="n">{campaigns}</div><div className="l">{campaigns === 1 ? "campaign" : "campaigns"}</div></div>
         <div className="stat"><div className="n">{watched}</div>
           <div className="l" title={partial ? "Claims from before 10 Oct didn't record their watch time" : undefined}>of watching behind them</div></div>
+        <div className="stat"><div className="n">{(data.points?.points ?? 0).toLocaleString("en-US")}</div>
+          <div className="l">channel points</div>
+          {(data.points?.chests ?? 0) > 0 && <div className="l">{data.points!.chests} {data.points!.chests === 1 ? "chest" : "chests"} opened</div>}</div>
       </div>
       <div className="list stats-list">
         {bars("Rewards by game", games, () => undefined, (k) => k)}

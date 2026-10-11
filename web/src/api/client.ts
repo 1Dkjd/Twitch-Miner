@@ -11,6 +11,7 @@ export type Lists = S["ListsOut"];
 export type Settings = S["SettingsOut"];
 export type About = S["AboutOut"];
 export type Activity = S["ActivityOut"];
+export type Sessions = S["SessionsOut"];
 export type ActivityEvent = S["ActivityEvent"];
 export type SettingsIn = S["SettingsIn"];
 export type History = S["HistoryOut"];

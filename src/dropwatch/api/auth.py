@@ -90,7 +90,7 @@ async def setup(body: PasswordIn, request: Request, response: Response) -> None:
     if len(body.password) < MIN_PASSWORD:
         raise HTTPException(status_code=422, detail=f"Use at least {MIN_PASSWORD} characters.")
     ctx.store.set_password(body.password)
-    _set_cookie(response, ctx.store.create_web_session(ctx.clock()))
+    _set_cookie(response, ctx.store.create_web_session(ctx.clock(), request.headers.get("user-agent", "")))
 
 
 @public.post("/login", status_code=204)
@@ -107,7 +107,7 @@ async def login(body: PasswordIn, request: Request, response: Response) -> None:
         await asyncio.sleep(0.5)  # blunt online guessing
         raise HTTPException(status_code=401, detail="Wrong password.")
     limiter.succeeded(who)
-    _set_cookie(response, ctx.store.create_web_session(ctx.clock()))
+    _set_cookie(response, ctx.store.create_web_session(ctx.clock(), request.headers.get("user-agent", "")))
 
 
 private_auth = APIRouter(prefix="/api", dependencies=[Depends(require_session)])

@@ -587,6 +587,8 @@ class Runner:
             return
         if isinstance(event, PointsEarned):
             login = next((ch.login for ch in self.live if ch.id == event.channel_id), None)
+            if (add := getattr(self._store, "add_points", None)) is not None and event.points:
+                add(self._clock(), login, event.reason, event.points)  # History and the weekly summary
             if event.reason not in ("WATCH", "CLAIM"):  # every-5-minute points and chests: not news
                 self._store.log_event("points_earned", {"channel": login, "reason": event.reason,
                                                         "points": event.points})

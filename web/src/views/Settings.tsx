@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ApiError, api, type About, type Settings } from "../api/client";
+import { ApiError, api, type About, type Sessions, type Settings } from "../api/client";
 import { go } from "../router";
 import { useApp } from "../store";
 import { clock, day } from "../ui/format";
@@ -87,6 +87,7 @@ export function SettingsView() {
         </div>
       </Set>
       <Set title="This page">
+        <Browsers />
         <div className="opt"><div>Theme</div>
           <div className="seg" role="group" aria-label="Theme">
             {(["system", "light", "dark"] as Theme[]).map((t) => (
@@ -179,6 +180,41 @@ function Backup({ onRestored }: { onRestored: () => void }) {
 }
 
 const EVERY: [number, string][] = [[15, "Every 15 min"], [30, "Every 30 min"], [60, "Every hour"], [120, "Every 2 hours"], [240, "Every 4 hours"]];
+
+/** Settings > This page: the browsers signed in to this page (asked for 2026-10-11). */
+function Browsers() {
+  const { say } = useApp();
+  const [rows, setRows] = useState<Sessions["sessions"] | null>(null);
+  const load = () => api.get<Sessions>("/sessions").then((s) => setRows(s.sessions)).catch(() => undefined);
+  useEffect(() => { void load(); }, []);
+  async function out(id: string | null, label: string) {
+    try {
+      if (id) await api.del(`/sessions/${id}`); else await api.post("/sessions/sign-out-others");
+      say(label);
+    } catch (e) { say(e instanceof ApiError ? e.message : "Couldn't sign it out."); }
+    void load();
+  }
+  if (!rows) return null;
+  const others = rows.filter((r) => !r.current);
+  return (
+    <div className="opt opt-col">
+      <div><div>Signed-in browsers</div>
+        <div className="d">Browsers that can open this page without the password.</div></div>
+      <ul className="sessions" aria-label="Signed-in browsers">
+        {rows.map((r) => (
+          <li key={r.id}>
+            <span><b>{r.device}</b>{r.current ? <span className="chip green">This browser</span>
+              : r.last_seen_at ? <span className="d"> · last seen {day(r.last_seen_at)} {clock(r.last_seen_at)}</span> : null}</span>
+            {!r.current && <button className="btn quiet" type="button" aria-label={`Sign out ${r.device}`}
+              onClick={() => void out(r.id, `${r.device} signed out`)}>Sign out</button>}
+          </li>
+        ))}
+      </ul>
+      {others.length > 0 && <div><button className="btn" type="button" onClick={() => void out(null, "Signed out everywhere else")}>
+        Sign out everywhere else</button></div>}
+    </div>
+  );
+}
 
 function Set({ title, children }: { title: string; children: ReactNode }) {
   return <div className="set"><h2>{title}</h2>{children}</div>;
