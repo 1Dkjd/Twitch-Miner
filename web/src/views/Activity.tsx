@@ -5,10 +5,25 @@ import { clock, day } from "../ui/format";
 
 /** Activity (approved mockup docs/design/pre-docker-mockup.html, 2026-10-10): what Dropwatch did, newest
  * first, one plain sentence per event, grouped by the viewer's day. The server keeps 7 days (store.py). */
-type Group = "mining" | "rewards" | "problems" | "notifications";
-const FILTERS: [Group | "all", string][] = [
-  ["all", "All"], ["mining", "Mining"], ["rewards", "Rewards"], ["problems", "Problems"], ["notifications", "Notifications"],
+type Group = "mining" | "twitch" | "rewards" | "problems" | "notifications";
+/** Multi-select (asked for 2026-10-10): every kind starts on; turn off the ones you don't care about. */
+const GROUPS: [Group, string][] = [
+  ["mining", "Mining"], ["twitch", "Twitch"], ["rewards", "Rewards"], ["problems", "Problems"], ["notifications", "Notifications"],
 ];
+const ALL = GROUPS.map(([g]) => g);
+const SHOWN_KEY = "dropwatch.activity.shown"; // this browser's choice
+
+function savedShown(): Set<Group> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SHOWN_KEY) ?? "null");
+    if (Array.isArray(raw)) return new Set(raw.filter((g): g is Group => (ALL as string[]).includes(g)));
+  } catch { /* storage blocked or unreadable: show everything */ }
+  return new Set(ALL);
+}
+
+function saveShown(shown: Set<Group>) {
+  try { localStorage.setItem(SHOWN_KEY, JSON.stringify([...shown])); } catch { /* storage blocked: not remembered */ }
+}
 
 export interface Line { text: ReactNode; d?: string; tone: "ok" | "gold" | "bad" | "note" | ""; group: Group }
 
@@ -75,7 +90,7 @@ export function describe(e: ActivityEvent, older: ActivityEvent | undefined): Li
         typeof d.seconds === "number" ? `took ${d.seconds} s` : "",
       ].filter(Boolean);
       return { text: d.manual ? "You checked Twitch" : "Checked Twitch for campaign changes", d: parts.join(" · ") || undefined,
-        tone: "", group: "mining" };
+        tone: "", group: "twitch" };
     }
     case "notified": {
       const title = s(d.title).replace(/^Dropwatch: /, "");
@@ -94,7 +109,9 @@ export function describe(e: ActivityEvent, older: ActivityEvent | undefined): Li
 export function ActivityView() {
   const { state } = useApp();
   const [data, setData] = useState<Activity | null>(null);
-  const [filter, setFilter] = useState<Group | "all">("all");
+  const [shown, setShown] = useState<Set<Group>>(savedShown);
+  const choose = (next: Set<Group>) => { setShown(next); saveShown(next); };
+  const toggle = (g: Group) => { const n = new Set(shown); if (n.has(g)) n.delete(g); else n.add(g); choose(n); };
   useEffect(() => {
     let live = true;
     api.get<Activity>("/activity").then((a) => { if (live) setData(a); }).catch(() => undefined);
@@ -105,7 +122,7 @@ export function ActivityView() {
   const events = data?.events ?? [];
   events.forEach((e, i) => {
     const line = describe(e, events[i + 1]);
-    if (line && (filter === "all" || line.group === filter)) lines.push({ e, line });
+    if (line && shown.has(line.group)) lines.push({ e, line });
   });
   const rows: ReactNode[] = [];
   let lastDay = "";
@@ -124,14 +141,16 @@ export function ActivityView() {
       <div className="view-h">
         <h1 id="h-activity" className="disp" tabIndex={-1}>Activity</h1>
         <div className="chips" role="group" aria-label="Show">
-          {FILTERS.map(([g, label]) => (
-            <button key={g} type="button" aria-pressed={filter === g} onClick={() => setFilter(g)}>{label}</button>
+          <button type="button" aria-pressed={shown.size === ALL.length} onClick={() => choose(new Set(ALL))}>All</button>
+          {GROUPS.map(([g, label]) => (
+            <button key={g} type="button" aria-pressed={shown.has(g)} onClick={() => toggle(g)}>{label}</button>
           ))}
         </div>
       </div>
       {!data && <p className="lead">Loading…</p>}
       {data && rows.length > 0 && <div className="list act-list">{rows}</div>}
-      {data && !rows.length && <p className="hint">{filter === "all" ? "Nothing yet." : `Nothing like that in the last ${data.kept_days} days.`}</p>}
+      {data && !rows.length && <p className="hint">{!shown.size ? "Turn on at least one kind to see activity."
+        : shown.size === ALL.length ? "Nothing yet." : `Nothing like that in the last ${data.kept_days} days.`}</p>}
       {data && <p className="keep">Kept for {data.kept_days} days.</p>}
     </section>
   );
