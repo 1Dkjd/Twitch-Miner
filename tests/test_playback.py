@@ -139,3 +139,21 @@ async def test_new_broadcast_resets_segment_memory():
 async def test_network_error_is_a_failed_send():
     net = Net([media("a.ts")], raise_on="usher")
     assert await Watcher(net, lambda: S, FakeGql(), clock=lambda: 0.0).send(CH, NOW) is False
+
+
+async def test_video_requests_use_the_session_clients_user_agent():
+    # 2026-10-11: playlists and segments went as the Android app (left from the Android sign-in); measured
+    # live with the TV sign-in's own agent: drops 8 -> 17 and points 0 -> 20 in 10 min, same as before
+    from dropwatch.twitch.constants import SMARTBOX
+    tv = TwitchSession("tok", 42, "me", "dev", SMARTBOX.client_id, "sess")
+    seen = []
+
+    class Rec(Net):
+        async def request(self, method, url, *, headers, json=None, data=None):
+            if "usher" in url or "video.example" in url:
+                seen.append(headers.get("User-Agent"))
+            return await super().request(method, url, headers=headers, json=json, data=data)
+
+    net = Rec([media("a.ts")])
+    await Watcher(net, lambda: tv, FakeGql(), clock=lambda: 1000.0).send(CH, NOW)
+    assert seen and set(seen) == {SMARTBOX.user_agent}

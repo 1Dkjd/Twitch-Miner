@@ -125,6 +125,11 @@ class Watcher:
         self._segments: OrderedDict[str, None] = OrderedDict()
         self._last_spade: float | None = None
 
+    def _agent(self) -> str:
+        """The signed-in client's own user agent, for the playlists and segments. They went as the Android
+        app (left from the Android sign-in) until 2026-10-11; the TV sign-in's agent measured the same."""
+        return client_for(self._session().client_id).user_agent
+
     async def _media_url(self, channel: LiveChannel) -> str | None:
         if channel.login in self._media:
             return self._media[channel.login]
@@ -136,7 +141,7 @@ class Watcher:
             return None
         master_url = f"{USHER}/{channel.login}.m3u8?" + urlencode(
             {"sig": tok["signature"], "token": tok["value"]})
-        r = await self._t.request("GET", master_url, headers={"User-Agent": ANDROID_APP.user_agent})
+        r = await self._t.request("GET", master_url, headers={"User-Agent": self._agent()})
         if r.status != 200:
             return None
         qualities = playlist_urls(r.text, master_url, master=True)
@@ -154,7 +159,7 @@ class Watcher:
         url = await self._media_url(channel)
         if url is None:
             return False
-        headers = {"User-Agent": ANDROID_APP.user_agent}
+        headers = {"User-Agent": self._agent()}
         r = await asyncio.wait_for(self._t.request("GET", url, headers=headers), MEDIA_TIMEOUT)
         if r.status != 200:
             if r.status in (401, 403, 404):
@@ -204,7 +209,7 @@ class Watcher:
             log.warning("No spade URL for %s", channel.login)
             return
         s = self._session()
-        # the page and playlists stay Android (proven 2026-10-10); the event goes as the token's own client
+        # the channel page stays Android (proven 2026-10-10); the event goes as the token's own client
         r = await self._t.request("POST", url, headers=base_headers(s, client_for(s.client_id)),
                                   data=watch_payload(channel, s.user_id, now))
         if r.status != 204:
