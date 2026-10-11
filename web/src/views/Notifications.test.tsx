@@ -27,6 +27,7 @@ function setup(routes: Record<string, unknown> = {}) {
     "GET /api/state": state(), "GET /api/settings": SETTINGS, "PUT /api/settings": (b: object) => ({ ...SETTINGS, ...b }),
     "GET /api/notify/channels": { channels: [], available: ALL }, ...routes,
   });
+  location.hash = "#settings/notifications";
   render(<AppProvider initialMe={ME}><SettingsView /><Said /></AppProvider>);
   return calls;
 }
@@ -35,7 +36,7 @@ afterEach(() => vi.unstubAllGlobals());
 test("the failure alerts are on, 'a campaign needs you' is off, and a switch saves", async () => {
   const calls = setup();
   const u = userEvent.setup();
-  const sec = (await screen.findByRole("heading", { name: "Notifications" })).closest(".set") as HTMLElement;
+  const sec = (await screen.findByRole("heading", { name: "Alerts" })).closest(".set") as HTMLElement;
   for (const name of ["Twitch sign-in stops working", "Twitch can't be reached", "Mining isn't earning",
     "A reward couldn't be claimed", "Mining stopped on an error"]) {
     expect(await within(sec).findByRole("checkbox", { name })).toBeChecked();

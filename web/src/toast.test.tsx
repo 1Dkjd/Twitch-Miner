@@ -73,6 +73,17 @@ test("pointing at or tabbing into the deck pauses every line", async () => {
   expect(deck).toHaveAttribute("data-paused");
 });
 
+test("closing the last notice while pointing at it doesn't leave the next one paused", async () => {
+  // found on the bench: the deck unmounts under the pointer, so mouseleave/blur never arrive
+  setup(<Sayer spec="Setting saved" />);
+  await userEvent.click(screen.getByRole("button", { name: "go" }));
+  fireEvent.mouseEnter(screen.getByRole("region", { name: "Notices" }));
+  fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
+  expect(screen.queryByRole("region", { name: "Notices" })).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "go" }));
+  expect(screen.getByRole("region", { name: "Notices" })).not.toHaveAttribute("data-paused");
+});
+
 test("they stack newest first, three at most", async () => {
   setup(<><Sayer spec="One" /><Sayer spec="Two" /><Sayer spec="Three" /><Sayer spec="Four" /></>);
   for (const b of screen.getAllByRole("button", { name: "go" })) await userEvent.click(b);

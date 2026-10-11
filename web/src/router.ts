@@ -7,8 +7,24 @@ const TITLES: Record<View, string> = {
 };
 
 export function parseView(hash: string): View {
-  const v = hash.replace(/^#/, "");
+  const v = hash.replace(/^#/, "").split("/")[0]!;
   return v === "connect" || (VIEWS as readonly string[]).includes(v) ? (v as View) : "overview";
+}
+
+/** The part of the hash after the view ("#settings/backup" → "backup"), or "". */
+export function parseSub(hash: string): string {
+  return hash.replace(/^#/, "").split("/")[1] ?? "";
+}
+
+/** The current sub-route, following the hash (Settings keeps its open section here). */
+export function useSub(): string {
+  const [sub, setSub] = useState(() => parseSub(location.hash));
+  useEffect(() => {
+    const on = () => setSub(parseSub(location.hash));
+    window.addEventListener("hashchange", on);
+    return () => window.removeEventListener("hashchange", on);
+  }, []);
+  return sub;
 }
 
 /** Hash routing as in the mockup: the title follows the view, and after navigation (not on first

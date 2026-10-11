@@ -144,6 +144,8 @@ export function AppProvider({ children, initialMe = null, retryMs = 5000 }: { ch
 export function Toasts() {
   const { toasts, dismissToast } = useApp();
   const [paused, setPaused] = useState(false);
+  // the deck unmounts under the pointer or focus when its last notice closes, so no leave/blur arrives
+  useEffect(() => { if (!toasts.length) setPaused(false); }, [toasts.length]);
   if (!toasts.length) return null;
   return (
     <div className="toasts" role="region" aria-label="Notices" data-paused={paused || undefined}

@@ -236,7 +236,7 @@ label.btn:has(input:focus-visible) { outline: 2px solid var(--accent); outline-o
 .toasts > .toast[data-depth="0"] { z-index: 3; }
 .toasts > .toast[data-depth="1"] { z-index: 2; transform: translateY(-10px) scale(.95); opacity: .7; }
 .toasts > .toast[data-depth="2"] { z-index: 1; transform: translateY(-20px) scale(.9); opacity: .4; }
-.toasts[data-paused] { display: flex; flex-direction: column-reverse; gap: 8px; }
+.toasts[data-paused] { display: flex; flex-direction: column-reverse; align-items: stretch; gap: 8px; }
 .toasts[data-paused] > .toast { transform: none; opacity: 1; }
 .toast { position: relative; overflow: hidden; display: flex; align-items: center; gap: 10px; padding: 12px 8px 14px 14px;
   background: var(--surface-2); color: var(--fg); border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,.34);

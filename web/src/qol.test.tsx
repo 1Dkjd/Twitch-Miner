@@ -80,6 +80,7 @@ test("Settings lists the signed-in browsers and signs the others out", async () 
   ] };
   const calls = mockApi({ "GET /api/state": state(), "GET /api/settings": {}, "GET /api/sessions": sessions,
     "POST /api/sessions/sign-out-others": undefined, "DELETE /api/sessions/bbbb": undefined });
+  location.hash = "#settings/account";
   render(<AppProvider initialMe={ME}><SettingsView /></AppProvider>);
   const list = await screen.findByRole("list", { name: "Signed-in browsers" });
   expect(within(list).getByText("Chrome on Windows")).toBeInTheDocument();
