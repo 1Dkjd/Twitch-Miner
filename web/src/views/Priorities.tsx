@@ -71,7 +71,7 @@ export function PrioritiesView() {
 
   async function commit(next: Lists, message: string, f?: [string, string]) {
     const err = await save(next);
-    say(err ?? message);
+    say(err ? { title: "Couldn't save the lists", detail: err, tone: "bad" } : message);
     if (f) setFocus(f);
     else document.getElementById("h-priorities")?.focus();
   }

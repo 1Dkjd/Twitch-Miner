@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { AppProvider, useApp } from "../store";
+import { AppProvider, Toasts, useApp } from "../store";
 import { mockApi } from "../test/fetch";
 import { state } from "../test/fixtures";
 import { SettingsView } from "./Settings";
@@ -27,7 +27,8 @@ function setup(routes: Record<string, unknown> = {}) {
     "GET /api/state": state(), "GET /api/settings": SETTINGS, "PUT /api/settings": (b: object) => ({ ...SETTINGS, ...b }),
     "GET /api/notify/channels": { channels: [], available: ALL }, ...routes,
   });
-  render(<AppProvider initialMe={ME}><SettingsView /><Said /></AppProvider>);
+  location.hash = "#settings/notifications";
+  render(<AppProvider initialMe={ME}><SettingsView /><Said /><Toasts /></AppProvider>);
   return calls;
 }
 afterEach(() => vi.unstubAllGlobals());
@@ -35,7 +36,7 @@ afterEach(() => vi.unstubAllGlobals());
 test("the failure alerts are on, 'a campaign needs you' is off, and a switch saves", async () => {
   const calls = setup();
   const u = userEvent.setup();
-  const sec = (await screen.findByRole("heading", { name: "Notifications" })).closest(".set") as HTMLElement;
+  const sec = (await screen.findByRole("heading", { name: "Alerts" })).closest(".set") as HTMLElement;
   for (const name of ["Twitch sign-in stops working", "Twitch can't be reached", "Mining isn't earning",
     "A reward couldn't be claimed", "Mining stopped on an error"]) {
     expect(await within(sec).findByRole("checkbox", { name })).toBeChecked();
@@ -95,7 +96,8 @@ test("removing a channel and sending a test", async () => {
   });
   const u = userEvent.setup();
   await u.click(await screen.findByRole("button", { name: "Send test notification" }));
-  expect(await screen.findByText("Failed: Discord: HTTP 404.")).toBeInTheDocument();
+  expect(await screen.findByText("Failed: Discord: HTTP 404.", { selector: ".nt-test span" })).toBeInTheDocument();
+  expect(screen.getByRole("group", { name: "Failed: Discord: HTTP 404." })).toHaveClass("bad"); // review fix: was a green tick
   await u.click(screen.getByRole("button", { name: "Remove Discord" }));
   await waitFor(() => expect(calls.some((c) => c.method === "DELETE")).toBe(true));
   await waitFor(() => expect(screen.queryByText("webhook set")).toBeNull());

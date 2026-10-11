@@ -227,16 +227,40 @@ label.btn:has(input:focus-visible) { outline: 2px solid var(--accent); outline-o
 /* Pre-Docker QoL (2026-10-11) */
 .banner[data-tone="note"] { background: var(--note-soft); border-color: color-mix(in srgb, var(--note) 40%, var(--line)); margin-bottom: 16px; }
 .banner[data-tone="note"] > svg { color: var(--note); width: 20px; height: 20px; }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 20;
-  display: flex; align-items: center; gap: 10px; max-width: min(560px, calc(100vw - 32px)); padding: 8px 8px 8px 16px;
-  background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); border-radius: 12px;
-  box-shadow: 0 8px 28px rgba(0,0,0,.35); font-size: 14px; animation: toast-in .18s ease-out; }
-.toast > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.toast .btn { min-height: 30px; color: var(--accent-text); }
+/* Notices (docs/design/toast-mockup.html variant B, picked 2026-10-11): bottom right, centred above the tab
+ * bar on phones. Newest in front; older ones sit behind it as a deck and fan out while the pointer or focus is
+ * in the deck (which also pauses every line). */
+.toasts { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  width: min(380px, calc(100vw - 32px)); display: grid; align-items: end; }
+.toasts > .toast { grid-area: 1 / 1; transition: transform .18s ease-out, opacity .18s ease-out; }
+.toasts > .toast[data-depth="0"] { z-index: 3; }
+.toasts > .toast[data-depth="1"] { z-index: 2; transform: translateY(-10px) scale(.95); opacity: .7; }
+.toasts > .toast[data-depth="2"] { z-index: 1; transform: translateY(-20px) scale(.9); opacity: .4; }
+.toasts[data-paused] { display: flex; flex-direction: column-reverse; align-items: stretch; gap: 8px; }
+.toasts[data-paused] > .toast { transform: none; opacity: 1; }
+.toast { position: relative; overflow: hidden; display: flex; align-items: center; gap: 10px; padding: 12px 8px 14px 14px;
+  background: var(--surface-2); color: var(--fg); border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,.34);
+  font-size: 14px; animation: toast-in .18s ease-out; }
+.toast-i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round;
+  stroke-linejoin: round; color: var(--ok); }
+.toast.bad .toast-i { color: var(--alert); }
+.toast-t { display: grid; gap: 2px; min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.toast-t b { font-weight: 600; }
+.toast-d { color: var(--muted); font-size: 13px; }
+.toast-a { border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); font: inherit; font-weight: 500;
+  font-size: 13px; min-height: 30px; padding: 4px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.toast-a:hover { border-color: var(--muted); }
 .toast-x { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; padding: 4px 8px; cursor: pointer; border-radius: 6px; }
-@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } }
-@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
-@media (max-width: 720px) { .toast { bottom: calc(78px + env(safe-area-inset-bottom, 0px)); } } /* above the tab bar */
+/* the line along the bottom is the timer: its animationend closes the notice */
+.toast-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent); transform-origin: left;
+  animation: toast-drain linear forwards; }
+.toast.bad .toast-bar { background: var(--alert); }
+.toasts[data-paused] .toast-bar { animation-play-state: paused; }
+@keyframes toast-in { from { opacity: 0; translate: 0 8px; } }
+@keyframes toast-drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+/* reduced motion: no slide-in or fanning; the line still drains (it's the timer, and a slow linear bar) */
+@media (prefers-reduced-motion: reduce) { .toast, .toasts > .toast { animation: none; transition: none; } }
+@media (max-width: 720px) { .toasts { left: 16px; right: 16px; width: auto; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); } } /* above the tab bar */
 .opt-col { grid-template-columns: minmax(0, 1fr); }
 .sessions { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .sessions li { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; }

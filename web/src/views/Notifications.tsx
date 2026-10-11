@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ApiError, api, type NotifyChannel, type NotifyChannels, type NotifyTest, type Settings } from "../api/client";
+import { api, type NotifyChannel, type NotifyChannels, type NotifyTest, type Settings } from "../api/client";
 import { useApp } from "../store";
 import { zones } from "../ui/zones";
 import { MenuButton } from "./Menu";
@@ -8,7 +8,7 @@ type Toggle = { key: keyof Settings & `notify_${string}`; label: string; d: stri
 
 /** The approved mockup (docs/design/notifications-mockup.html, 2026-10-10): failures on by default, "a campaign
  * needs you" off; each alert is sent once when the problem starts and once when it's fixed (alerts.py). */
-const TOGGLES: Toggle[] = [
+export const TOGGLES: Toggle[] = [
   { key: "notify_signin", label: "Twitch sign-in stops working", d: "Mining stops until you sign in again with a new code." },
   { key: "notify_unreachable", label: "Twitch can't be reached", d: "",
     minutes: { key: "notify_unreachable_minutes", min: 5, max: 240, before: "Checks have been failing for", after: "minutes." } },
@@ -20,42 +20,43 @@ const TOGGLES: Toggle[] = [
 ];
 
 /** The weekly summary's day (0 = Monday, as the server counts) and hour, in the chosen zone ("" = the server's). */
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
-export function Notifications({ settings, put, serverTz }: {
+/** Settings › Notifications: Alerts, Summaries and rewards, Where they go (settings reorg, 2026-10-11). The
+ * channels live in Settings so its section list can say where notices go. */
+export function Notifications({ settings, put, serverTz, chans, setChans }: {
   settings: Settings | null; put: (c: Partial<Settings>) => Promise<void>; serverTz?: string;
+  chans: NotifyChannels | null; setChans: (c: NotifyChannels) => void;
 }) {
-  const { say } = useApp();
-  const [chans, setChans] = useState<NotifyChannels | null>(null);
+  const { say, sayError } = useApp();
   const [editing, setEditing] = useState<string | null>(null);
   const [test, setTest] = useState<NotifyTest | null>(null);
   const [testing, setTesting] = useState(false);
-  useEffect(() => { api.get<NotifyChannels>("/notify/channels").then(setChans).catch(() => undefined); }, []);
 
   async function change(kind: string, values: Record<string, string>) {
     try { setChans(await api.put<NotifyChannels>(`/notify/channels/${kind}`, { values })); return true; }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't save."); return false; }
+    catch (e) { sayError(e, "Couldn't save"); return false; }
   }
   async function add(kind: string, name: string) {
     if (await change(kind, {})) { setEditing(kind); say(`${name} added`); }
   }
   async function remove(c: NotifyChannel) {
     try { setChans(await api.del<NotifyChannels>(`/notify/channels/${c.type}`)); say(`${c.name} removed`); }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't remove it."); }
+    catch (e) { sayError(e, "Couldn't remove it"); }
   }
   async function sendTest() {
     setTesting(true);
-    try { const r = await api.post<NotifyTest>("/notify/test"); setTest(r); say(r.message); }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't send."); }
+    try { const r = await api.post<NotifyTest>("/notify/test"); setTest(r); say({ title: r.message, tone: r.ok ? "ok" : "bad" }); }
+    catch (e) { sayError(e, "Couldn't send"); }
     finally { setTesting(false); }
   }
 
   return (
+    <>
     <div className="set">
-      <h2>Notifications</h2>
+      <h2>Alerts</h2>
       <p className="nt-hint">Dropwatch tells you when something stops it mining. Each alert is sent once when the problem starts and once when it's fixed.</p>
-      <div className="nt-lab">What to notify</div>
       {TOGGLES.map((t) => (
         <div className="opt" key={t.key}>
           <div><label htmlFor={t.key}>{t.label}</label>
@@ -64,7 +65,9 @@ export function Notifications({ settings, put, serverTz }: {
             onChange={(e) => void put({ [t.key]: e.target.checked })} />
         </div>
       ))}
-      <div className="nt-lab">Summaries and rewards</div>
+    </div>
+    <div className="set">
+      <h2>Summaries and rewards</h2>
       <div className="opt">
         <div><label htmlFor="notify_weekly">Weekly summary</label>
           <div className="d">Every <select className="inline-sel" aria-label="Day" disabled={!settings} value={settings?.notify_weekly_day ?? 6}
@@ -88,7 +91,9 @@ export function Notifications({ settings, put, serverTz }: {
         <input type="checkbox" className="sw" id="notify_claimed" disabled={!settings} checked={!!settings?.notify_claimed}
           onChange={(e) => void put({ notify_claimed: e.target.checked })} />
       </div>
-      <div className="nt-lab">How you're notified</div>
+    </div>
+    <div className="set">
+      <h2>Where they go</h2>
       <div className="nt-how">
         {chans?.channels.map((c) => (
           <ChannelCard key={c.type} c={c} open={editing === c.type} onToggle={() => setEditing(editing === c.type ? null : c.type)}
@@ -105,6 +110,7 @@ export function Notifications({ settings, put, serverTz }: {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -117,7 +123,7 @@ function Minutes({ t, settings, put }: { t: Toggle; settings: Settings | null; p
   function commit() {
     const n = Number(draft);
     if (draft === "" || !Number.isInteger(n) || n < m.min || n > m.max) {
-      say(`Pick ${m.min} to ${m.max} minutes.`);
+      say({ title: "Not saved", detail: `Pick ${m.min} to ${m.max} minutes.`, tone: "bad" });
       if (saved != null) setDraft(String(saved));
       return;
     }

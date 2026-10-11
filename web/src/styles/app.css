@@ -302,6 +302,16 @@ svg.i { width: 16px; height: 16px; flex: none; }
 .todo { margin-top: 4px; font-size: 13px; }
 
 /* ---------- settings ---------- */
+/* section list + one open section (settings-mockup.html package 2); chips on phones, below */
+.split { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 20px; align-items: start; }
+.snav { display: grid; gap: 2px; position: sticky; top: calc(72px + env(safe-area-inset-top, 0px)); }
+.snav a { display: grid; gap: 1px; padding: 9px 12px; border-radius: 8px; color: var(--fg); text-decoration: none; }
+.snav a:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+.snav a small { color: var(--muted); font-size: 12px; }
+.snav a[aria-current] { background: var(--surface-2); box-shadow: inset 3px 0 0 var(--accent); }
+.spane { display: grid; gap: 16px; min-width: 0; }
+.set .sub { padding: 14px 16px 2px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--line); }
+.set h2 + .sub { border-top: 0; padding-top: 6px; }
 .set { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
 .set h2 { padding: 14px 16px 4px; font-size: 15px; }
 .opt { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; padding: 12px 16px; }
@@ -382,6 +392,11 @@ svg.i { width: 16px; height: 16px; flex: none; }
   .g-act { grid-column: 2 / -1; flex-wrap: wrap; gap: 2px; margin-left: -8px; }
   .g-act .btn { padding-inline: 8px; }
   .opt { grid-template-columns: 1fr; }
+  .split { grid-template-columns: 1fr; gap: 14px; }
+  .snav { position: static; display: flex; gap: 6px; overflow-x: auto; margin-inline: -16px; padding: 0 16px 4px; scrollbar-width: none; }
+  .snav a { flex: none; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; color: var(--muted); background: var(--surface); }
+  .snav a small { display: none; }
+  .snav a[aria-current] { color: var(--fg); border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); background: var(--surface-2); box-shadow: none; }
   .banner { grid-template-columns: auto minmax(0, 1fr); }
   .banner-acts { grid-column: 2; }
   .sw { width: 48px; height: 28px; }

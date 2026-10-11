@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { ApiError, api, type Campaign, type Lists, type State } from "../api/client";
+import { api, type Campaign, type Lists, type State } from "../api/client";
 import { useLists } from "../lists";
 import { go } from "../router";
 import { useApp } from "../store";
@@ -15,7 +15,7 @@ export function OverviewView() {
   const { state, connection, lostSince } = useApp();
   const { lists, save } = useLists();
   const phone = useNarrow();
-  const { say } = useApp();
+  const { say, sayError } = useApp();
   if (!state) {
     return (
       <section className="view" aria-labelledby="h-overview"><h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1>
@@ -32,30 +32,31 @@ export function OverviewView() {
   async function undoOn(change: (now: Lists) => Lists, done: string) {
     try {
       const now = await api.get<Lists>("/lists");
-      say((await save(change(now))) ?? done);
-    } catch (e) { say(e instanceof ApiError ? e.message : "Couldn't undo."); }
+      const err = await save(change(now));
+      say(err ? { title: "Couldn't undo", detail: err, tone: "bad" } : { title: "Undone", detail: done });
+    } catch (e) { sayError(e, "Couldn't undo"); }
   }
   async function never(game: string) {
     if (!lists) return;
     const at = lists.priority.indexOf(game);  // to put it back where it was
     const msg = await save({ ...lists, priority: lists.priority.filter((g) => g !== game), never: [...lists.never, game] });
-    if (msg) { say(msg); return; }
-    say(`${game} moved to Never`, () => void undoOn((now) => {
+    if (msg) { say({ title: "Couldn't move it to Never", detail: msg, tone: "bad" }); return; }
+    say({ title: "Moved to Never", detail: `${game} won't be mined.` }, () => void undoOn((now) => {
       const priority = now.priority.filter((g) => g !== game);
       if (at >= 0) priority.splice(Math.min(at, priority.length), 0, game);
       return { ...now, never: now.never.filter((g) => g !== game), priority };
-    }, `${game} is back`));
+    }, `${game} can be mined again.`));
   }
   async function prioritise(game: string) {
     if (!lists) return;
     const wasNever = lists.never.includes(game);
     const priority = [...lists.priority.filter((g) => g !== game), game];
     const msg = await save({ ...lists, priority, never: lists.never.filter((g) => g !== game) });
-    if (msg) { say(msg); return; }
-    say(`${game} added to Priority, position ${priority.length}`, () => void undoOn((now) => ({
+    if (msg) { say({ title: "Couldn't add it to Priority", detail: msg, tone: "bad" }); return; }
+    say({ title: "Added to Priority", detail: `${game} is number ${priority.length}.` }, () => void undoOn((now) => ({
       ...now, priority: now.priority.filter((g) => g !== game),
       never: wasNever && !now.never.includes(game) ? [...now.never, game] : now.never,
-    }), `${game} taken off Priority`));
+    }), `${game} is off Priority.`));
   }
   const needs = <NeedsYou key="needs" state={state} onNever={never} />;
   const now = <NowSlot key="now" state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf} />;
@@ -96,7 +97,7 @@ function LostBanner({ lostSince }: { lostSince: Date | null }) {
 }
 
 function Banner({ state, lost, lostSince }: { state: State; lost: boolean; lostSince: Date | null }) {
-  const { refreshState, say } = useApp();
+  const { refreshState, say, sayError } = useApp();
   if (lost) return <LostBanner lostSince={lostSince} />;
   if (state.state === "signed_out") {
     return (
@@ -115,7 +116,7 @@ function Banner({ state, lost, lostSince }: { state: State; lost: boolean; lostS
           <div className="banner-b">{until ? `Nothing is being mined for the next ${dur(minutesUntil(until))}. ` : "Nothing is being mined. "}Progress is kept.</div></div>
         <div className="banner-acts"><button className="btn strong" type="button" onClick={async () => {
           try { await api.post("/resume"); say("Mining resumed."); }
-          catch (e) { say(e instanceof ApiError ? e.message : "Couldn't resume."); }
+          catch (e) { sayError(e, "Couldn't resume"); }
           void refreshState();
         }}>Resume now</button></div>
       </div>
@@ -157,7 +158,7 @@ function NowSlot({ state, lost, lostSince, priorityOf }: { state: State; lost: b
 
 /** A watch-streak visit (Settings > Mining): drops wait a few minutes while a favourite's new stream is watched. */
 function StreakVisit({ visit, next }: { visit: NonNullable<State["streak_visit"]>; next: string | null }) {
-  const { refreshState, say } = useApp();
+  const { refreshState, say, sayError } = useApp();
   const [busy, setBusy] = useState(false);
   return (
     <section className="idle" aria-labelledby="h-streak">
@@ -168,7 +169,7 @@ function StreakVisit({ visit, next }: { visit: NonNullable<State["streak_visit"]
         if (busy) return;
         setBusy(true);
         try { await api.post("/streak/end"); say("Back to drops."); }
-        catch (e) { say(e instanceof ApiError ? e.message : "Couldn't stop the visit."); }
+        catch (e) { sayError(e, "Couldn't stop the visit"); }
         finally { setBusy(false); void refreshState(); }
       }}>Back to drops now</button></div>
     </section>
@@ -180,7 +181,7 @@ const VERDICT: Record<string, [string, string]> = {
 };
 
 function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string, ordinal?: boolean) => string | null }) {
-  const { say, refreshState } = useApp();
+  const { say, sayError, refreshState } = useApp();
   const [allOpen, setAllOpen] = useState(false);
   const [dismissed, setDismissed] = useState<string | null>(null);
   const cur = state.current!;
@@ -202,12 +203,12 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
 
   async function pause(minutes: number | null) {
     try { await api.post("/pause", { minutes }); say("Paused. Progress is kept."); }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't pause."); }
+    catch (e) { sayError(e, "Couldn't pause"); }
     void refreshState();
   }
   async function useChannel(login: string) {
     try { await api.post("/channel", { login }); say(`Switched to ${login}`); }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't switch channel."); }
+    catch (e) { sayError(e, "Couldn't switch channel"); }
     void refreshState();
   }
 
@@ -277,7 +278,7 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
 }
 
 function Idle({ state }: { state: State }) {
-  const { refreshState, say } = useApp();
+  const { refreshState, say, sayError } = useApp();
   const [busy, setBusy] = useState(false);
   const line = state.first_in_line;
   const next = state.next_check_at ? minutesUntil(state.next_check_at) : null;
@@ -291,7 +292,7 @@ function Idle({ state }: { state: State }) {
         if (busy) return;
         setBusy(true);
         try { await api.post("/refresh"); say("Checked for live channels."); }
-        catch (e) { say(e instanceof ApiError ? e.message : "Couldn't check."); }
+        catch (e) { sayError(e, "Couldn't check"); }
         finally { setBusy(false); void refreshState(); }
       }}>Check now</button></div>
     </section>
@@ -314,7 +315,7 @@ function firstReward(c: Campaign) {
 }
 
 function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) => void }) {
-  const { refreshState, say } = useApp();
+  const { refreshState, say, sayError } = useApp();
   if (!state.needs_you.length) return null;
   return (
     <Sec id="needs" title="Needs you" count={state.needs_you.length} aside="Can't be mined until you act">
@@ -344,7 +345,7 @@ function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) =>
                 {c.maybe_unlinked && (
                   <button className="btn" type="button" aria-label={`Try ${c.name} again`} onClick={async () => {
                     try { await api.post("/mine-now", { campaign_id: c.id }); say(`Trying ${c.name} again`); }
-                    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't start it."); }
+                    catch (e) { sayError(e, "Couldn't start it"); }
                     void refreshState();
                   }}>Mine now</button>
                 )}

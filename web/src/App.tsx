@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { type View, useView } from "./router";
 import { ConnectScreen } from "./screens/Connect";
 import { LoginScreen, SetupScreen } from "./screens/PagePassword";
-import { AppProvider, Toast, useApp } from "./store";
+import { AppProvider, Toasts, useApp } from "./store";
 import type { State } from "./api/client";
 import { CheckTwitch } from "./ui/CheckTwitch";
 import { milestones } from "./views/Track";
@@ -131,7 +131,7 @@ function Shell() {
         <div id="live" className="sr" aria-live="polite">{announcement}</div>
         {tabs && <UpdateNotice />}
         {body}
-        <Toast />
+        <Toasts />
       </main>
     </>
   );

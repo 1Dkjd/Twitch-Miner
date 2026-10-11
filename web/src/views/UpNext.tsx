@@ -2,7 +2,7 @@ import { DndContext, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, us
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS as DndCSS } from "@dnd-kit/utilities";
 import { useEffect, useState } from "react";
-import { ApiError, api, type Campaign, type Settings, type State } from "../api/client";
+import { api, type Campaign, type Settings, type State } from "../api/client";
 import { useApp } from "../store";
 import { NB, boxArt, clock, day, dur } from "../ui/format";
 import { Icon } from "../ui/Icons";
@@ -17,7 +17,7 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   state: State; priorityOf: (g: string, ordinal?: boolean) => string | null; onNever: (game: string) => void;
   onPriority: (game: string) => void;
 }) {
-  const { refreshState, say } = useApp();
+  const { refreshState, say, sayError } = useApp();
   const [all, setAll] = useState(false);
   const [filter, setFilter] = useState("");
   const [arrange, setArrange] = useState<boolean | null>(null);
@@ -38,13 +38,13 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
 
   async function savePins(next: string[], said: string) {
     try { setPins((await api.put<{ pins: string[] }>("/pins", { pins: next })).pins); say(said); }
-    catch (e) { say(e instanceof ApiError ? e.message : "Couldn't save the order."); }
+    catch (e) { sayError(e, "Couldn't save the order"); }
     void refreshState();
   }
   async function toggle(on: boolean) {
     setArrange(on);
     try { await api.put("/settings", { arrange_up_next: on }); say(on ? "Arrange myself is on" : "Back to the automatic order"); }
-    catch (e) { setArrange(!on); say(e instanceof ApiError ? e.message : "Couldn't save."); }
+    catch (e) { setArrange(!on); sayError(e, "Couldn't save"); }
     void refreshState();
   }
   // the pinned campaigns shown in Up next, in order: the one being mined (or one with no live channel)
@@ -77,7 +77,7 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
       pinIndex={visiblePins.indexOf(c.id)} pinCount={visiblePins.length}
       onMineNow={async () => {
         try { await api.post("/mine-now", { campaign_id: c.id }); say(`Mining ${c.name} now`); }
-        catch (e) { say(e instanceof ApiError ? e.message : "Couldn't switch to it."); }
+        catch (e) { sayError(e, "Couldn't switch to it"); }
         void refreshState();
       }}
       onNever={() => onNever(c.game)}
