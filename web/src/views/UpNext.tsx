@@ -13,8 +13,9 @@ const SHOWN = 5;
 /** Up next (approved mockup docs/design/next-features-mockup.html, 2026-10-10): a filter over every queued
  * campaign, a red warning on a campaign that would end before its turn, and "Arrange myself" pins that go
  * first after Priority in Nick's order (drag, or the arrows). The rest stays in the automatic order. */
-export function UpNext({ state, priorityOf, onNever }: {
+export function UpNext({ state, priorityOf, onNever, onPriority }: {
   state: State; priorityOf: (g: string, ordinal?: boolean) => string | null; onNever: (game: string) => void;
+  onPriority: (game: string) => void;
 }) {
   const { refreshState, say } = useApp();
   const [all, setAll] = useState(false);
@@ -80,6 +81,7 @@ export function UpNext({ state, priorityOf, onNever }: {
         void refreshState();
       }}
       onNever={() => onNever(c.game)}
+      onPriority={() => onPriority(c.game)}
       onPin={() => savePins([...pins, c.id], `${c.name} pinned`)}
       onUnpin={() => savePins(pins.filter((p) => p !== c.id), `${c.name} unpinned`)}
       onMove={(by) => move(c.id, by)} />
@@ -124,10 +126,15 @@ export function UpNext({ state, priorityOf, onNever }: {
   );
 }
 
-function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, onMineNow, onNever, onPin, onUnpin, onMove }: {
+function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, onMineNow, onNever, onPriority, onPin, onUnpin, onMove }: {
   c: Campaign; pr: string | null; arrange: boolean; pinned: boolean; pinIndex: number; pinCount: number;
-  onMineNow: () => void; onNever: () => void; onPin: () => void; onUnpin: () => void; onMove: (by: number) => void;
+  onMineNow: () => void; onNever: () => void; onPriority: () => void; onPin: () => void; onUnpin: () => void;
+  onMove: (by: number) => void;
 }) {
+  // offered only for games not on Priority yet (pr is their "Priority N" label)
+  const addToPriority = !pr && (
+    <button className="btn quiet" type="button" aria-label={`Add ${c.game} to Priority`} onClick={onPriority}>Add to Priority</button>
+  );
   const sortable = useSortable({ id: c.id, disabled: !pinned });
   const { watched, max } = milestones(c.drops);
   const firstOpen = [...c.drops].filter((x) => !x.claimed && x.rewards.length).sort((a, b) => a.required_minutes - b.required_minutes)[0];
@@ -152,6 +159,7 @@ function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, onMineNow, onNe
         )}
         {!arrange && <>
           <button className="btn" type="button" aria-label={`Mine ${c.name} now`} onClick={onMineNow}>Mine now</button>
+          {addToPriority}
           <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={onNever}>Never mine</button>
         </>}
         {arrange && pinned && <>
@@ -162,6 +170,7 @@ function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, onMineNow, onNe
         </>}
         {arrange && !pinned && <>
           <button className="btn" type="button" aria-label={`Pin ${c.name} to the top`} onClick={onPin}>Pin to top</button>
+          {addToPriority}
           <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={onNever}>Never mine</button>
         </>}
       </div>

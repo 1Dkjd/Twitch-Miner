@@ -155,3 +155,5 @@ button.row.hx { width: 100%; text-align: left; background: none; border: 0; colo
 .row .why { margin-top: 6px; font-size: 13px; color: var(--muted); }
 .row-art.gone img { opacity: .4; filter: grayscale(.6); }
 .opt .d .inline-sel { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; color: var(--fg); font: inherit; padding: 1px 6px; }
+/* Up next rows can carry three buttons (Pin / Add to Priority / Never mine): on phones they wrap */
+@media (max-width: 720px) { #up-next-list .row-acts { flex-wrap: wrap; row-gap: 4px; } }
