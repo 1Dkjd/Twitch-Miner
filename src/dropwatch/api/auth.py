@@ -79,17 +79,12 @@ async def health() -> dict:
 async def miner_health(request: Request, response: Response) -> dict:
     """Docker's health check (no sign-in, nothing private): 503 when mining crashed or stopped ticking, so
     Unraid's autoheal restarts the container. Signed out, paused or idle are healthy."""
-    from ..runner import HEALTH_STALL
+    from ..maintenance import miner_health
     ctx = _ctx(request)
-    if crashed := getattr(ctx.service, "crashed", None):
+    ok, why = miner_health(ctx.service, ctx.clock())
+    if not ok:
         response.status_code = 503
-        return {"ok": False, "reason": f"mining loop crashed ({crashed})"}
-    runner = ctx.service.runner
-    last = getattr(runner, "last_tick", None) if runner else None
-    if last is not None and ctx.clock() - last > HEALTH_STALL:
-        response.status_code = 503
-        return {"ok": False, "reason": f"no tick since {last.isoformat()}"}
-    return {"ok": True, "reason": "mining" if runner else "not mining"}
+    return {"ok": ok, "reason": why}
 
 
 @public.get("/me", response_model=MeOut)

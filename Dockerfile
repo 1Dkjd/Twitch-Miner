@@ -30,7 +30,8 @@ ENV DROPWATCH_COMMIT=$DROPWATCH_COMMIT \
     DROPWATCH_DATA=/data \
     DROPWATCH_WEB=/app/web/dist \
     PATH=/app/.venv/bin:$PATH \
-    PUID=99 PGID=100 TZ=UTC
+    PUID=99 PGID=100 TZ=UTC \
+    DROPWATCH_EXIT_WHEN_STUCK=1
 # Unraid's user 99 (nobody) and group 100 (users) by default, so the host can read /data without sudo
 
 EXPOSE 5800

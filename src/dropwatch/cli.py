@@ -122,6 +122,18 @@ async def keep_images(store: Store, images) -> None:
         await asyncio.sleep(KEEP_IMAGES_EVERY_S)
 
 
+WATCHDOG_EVERY_S = 60
+
+
+async def watch_health(service) -> None:
+    """Docker only: exit a stuck or crashed miner so the restart policy brings it back."""
+    from .maintenance import Watchdog, miner_health
+    dog = Watchdog(lambda: miner_health(service, datetime.now(UTC)))
+    while True:
+        await asyncio.sleep(WATCHDOG_EVERY_S)
+        dog.check()
+
+
 async def serve(store: Store, host: str, port: int) -> int:
     import uvicorn
 
@@ -153,6 +165,8 @@ async def serve(store: Store, host: str, port: int) -> int:
     alerts = asyncio.create_task(notifier.run(
         bus, lambda: snapshot_of(service.runner), lambda t, b: send_all(store.get_channels(), t, b)))
     keeper = asyncio.create_task(keep_images(store, images))
+    stuck_exits = os.environ.get("DROPWATCH_EXIT_WHEN_STUCK") == "1"  # the Docker image sets it
+    watchdog = asyncio.create_task(watch_health(service)) if stuck_exits else None
     from .maintenance import backup_on_upgrade
     from .version import VERSION, build_info
     backup_on_upgrade(store, f"{VERSION}+{build_info() or 'unknown'}")
@@ -166,6 +180,8 @@ async def serve(store: Store, host: str, port: int) -> int:
     finally:
         alerts.cancel()
         keeper.cancel()
+        if watchdog:
+            watchdog.cancel()
         await service.stop()
     return 0
 

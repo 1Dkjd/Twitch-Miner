@@ -57,3 +57,34 @@ def test_a_new_build_backs_up_the_database_and_keeps_the_last_few(tmp_path):
     for b in ("ccc", "ddd", "eee"):
         backup_on_upgrade(st, f"0.1.0+main@{b}")
     assert len(list(tmp_path.glob("drops.db.before-*"))) == BACKUP_KEEP
+
+
+async def test_the_watchdog_exits_only_after_two_bad_checks_in_a_row(tmp_path):
+    from dropwatch.maintenance import Watchdog
+    exits = []
+    state = {"ok": True}
+    dog = Watchdog(lambda: (state["ok"], "x"), exit=lambda code: exits.append(code))
+    dog.check()
+    state["ok"] = False
+    dog.check()
+    assert exits == []  # one bad check could be a moment's hiccup
+    state["ok"] = True
+    dog.check()
+    state["ok"] = False
+    dog.check()
+    assert exits == []  # not consecutive
+    dog.check()
+    assert exits == [3]
+
+
+def test_health_logic_is_shared(tmp_path):
+    from types import SimpleNamespace
+
+    from dropwatch.maintenance import miner_health
+    ok, _ = miner_health(SimpleNamespace(crashed=None, runner=None), NOW)
+    assert ok
+    bad, why = miner_health(SimpleNamespace(crashed="KeyError", runner=None), NOW)
+    assert not bad and "crashed" in why
+    late = NOW - HEALTH_STALL - timedelta(seconds=1)
+    stuck = SimpleNamespace(crashed=None, runner=SimpleNamespace(last_tick=late))
+    assert miner_health(stuck, NOW)[0] is False

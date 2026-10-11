@@ -1,9 +1,13 @@
-"""Housekeeping for long-running installs (Docker, 2026-10-11): a database copy before an upgrade."""
+"""Housekeeping for long-running installs (Docker, 2026-10-11): a database copy before an upgrade, and the
+miner's health (the Docker health check and the watchdog that exits a stuck miner so Docker restarts it)."""
 from __future__ import annotations
 
 import logging
+import os
 import re
 import sqlite3
+from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 
 log = logging.getLogger("dropwatch.maintenance")
@@ -33,3 +37,34 @@ def backup_on_upgrade(store, build: str) -> Path | None:
             old.unlink(missing_ok=True)
     store.set_setting("last_build", build)
     return made
+
+
+def miner_health(service, now: datetime) -> tuple[bool, str]:
+    """(healthy, why). Mining crashed, or no tick for HEALTH_STALL, is unhealthy; signed out, paused or idle
+    are not faults."""
+    from .runner import HEALTH_STALL
+    if crashed := getattr(service, "crashed", None):
+        return False, f"mining loop crashed ({crashed})"
+    runner = service.runner
+    last = getattr(runner, "last_tick", None) if runner else None
+    if last is not None and now - last > HEALTH_STALL:
+        return False, f"no tick since {last.isoformat()}"
+    return True, "mining" if runner else "not mining"
+
+
+class Watchdog:
+    """Exits the process after two unhealthy checks in a row, so Docker's restart policy starts a fresh
+    miner (Unraid runs no autoheal container). Only on when DROPWATCH_EXIT_WHEN_STUCK=1 (the image sets it);
+    on a PC there is nothing to restart it."""
+
+    STRIKES = 2
+
+    def __init__(self, health: Callable[[], tuple[bool, str]], exit: Callable[[int], None] = os._exit):
+        self._health, self._exit, self._strikes = health, exit, 0
+
+    def check(self) -> None:
+        ok, why = self._health()
+        self._strikes = 0 if ok else self._strikes + 1
+        if self._strikes >= self.STRIKES:
+            log.error("Miner unhealthy twice in a row (%s); exiting so Docker restarts it", why)
+            self._exit(3)
