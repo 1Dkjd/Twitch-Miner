@@ -16,7 +16,7 @@ from ..notify import CHANNELS, configured, send_all, summary
 from ..runner import State
 from ..store import EVENT_RETENTION
 from ..version import VERSION, build_info, server_tz
-from .auth import LoginLimiter, private_auth, public, require_session
+from .auth import COOKIE, LoginLimiter, private_auth, public, require_session
 from .models import (
     AboutOut,
     ActivityEvent,
@@ -36,7 +36,10 @@ from .models import (
     NotifyTestOut,
     PauseIn,
     Pins,
+    PointsOut,
     RestoreOut,
+    SessionOut,
+    SessionsOut,
     SettingsIn,
     SettingsOut,
     SignInStatus,
@@ -70,7 +73,9 @@ def _c(request: Request) -> AppContext:
 @api.get("/state", response_model=StateOut)
 async def get_state(request: Request) -> StateOut:
     ctx = _c(request)
-    return state_view(ctx.service.runner, ctx.store, ctx.clock())
+    out = state_view(ctx.service.runner, ctx.store, ctx.clock())
+    out.build = f"{VERSION}+{build_info() or 'unknown'}"
+    return out
 
 
 def _lists(ctx) -> ListsOut:
@@ -168,6 +173,44 @@ async def post_restore(request: Request) -> RestoreOut:
     if ctx.service.runner is not None:
         await ctx.service.runner.replan()
     return RestoreOut(skipped=skipped)
+
+
+def _device(ua: str) -> str:
+    """A rough "Browser on OS" from a user agent; good enough to tell your own browsers apart."""
+    if not ua:
+        return "Older sign-in (no details kept)"  # signed in before the list existed (2026-10-11)
+    os_ = next((name for key, name in (("iPhone", "iPhone"), ("iPad", "iPad"), ("Android", "Android"),
+                                         ("Windows", "Windows"), ("Mac OS X", "Mac"), ("CrOS", "ChromeOS"),
+                                         ("Linux", "Linux")) if key in ua), None)
+    browsers = (("Edg/", "Edge"), ("OPR/", "Opera"), ("Firefox/", "Firefox"), ("Chrome/", "Chrome"),
+                ("Safari/", "Safari"))
+    browser = next((name for key, name in browsers if key in ua), None)
+    if browser and os_:
+        return f"{browser} on {os_}"
+    return browser or os_ or "Unknown browser"
+
+
+@api.get("/sessions", response_model=SessionsOut)
+async def get_sessions(request: Request) -> SessionsOut:
+    """Settings: the browsers signed in to this page."""
+    ctx = _c(request)
+    mine = ctx.store.session_hash(request.cookies.get(COOKIE, ""))
+    rows = ctx.store.web_sessions(ctx.clock())
+    out = [SessionOut(id=r["id"], device=_device(r["user_agent"]), created_at=r["created_at"],
+                      last_seen_at=r["last_seen_at"], current=r["hash"] == mine) for r in rows]
+    out.sort(key=lambda s: not s.current)  # this browser first
+    return SessionsOut(sessions=out)
+
+
+@api.delete("/sessions/{session_id}", status_code=204)
+async def delete_session(session_id: str, request: Request) -> None:
+    if not _c(request).store.delete_web_session_by_id(session_id):
+        raise HTTPException(404, "No browser like that is signed in.")
+
+
+@api.post("/sessions/sign-out-others", status_code=204)
+async def sign_out_others(request: Request) -> None:
+    _c(request).store.delete_other_web_sessions(request.cookies.get(COOKIE, ""))
 
 
 @api.get("/about", response_model=AboutOut)
@@ -293,7 +336,9 @@ async def get_history(request: Request, days: int = Query(30, ge=1, le=365)) -> 
     ctx = _c(request)
     now = ctx.clock()
     since = now - timedelta(days=days)
-    return history_view(ctx.store.claims_since(since), ctx.store.missed_between(since, now), ctx.images)
+    out = history_view(ctx.store.claims_since(since), ctx.store.missed_between(since, now), ctx.images)
+    out.points = PointsOut(**ctx.store.points_since(since))
+    return out
 
 
 def _runner(ctx):

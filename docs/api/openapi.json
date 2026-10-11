@@ -550,6 +550,13 @@
       "title": "Missed",
       "type": "array"
      },
+     "points": {
+      "$ref": "#/components/schemas/PointsOut",
+      "default": {
+       "chests": 0,
+       "points": 0
+      }
+     },
      "total_rewards": {
       "title": "Total Rewards",
       "type": "integer"
@@ -994,6 +1001,22 @@
     "title": "Pins",
     "type": "object"
    },
+   "PointsOut": {
+    "properties": {
+     "chests": {
+      "default": 0,
+      "title": "Chests",
+      "type": "integer"
+     },
+     "points": {
+      "default": 0,
+      "title": "Points",
+      "type": "integer"
+     }
+    },
+    "title": "PointsOut",
+    "type": "object"
+   },
    "RestoreOut": {
     "properties": {
      "skipped": {
@@ -1026,6 +1049,71 @@
      "image_url"
     ],
     "title": "RewardOut",
+    "type": "object"
+   },
+   "SessionOut": {
+    "properties": {
+     "created_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Created At"
+     },
+     "current": {
+      "title": "Current",
+      "type": "boolean"
+     },
+     "device": {
+      "title": "Device",
+      "type": "string"
+     },
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "last_seen_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Seen At"
+     }
+    },
+    "required": [
+     "id",
+     "device",
+     "created_at",
+     "last_seen_at",
+     "current"
+    ],
+    "title": "SessionOut",
+    "type": "object"
+   },
+   "SessionsOut": {
+    "properties": {
+     "sessions": {
+      "items": {
+       "$ref": "#/components/schemas/SessionOut"
+      },
+      "title": "Sessions",
+      "type": "array"
+     }
+    },
+    "required": [
+     "sessions"
+    ],
+    "title": "SessionsOut",
     "type": "object"
    },
    "SettingsIn": {
@@ -1401,6 +1489,11 @@
    },
    "StateOut": {
     "properties": {
+     "build": {
+      "default": "",
+      "title": "Build",
+      "type": "string"
+     },
      "catalog": {
       "anyOf": [
        {
@@ -1803,6 +1896,27 @@
      }
     },
     "summary": "Health"
+   }
+  },
+  "/api/health/miner": {
+   "get": {
+    "description": "Docker's health check, open without sign-in, so it says only ok or not (the reason is logged): 503\nwhen mining crashed or stopped ticking. Signed out, paused or idle are healthy.",
+    "operationId": "miner_health_api_health_miner_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response Miner Health Api Health Miner Get",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Miner Health"
    }
   },
   "/api/history": {
@@ -2242,6 +2356,68 @@
      }
     },
     "summary": "Resume"
+   }
+  },
+  "/api/sessions": {
+   "get": {
+    "description": "Settings: the browsers signed in to this page.",
+    "operationId": "get_sessions_api_sessions_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SessionsOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Sessions"
+   }
+  },
+  "/api/sessions/sign-out-others": {
+   "post": {
+    "operationId": "sign_out_others_api_sessions_sign_out_others_post",
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Sign Out Others"
+   }
+  },
+  "/api/sessions/{session_id}": {
+   "delete": {
+    "operationId": "delete_session_api_sessions__session_id__delete",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "session_id",
+      "required": true,
+      "schema": {
+       "title": "Session Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Delete Session"
    }
   },
   "/api/settings": {

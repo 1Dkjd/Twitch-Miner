@@ -2,8 +2,10 @@ import { useEffect, type ReactNode } from "react";
 import { type View, useView } from "./router";
 import { ConnectScreen } from "./screens/Connect";
 import { LoginScreen, SetupScreen } from "./screens/PagePassword";
-import { AppProvider, useApp } from "./store";
+import { AppProvider, Toast, useApp } from "./store";
+import type { State } from "./api/client";
 import { CheckTwitch } from "./ui/CheckTwitch";
+import { milestones } from "./views/Track";
 import { Icon, IconSprite, Mark, type IconName } from "./ui/Icons";
 import { ActivityView } from "./views/Activity";
 import { HistoryView } from "./views/History";
@@ -75,9 +77,38 @@ function MinerDown() {
   );
 }
 
+/** The browser tab's title: progress while mining, so a background tab shows how it's going. */
+export function titleFor(state: State | null, viewTitle: string): string {
+  const c = state?.current?.campaign;
+  const mining = state?.state === "mining" || state?.state === "switched";
+  if (!c || !mining || state?.streak_visit) return `${viewTitle} · Dropwatch`;
+  const { watched, max } = milestones(c.drops);  // drops share watch time: the furthest one, as the track shows
+  return `${watched}/${max} min · ${c.name} · Dropwatch`;
+}
+
+/** Shown when the server runs a newer build than this page (a tab left open across an update). */
+export function UpdateNotice() {
+  const { updated } = useApp();
+  if (!updated) return null;
+  return (
+    <div className="banner" data-tone="note" role="status"><Icon name="refresh" />
+      <div><div className="banner-t">Dropwatch was updated</div>
+        <div className="banner-b">This page is from before the update. Reload to get the new one.</div></div>
+      <div className="banner-acts"><button className="btn" type="button" onClick={() => location.reload()}>Reload</button></div>
+    </div>
+  );
+}
+
+const VIEW_TITLES: Record<string, string> = {
+  overview: "Overview", priorities: "Priorities", history: "History", activity: "Activity", settings: "Settings",
+};
+
 function Shell() {
-  const { me, announcement, connection } = useApp();
+  const { me, announcement, connection, state } = useApp();
   const view = useView();
+  useEffect(() => {
+    if (me?.authenticated && view !== "connect") document.title = titleFor(state, VIEW_TITLES[view] ?? "Dropwatch");
+  }, [me, state, view]);
   useEffect(() => {
     if (me?.setup_required) document.title = "Set up · Dropwatch";
     else if (me && !me.authenticated) document.title = "Sign in · Dropwatch";
@@ -98,7 +129,9 @@ function Shell() {
       <TopBar view={view} tabs={tabs} />
       <main className="wrap">
         <div id="live" className="sr" aria-live="polite">{announcement}</div>
+        {tabs && <UpdateNotice />}
         {body}
+        <Toast />
       </main>
     </>
   );

@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS events (at TEXT NOT NULL, kind TEXT NOT NULL, data TE
 CREATE TABLE IF NOT EXISTS claims (at TEXT NOT NULL, campaign_id TEXT NOT NULL, campaign TEXT NOT NULL,
   game TEXT NOT NULL, rewards TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS web_sessions (token_hash TEXT PRIMARY KEY, expires_at TEXT NOT NULL);
+-- channel points gained (2026-10-11), from PubSub points-earned: History and the weekly summary add them up
+CREATE TABLE IF NOT EXISTS points_log (at TEXT NOT NULL, channel TEXT, reason TEXT NOT NULL,
+  points INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS seen_channels (login TEXT PRIMARY KEY, game TEXT NOT NULL,
   last_seen TEXT NOT NULL);
 -- History "Missed" (2026-10-10): the last thing Dropwatch knew about each campaign, kept after it ends
@@ -47,6 +50,8 @@ CLAIM_DETAIL_COLUMNS = (("minutes", "INTEGER"), ("channel", "TEXT"), ("campaign_
                         ("campaign_ends", "TEXT"), ("box_art_url", "TEXT"))
 EVENT_RETENTION = timedelta(days=7)
 SESSION_TTL = timedelta(days=30)
+SESSION_SEEN_EVERY = timedelta(minutes=5)  # how often a session's "last seen" is written
+SESSION_ID_LEN = 16
 SEEN_KEEP = timedelta(days=30)  # channels seen live, for the favourites add box
 MIN_PASSWORD = 8
 SETTINGS: dict[str, type] = {
@@ -87,6 +92,11 @@ class Store:
         for col, kind in CLAIM_DETAIL_COLUMNS:
             if col not in have:
                 self._db.execute(f"ALTER TABLE claims ADD COLUMN {col} {kind}")
+        # 2026-10-11: Settings lists the signed-in browsers; older rows read back with no details
+        have = {row[1] for row in self._db.execute("PRAGMA table_info(web_sessions)")}
+        for col in ("created_at", "last_seen_at", "user_agent"):
+            if col not in have:
+                self._db.execute(f"ALTER TABLE web_sessions ADD COLUMN {col} TEXT")
         self._db.commit()
 
     def close(self) -> None:
@@ -358,11 +368,14 @@ class Store:
     def _token_hash(token: str) -> str:
         return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
-    def create_web_session(self, now: datetime) -> str:
+    def create_web_session(self, now: datetime, user_agent: str = "") -> str:
         token = secrets.token_urlsafe(32)
+        at = now.astimezone(UTC).isoformat()
         with self._db:
-            self._db.execute("INSERT INTO web_sessions VALUES (?, ?)",
-                             (self._token_hash(token), (now + SESSION_TTL).astimezone(UTC).isoformat()))
+            expires = (now + SESSION_TTL).astimezone(UTC).isoformat()
+            self._db.execute("INSERT INTO web_sessions (token_hash, expires_at, created_at, last_seen_at,"
+                             " user_agent) VALUES (?, ?, ?, ?, ?)",
+                             (self._token_hash(token), expires, at, at, user_agent[:300]))
             self._db.execute("DELETE FROM web_sessions WHERE expires_at < ?",
                              (now.astimezone(UTC).isoformat(),))
         return token
@@ -370,9 +383,56 @@ class Store:
     def valid_web_session(self, token: str | None, now: datetime) -> bool:
         if not token:
             return False
-        row = self._db.execute("SELECT expires_at FROM web_sessions WHERE token_hash = ?",
-                               (self._token_hash(token),)).fetchone()
-        return bool(row) and datetime.fromisoformat(row[0]) > now
+        h = self._token_hash(token)
+        row = self._db.execute("SELECT expires_at, last_seen_at FROM web_sessions WHERE token_hash = ?",
+                               (h,)).fetchone()
+        if not row or datetime.fromisoformat(row[0]) <= now:
+            return False
+        # not a write per request
+        if not row[1] or now - datetime.fromisoformat(row[1]) >= SESSION_SEEN_EVERY:
+            with self._db:
+                self._db.execute("UPDATE web_sessions SET last_seen_at = ? WHERE token_hash = ?",
+                                 (now.astimezone(UTC).isoformat(), h))
+        return True
+
+    def web_sessions(self, now: datetime) -> list[dict]:
+        """Signed-in browsers, most recently seen first. id is a prefix of the token's hash, never the
+        token."""
+        rows = self._db.execute("SELECT token_hash, created_at, last_seen_at, user_agent FROM web_sessions "
+                                "WHERE expires_at > ? ORDER BY COALESCE(last_seen_at, '') DESC",
+                                (now.astimezone(UTC).isoformat(),))
+        return [{"hash": h, "id": h[:SESSION_ID_LEN], "created_at": c, "last_seen_at": s,
+                 "user_agent": ua or ""} for h, c, s, ua in rows]
+
+    def session_hash(self, token: str) -> str:
+        return self._token_hash(token)
+
+    def delete_web_session_by_id(self, session_id: str) -> bool:
+        if len(session_id) != SESSION_ID_LEN:
+            return False
+        with self._db:
+            cur = self._db.execute("DELETE FROM web_sessions WHERE substr(token_hash, 1, ?) = ?",
+                                   (SESSION_ID_LEN, session_id))
+        return cur.rowcount > 0
+
+    def delete_other_web_sessions(self, keep_token: str) -> None:
+        with self._db:
+            self._db.execute("DELETE FROM web_sessions WHERE token_hash != ?",
+                             (self._token_hash(keep_token),))
+
+    # --- channel points gained (History, weekly summary)
+    def add_points(self, at: datetime, channel: str | None, reason: str, points: int) -> None:
+        with self._db:
+            self._db.execute("INSERT INTO points_log VALUES (?, ?, ?, ?)",
+                             (at.astimezone(UTC).isoformat(), channel, reason, int(points)))
+            self._db.execute("DELETE FROM points_log WHERE at < ?",
+                             ((at - CAMPAIGN_LOG_KEEP).astimezone(UTC).isoformat(),))
+
+    def points_since(self, since: datetime) -> dict:
+        row = self._db.execute("SELECT COALESCE(SUM(points), 0), COALESCE(SUM(reason = 'CLAIM'), 0) "
+                               "FROM points_log WHERE at >= ?",
+                               (since.astimezone(UTC).isoformat(),)).fetchone()
+        return {"points": int(row[0]), "chests": int(row[1])}
 
     # --- channels seen live (favourites suggestions; spec §8 /api/suggestions)
     def record_seen(self, channels: list[tuple[str, str]], at: datetime) -> None:

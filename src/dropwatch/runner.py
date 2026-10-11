@@ -55,6 +55,7 @@ STREAK_VISIT = timedelta(minutes=7)  # a favourite's new stream is watched this 
 STREAK_REMEMBER = 200  # visited broadcast ids kept across restarts
 CLAIM_WAIT = timedelta(hours=1)  # force campaign re-fetches this long; the hourly fetch covers the rest
 BACKOFF_START, BACKOFF_MAX = 60.0, 600.0
+HEALTH_STALL = timedelta(minutes=15)  # no tick for this long = stuck (longer than any back-off sleep)
 # spec §4 (2026-10-10): an unknown account link that earns nothing for 10 minutes of good playback
 LINK_PROBE_TICKS = 60  # ticks are PLAY_INTERVAL (10 s) apart
 MAYBE_UNLINKED_FOR = timedelta(hours=6)
@@ -107,6 +108,7 @@ class Runner:
         self._link_recheck: dict[str, datetime] = {}  # unknown-link campaign -> campaigns last re-read for it
         self.maybe_unlinked: dict[str, datetime] = {}  # campaign -> marked at
         self._mined_on: dict[str, str] = {}  # campaign -> channel last watched for it (History details)
+        self.last_tick: datetime | None = None
         self._streak: tuple[str, str, datetime] | None = None  # watch-streak visit: (broadcast, login, since)
         # broadcasts already visited (or mined) for their streak; kept across restarts (review fix)
         get = getattr(store, "get_setting", None)
@@ -502,6 +504,7 @@ class Runner:
     async def safe_tick(self) -> float:
         """One tick that never raises. Returns how long to sleep before the next one."""
         started = self._clock()
+        self.last_tick = started  # the Docker health check reads it
         try:
             await self.tick()
         except Exception as exc:  # noqa: BLE001  the loop must survive anything
@@ -587,6 +590,8 @@ class Runner:
             return
         if isinstance(event, PointsEarned):
             login = next((ch.login for ch in self.live if ch.id == event.channel_id), None)
+            if (add := getattr(self._store, "add_points", None)) is not None and event.points:
+                add(self._clock(), login, event.reason, event.points)  # History and the weekly summary
             if event.reason not in ("WATCH", "CLAIM"):  # every-5-minute points and chests: not news
                 self._store.log_event("points_earned", {"channel": login, "reason": event.reason,
                                                         "points": event.points})

@@ -92,6 +92,7 @@ class StateOut(BaseModel):
     never: list[CampaignOut] = []  # running campaigns of Never games: never mined, listed for their art
     first_in_line: list[str] = []  # idle: names of the next campaigns to mine once a channel goes live
     streak_visit: StreakVisitOut | None = None  # watching a favourite for its watch streak; drops wait
+    build: str = ""  # version+commit running; the page offers a reload when it changes
 
 
 class ListsIn(BaseModel):
@@ -170,6 +171,18 @@ class ActivityEvent(BaseModel):
 class ActivityOut(BaseModel):
     events: list[ActivityEvent]  # newest first
     kept_days: int
+
+
+class SessionOut(BaseModel):
+    id: str
+    device: str  # e.g. "Chrome on Windows", from the browser's user agent
+    created_at: datetime | None
+    last_seen_at: datetime | None
+    current: bool  # this browser
+
+
+class SessionsOut(BaseModel):
+    sessions: list[SessionOut]
 
 
 class RestoreOut(BaseModel):
@@ -282,10 +295,16 @@ class MissedOut(BaseModel):
     pinned: bool
 
 
+class PointsOut(BaseModel):
+    points: int = 0  # channel points gained in the period (every gain Twitch reported)
+    chests: int = 0  # bonus chests opened
+
+
 class HistoryOut(BaseModel):
     total_rewards: int
     claims: list[ClaimOut]  # newest first; the page groups by the viewer's local day
     missed: list[MissedOut] = []  # campaigns that ended in the period with rewards left, newest first
+    points: PointsOut = PointsOut()
 
 
 class SignInStatus(BaseModel):

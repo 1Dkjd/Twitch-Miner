@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections import deque
 from datetime import datetime, timedelta
 
@@ -75,6 +76,19 @@ async def health() -> dict:
     return {"ok": True}
 
 
+@public.get("/health/miner")
+async def miner_health(request: Request, response: Response) -> dict:
+    """Docker's health check, open without sign-in, so it says only ok or not (the reason is logged): 503
+    when mining crashed or stopped ticking. Signed out, paused or idle are healthy."""
+    from ..maintenance import miner_health
+    ctx = _ctx(request)
+    ok, why = miner_health(ctx.service, ctx.clock())
+    if not ok:
+        logging.getLogger("dropwatch").warning("Health check: %s", why)
+        response.status_code = 503
+    return {"ok": ok}
+
+
 @public.get("/me", response_model=MeOut)
 async def me(request: Request) -> MeOut:
     ctx = _ctx(request)
@@ -90,7 +104,7 @@ async def setup(body: PasswordIn, request: Request, response: Response) -> None:
     if len(body.password) < MIN_PASSWORD:
         raise HTTPException(status_code=422, detail=f"Use at least {MIN_PASSWORD} characters.")
     ctx.store.set_password(body.password)
-    _set_cookie(response, ctx.store.create_web_session(ctx.clock()))
+    _set_cookie(response, ctx.store.create_web_session(ctx.clock(), request.headers.get("user-agent", "")))
 
 
 @public.post("/login", status_code=204)
@@ -107,7 +121,7 @@ async def login(body: PasswordIn, request: Request, response: Response) -> None:
         await asyncio.sleep(0.5)  # blunt online guessing
         raise HTTPException(status_code=401, detail="Wrong password.")
     limiter.succeeded(who)
-    _set_cookie(response, ctx.store.create_web_session(ctx.clock()))
+    _set_cookie(response, ctx.store.create_web_session(ctx.clock(), request.headers.get("user-agent", "")))
 
 
 private_auth = APIRouter(prefix="/api", dependencies=[Depends(require_session)])

@@ -211,10 +211,14 @@ class Notifier:
         parts = []
         if rewards:
             parts.append(f"{rewards} {_n(rewards, 'reward')} claimed from {camps} {_n(camps, 'campaign')}.")
-        elif missed or games:
-            parts.append("Nothing claimed.")
-        else:
-            parts.append("A quiet week: nothing claimed.")
+        pts = self._store.points_since(week) if hasattr(self._store, "points_since") else {"points": 0}
+        if not rewards:
+            quiet = not (missed or games or pts["points"])
+            parts.append("A quiet week: nothing claimed." if quiet else "Nothing claimed.")
+        if pts["points"]:
+            chests = pts.get("chests", 0)
+            parts.append(f"{pts['points']:,} channel points"
+                         + (f" ({chests} {_n(chests, 'chest')})." if chests else "."))
         if missed:
             parts.append(f"{missed} {_n(missed, 'campaign')} missed (History says why).")
         if games:

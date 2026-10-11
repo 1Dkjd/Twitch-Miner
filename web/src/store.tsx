@@ -13,8 +13,11 @@ interface Store {
   clearSignin: () => void;
   refreshMe: () => Promise<void>;
   refreshState: () => Promise<void>;
-  say: (text: string) => void;
+  say: (text: string, undo?: () => void) => void;
   announcement: string;
+  toast: { id: number; text: string; undo?: () => void } | null;
+  dismissToast: () => void;
+  updated: boolean; // the server runs a newer build than this page was loaded with
 }
 
 const Ctx = createContext<Store | null>(null);
@@ -32,6 +35,10 @@ export function AppProvider({ children, initialMe = null, retryMs = 5000 }: { ch
   const [lostSince, setLostSince] = useState<Date | null>(null);
   const [signin, setSignin] = useState<SignIn | null>(null);
   const [announcement, setAnnouncement] = useState("");
+  const [toast, setToast] = useState<Store["toast"]>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const firstBuild = useRef<string | null>(null);
+  const [updated, setUpdated] = useState(false);
   const sayTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const refreshMe = useCallback(async () => {
@@ -39,16 +46,26 @@ export function AppProvider({ children, initialMe = null, retryMs = 5000 }: { ch
   }, []);
   const refreshState = useCallback(async () => {
     try {
-      setState(await api.get<State>("/state"));
+      const s = await api.get<State>("/state");
+      setState(s);
+      if (s.build) {
+        if (firstBuild.current === null) firstBuild.current = s.build;
+        else if (s.build !== firstBuild.current) setUpdated(true);
+      }
     } catch {
       /* the live connection decides reachability; a 401 is handled by the client */
     }
   }, []);
-  const say = useCallback((text: string) => {
+  const dismissToast = useCallback(() => { clearTimeout(toastTimer.current); setToast(null); }, []);
+  const say = useCallback((text: string, undo?: () => void) => {
     // clear first so repeating the same message is announced again (as in the mockup)
     setAnnouncement("");
     clearTimeout(sayTimer.current);
     sayTimer.current = setTimeout(() => setAnnouncement(text), 30);
+    // and show it (asked for 2026-10-11: confirmations used to reach screen readers only)
+    clearTimeout(toastTimer.current);
+    setToast({ id: Date.now(), text, undo });
+    toastTimer.current = setTimeout(() => setToast(null), undo ? 8000 : 4000);
   }, []);
 
   useEffect(() => {
@@ -86,8 +103,26 @@ export function AppProvider({ children, initialMe = null, retryMs = 5000 }: { ch
   }, [authed, refreshState, refreshMe]);
 
   const value = useMemo(
-    () => ({ me, state, connection, lostSince, signin, clearSignin, refreshMe, refreshState, say, announcement }),
-    [me, state, connection, lostSince, signin, clearSignin, refreshMe, refreshState, say, announcement],
+    () => ({ me, state, connection, lostSince, signin, clearSignin, refreshMe, refreshState, say, announcement,
+      toast, dismissToast, updated }),
+    [me, state, connection, lostSince, signin, clearSignin, refreshMe, refreshState, say, announcement, toast,
+      dismissToast, updated],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+}
+
+/** The visible confirmation (bottom of the page). Screen readers already hear it through the live region,
+ * so this is aria-hidden from the announcement point of view except for its Undo button. */
+export function Toast() {
+  const { toast, dismissToast } = useApp();
+  if (!toast) return null;
+  return (
+    <div className="toast" role="status" aria-label="Notice" key={toast.id}>
+      <span>{toast.text}</span>
+      {toast.undo && (
+        <button className="btn quiet" type="button" onClick={() => { toast.undo?.(); dismissToast(); }}>Undo</button>
+      )}
+      <button className="toast-x" type="button" aria-label="Dismiss" onClick={dismissToast}>×</button>
+    </div>
+  );
 }

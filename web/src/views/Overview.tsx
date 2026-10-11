@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { ApiError, api, type Campaign, type State } from "../api/client";
+import { ApiError, api, type Campaign, type Lists, type State } from "../api/client";
 import { useLists } from "../lists";
 import { go } from "../router";
 import { useApp } from "../store";
@@ -28,16 +28,34 @@ export function OverviewView() {
     if (i < 0) return null;
     return ordinal ? `${nth(i + 1)} in Priority` : `Priority ${i + 1}`;
   };
+  /** Undo reverses only this one change, on the lists as they are now (they may have changed meanwhile). */
+  async function undoOn(change: (now: Lists) => Lists, done: string) {
+    try {
+      const now = await api.get<Lists>("/lists");
+      say((await save(change(now))) ?? done);
+    } catch (e) { say(e instanceof ApiError ? e.message : "Couldn't undo."); }
+  }
   async function never(game: string) {
     if (!lists) return;
+    const at = lists.priority.indexOf(game);  // to put it back where it was
     const msg = await save({ ...lists, priority: lists.priority.filter((g) => g !== game), never: [...lists.never, game] });
-    say(msg ?? `${game} moved to Never`);
+    if (msg) { say(msg); return; }
+    say(`${game} moved to Never`, () => void undoOn((now) => {
+      const priority = now.priority.filter((g) => g !== game);
+      if (at >= 0) priority.splice(Math.min(at, priority.length), 0, game);
+      return { ...now, never: now.never.filter((g) => g !== game), priority };
+    }, `${game} is back`));
   }
   async function prioritise(game: string) {
     if (!lists) return;
+    const wasNever = lists.never.includes(game);
     const priority = [...lists.priority.filter((g) => g !== game), game];
     const msg = await save({ ...lists, priority, never: lists.never.filter((g) => g !== game) });
-    say(msg ?? `${game} added to Priority, position ${priority.length}`);
+    if (msg) { say(msg); return; }
+    say(`${game} added to Priority, position ${priority.length}`, () => void undoOn((now) => ({
+      ...now, priority: now.priority.filter((g) => g !== game),
+      never: wasNever && !now.never.includes(game) ? [...now.never, game] : now.never,
+    }), `${game} taken off Priority`));
   }
   const needs = <NeedsYou key="needs" state={state} onNever={never} />;
   const now = <NowSlot key="now" state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf} />;
@@ -227,7 +245,7 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
         {nx && (
           <div className="next-card">
             <div className="arts">{nx.items.map((it, i) => <img key={i} src={it.image} alt="" />)}</div>
-            <div><div className="next-when">{mining ? `Next reward in ${dur(nx.at - w)}` : `${dur(nx.at - w)} of watching to the next reward`}</div>
+            <div><div className="next-when">{mining ? `Next reward in ${dur(nx.at - w)} (~${clock(new Date(Date.now() + (nx.at - w) * 60_000))})` : `${dur(nx.at - w)} of watching to the next reward`}</div>
               <div className="next-what">{nx.items.map((i) => i.name).join(", ")}</div></div>
           </div>
         )}
