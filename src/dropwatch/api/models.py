@@ -41,6 +41,7 @@ class CampaignOut(BaseModel):
     pinned: bool = False  # Up next "Arrange myself"
     # Up next only: at the queue's order, mined back to back, it would end before its turn (an estimate)
     ends_before_turn: bool = False
+    new: bool = False  # first seen in the last 24 h (and not in Dropwatch's very first look)
 
 
 class ChannelOut(BaseModel):

@@ -225,6 +225,12 @@ class Store:
             self._db.execute("DELETE FROM campaign_log WHERE ends_at < ?",
                              ((now - CAMPAIGN_LOG_KEEP).astimezone(UTC).isoformat(),))
 
+    def first_seen(self) -> tuple[datetime | None, dict[str, datetime]]:
+        """(when the log began, {campaign: when Dropwatch first saw it}) for Up next's "New"."""
+        rows = self._db.execute("SELECT id, first_seen FROM campaign_log").fetchall()
+        seen = {cid: datetime.fromisoformat(at) for cid, at in rows}
+        return (min(seen.values()) if seen else None), seen
+
     def update_log_rewards(self, cid: str, rewards: list[dict]) -> None:
         """A campaign that just ended can still be claimed for 24 h: keep its claimed flags current (not
         last_seen, which says when Dropwatch last saw it running)."""

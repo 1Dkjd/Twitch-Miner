@@ -116,6 +116,11 @@
       "title": "Name",
       "type": "string"
      },
+     "new": {
+      "default": false,
+      "title": "New",
+      "type": "boolean"
+     },
      "pinned": {
       "default": false,
       "title": "Pinned",

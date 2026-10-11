@@ -143,7 +143,7 @@ function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, onMineNow, onNe
     <div className={`row${pinned ? " pinned" : ""}${sortable.isDragging ? " placeholder" : ""}`} ref={pinned ? sortable.setNodeRef : undefined} style={style}>
       <img className="box" src={boxArt(c.box_art_url)} alt="" />
       <div>
-        <div className="row-t">{c.name}</div>
+        <div className="row-t">{c.name}{c.new && <> <span className="chip note" title="Dropwatch first saw this campaign in the last 24 hours">New</span></>}</div>
         <div className="row-s">{c.game}{pr && <><span className="sep">·</span>{pr}</>}<span className="sep">·</span>ends {day(c.ends_at)}</div>
         {firstOpen && <div className="row-art">{firstOpen.rewards.map((x, i) => <img key={i} src={x.image_url} alt={x.name} />)}</div>}
         {c.ends_before_turn && (

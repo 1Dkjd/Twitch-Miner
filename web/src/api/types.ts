@@ -469,6 +469,11 @@ export interface components {
             /** Name */
             name: string;
             /**
+             * New
+             * @default false
+             */
+            new: boolean;
+            /**
              * Pinned
              * @default false
              */

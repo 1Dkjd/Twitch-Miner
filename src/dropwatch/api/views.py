@@ -22,6 +22,10 @@ from .models import (
 SWITCH_NOTICE_FOR = timedelta(minutes=10)
 
 
+NEW_FOR = timedelta(hours=24)  # Up next's "New": first seen within this long
+NEW_AFTER_START = timedelta(hours=1)  # ...and not in the log's first hour (the first look sees everything)
+
+
 def campaign_out(c: Campaign, now: datetime, verdict: str | None,
                  maybe_unlinked: bool = False) -> CampaignOut:
     return CampaignOut(
@@ -45,6 +49,12 @@ def state_view(runner, store, now: datetime) -> StateOut:
                         current=None, needs_you=[], up_next=[], done=[], catalog=None)
     by_id = {c.id: c for c in runner.campaigns}
     plan = runner.plan
+    began, seen = store.first_seen() if hasattr(store, "first_seen") else (None, {})
+
+    def is_new(cid: str) -> bool:
+        at = seen.get(cid)
+        # the first look logs everything that was already running: none of that is news
+        return bool(at and began and at - began > NEW_AFTER_START and now - at < NEW_FOR)
     verdicts = plan.verdicts if plan else {}
 
     def out(cid: str):
@@ -54,7 +64,9 @@ def state_view(runner, store, now: datetime) -> StateOut:
         v = verdicts.get(cid)
         if v is None and campaign_minutes_needed(c, now) > 0:
             v = deadline_verdict(campaign_ratio(c, now))
-        return campaign_out(c, now, v, maybe_unlinked=cid in getattr(runner, "maybe_unlinked", {}))
+        o = campaign_out(c, now, v, maybe_unlinked=cid in getattr(runner, "maybe_unlinked", {}))
+        o.new = is_new(cid)
+        return o
 
     current = None
     if plan and plan.current and runner.watching and (camp := out(plan.current.campaign_id)):

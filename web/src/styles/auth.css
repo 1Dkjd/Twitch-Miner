@@ -179,3 +179,6 @@ button.row.hx { width: 100%; text-align: left; background: none; border: 0; colo
   .stat + .stat { border-left: 0; border-top: 1px solid var(--line); }
   .sbar { grid-template-columns: minmax(0, 110px) minmax(0, 1fr) 28px; }
 }
+
+/* Up next: a campaign first seen in the last 24 h */
+.chip.note { background: var(--note-soft); color: var(--note); margin-left: 6px; vertical-align: 1px; }
