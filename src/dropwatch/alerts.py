@@ -27,6 +27,8 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 
+from .tz import zone_or_none
+
 log = logging.getLogger("dropwatch.alerts")
 PREFIX = "Dropwatch: "
 CHECK_EVERY_S = 30
@@ -189,7 +191,8 @@ class Notifier:
         return [Alert("notify_claimed", f"{PREFIX}Claimed {len(claims)} rewards", body)]
 
     def _weekly(self, now: datetime, s: dict, snap: Snapshot) -> list[Alert]:
-        local = now.astimezone(self._tz) if self._tz else now.astimezone()
+        zone = zone_or_none(s.get("notify_weekly_tz") or "") or self._tz  # chosen, else the server's
+        local = now.astimezone(zone) if zone else now.astimezone()
         due = local.replace(hour=s["notify_weekly_hour"], minute=0, second=0, microsecond=0)
         due -= timedelta(days=(local.weekday() - s["notify_weekly_day"]) % 7)
         if due > local:

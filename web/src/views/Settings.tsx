@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ApiError, api, type Settings } from "../api/client";
+import { ApiError, api, type About, type Settings } from "../api/client";
 import { go } from "../router";
 import { useApp } from "../store";
+import { clock, day } from "../ui/format";
 import { applyTheme, savedTheme, type Theme } from "../ui/theme";
 import { Notifications } from "./Notifications";
 
@@ -10,11 +11,13 @@ import { Notifications } from "./Notifications";
 export function SettingsView() {
   const { state, refreshState, refreshMe, say } = useApp();
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [about, setAbout] = useState<About | null>(null);
   const [theme, setTheme] = useState<Theme>(savedTheme());
   const [confirm, setConfirm] = useState(false);
   const signOutBtn = useRef<HTMLButtonElement>(null);
   const stayBtn = useRef<HTMLButtonElement>(null);
   useEffect(() => { api.get<Settings>("/settings").then(setSettings).catch(() => undefined); }, []);
+  useEffect(() => { api.get<About>("/about").then(setAbout).catch(() => undefined); }, []);
   useEffect(() => { if (confirm) stayBtn.current?.focus(); }, [confirm]);
 
   async function put(change: Partial<Settings>) {
@@ -52,7 +55,7 @@ export function SettingsView() {
           </div>
         )}
       </Set>
-      <Notifications settings={settings} put={put} />
+      <Notifications settings={settings} put={put} serverTz={about?.server_tz} />
       <Set title="Mining">
         <div className="opt">
           <div><label htmlFor="m-badges">Also mine badge and emote campaigns</label>
@@ -83,6 +86,15 @@ export function SettingsView() {
           }}>Sign out</button>
         </div>
       </Set>
+      {about && (
+        <Set title="About">
+          <div className="opt"><div>
+            <div>Dropwatch <b>{about.version}</b>{about.commit && <> <span className="mono">{about.commit}</span></>}</div>
+            <div className="d">Running since {day(about.started_at)} {clock(about.started_at)}
+              {about.campaigns_at ? ` · Campaign list updated ${clock(about.campaigns_at)}` : ""}</div>
+          </div></div>
+        </Set>
+      )}
     </section>
   );
 }

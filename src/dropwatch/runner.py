@@ -108,6 +108,10 @@ class Runner:
         return self.last_refresh + REFRESH_EVERY if self.last_refresh else None
 
     @property
+    def campaigns_at(self) -> datetime | None:
+        return self._campaigns_at
+
+    @property
     def catalog_status(self):
         """(ok|stale|unreachable, since) when campaigns come from the catalogue, else None."""
         catalog = getattr(self._client, "catalog", None)

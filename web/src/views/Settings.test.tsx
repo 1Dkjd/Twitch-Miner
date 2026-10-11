@@ -54,3 +54,23 @@ test("Also claim channel points is on and saves when switched", async () => {
   await u.click(sw);
   await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ claim_points: false }));
 });
+
+const ABOUT = { version: "0.1.0", commit: "main@abc1234", started_at: "2026-10-10T20:30:00Z",
+  campaigns_at: "2026-10-10T21:30:00Z", server_tz: "UTC" };
+
+test("About names the version and commit that is running", async () => {
+  setup({ "GET /api/about": ABOUT });
+  expect(await screen.findByText("main@abc1234")).toBeInTheDocument();
+  expect(screen.getByText("0.1.0")).toBeInTheDocument();
+  expect(screen.getByText(/Running since/)).toBeInTheDocument();
+});
+
+test("the weekly summary's time zone defaults to the server's and saves a chosen one", async () => {
+  const calls = setup({ "GET /api/about": ABOUT, "PUT /api/settings": { ...SETTINGS, notify_weekly_tz: "America/New_York" } });
+  const zone = await screen.findByRole("combobox", { name: "Time zone" });
+  await screen.findByRole("option", { name: "Server time (UTC)" });
+  await waitFor(() => expect(zone).toBeEnabled());
+  expect(zone).toHaveValue("");
+  await userEvent.selectOptions(zone, "America/New_York");
+  await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ notify_weekly_tz: "America/New_York" }));
+});

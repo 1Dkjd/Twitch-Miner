@@ -9,6 +9,7 @@ export type Channel = S["ChannelOut"];
 export type Current = S["CurrentOut"];
 export type Lists = S["ListsOut"];
 export type Settings = S["SettingsOut"];
+export type About = S["AboutOut"];
 export type SettingsIn = S["SettingsIn"];
 export type History = S["HistoryOut"];
 export type Claim = S["ClaimOut"];

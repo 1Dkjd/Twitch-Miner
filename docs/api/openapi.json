@@ -1,6 +1,55 @@
 {
  "components": {
   "schemas": {
+   "AboutOut": {
+    "properties": {
+     "campaigns_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Campaigns At"
+     },
+     "commit": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Commit"
+     },
+     "server_tz": {
+      "title": "Server Tz",
+      "type": "string"
+     },
+     "started_at": {
+      "format": "date-time",
+      "title": "Started At",
+      "type": "string"
+     },
+     "version": {
+      "title": "Version",
+      "type": "string"
+     }
+    },
+    "required": [
+     "version",
+     "commit",
+     "started_at",
+     "campaigns_at",
+     "server_tz"
+    ],
+    "title": "AboutOut",
+    "type": "object"
+   },
    "CampaignOut": {
     "properties": {
      "allowed_channels": {
@@ -1063,6 +1112,18 @@
        }
       ],
       "title": "Notify Weekly Hour"
+     },
+     "notify_weekly_tz": {
+      "anyOf": [
+       {
+        "maxLength": 64,
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Weekly Tz"
      }
     },
     "title": "SettingsIn",
@@ -1129,6 +1190,10 @@
      "notify_weekly_hour": {
       "title": "Notify Weekly Hour",
       "type": "integer"
+     },
+     "notify_weekly_tz": {
+      "title": "Notify Weekly Tz",
+      "type": "string"
      }
     },
     "required": [
@@ -1146,7 +1211,8 @@
      "notify_claimed",
      "notify_weekly",
      "notify_weekly_day",
-     "notify_weekly_hour"
+     "notify_weekly_hour",
+     "notify_weekly_tz"
     ],
     "title": "SettingsOut",
     "type": "object"
@@ -1434,10 +1500,28 @@
  },
  "info": {
   "title": "Dropwatch",
-  "version": "0.3.0"
+  "version": "0.1.0"
  },
  "openapi": "3.1.0",
  "paths": {
+  "/api/about": {
+   "get": {
+    "operationId": "about_api_about_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AboutOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "About"
+   }
+  },
   "/api/channel": {
    "post": {
     "operationId": "channel_api_channel_post",

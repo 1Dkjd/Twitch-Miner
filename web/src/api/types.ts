@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/about": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** About */
+        get: operations["about_api_about_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/channel": {
         parameters: {
             query?: never;
@@ -400,6 +417,22 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AboutOut */
+        AboutOut: {
+            /** Campaigns At */
+            campaigns_at: string | null;
+            /** Commit */
+            commit: string | null;
+            /** Server Tz */
+            server_tz: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Version */
+            version: string;
+        };
         /** CampaignOut */
         CampaignOut: {
             /** Allowed Channels */
@@ -755,6 +788,8 @@ export interface components {
             notify_weekly_day?: number | null;
             /** Notify Weekly Hour */
             notify_weekly_hour?: number | null;
+            /** Notify Weekly Tz */
+            notify_weekly_tz?: string | null;
         };
         /** SettingsOut */
         SettingsOut: {
@@ -788,6 +823,8 @@ export interface components {
             notify_weekly_day: number;
             /** Notify Weekly Hour */
             notify_weekly_hour: number;
+            /** Notify Weekly Tz */
+            notify_weekly_tz: string;
         };
         /** SignInStatus */
         SignInStatus: {
@@ -880,6 +917,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    about_api_about_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AboutOut"];
+                };
+            };
+        };
+    };
     channel_api_channel_post: {
         parameters: {
             query?: never;

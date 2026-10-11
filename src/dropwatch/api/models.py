@@ -4,7 +4,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
+
+from ..tz import zone_or_none
 
 
 class RewardOut(BaseModel):
@@ -101,6 +103,12 @@ class ListsOut(BaseModel):
     favourites: list[str]
 
 
+def _zone(v: str) -> str:
+    if v and zone_or_none(v) is None:
+        raise ValueError("not a time zone Dropwatch knows")
+    return v
+
+
 class SettingsIn(BaseModel):
     # StrictBool: pydantic's lax mode would turn "yes" or 1 into True
     mine_badges: StrictBool | None = None
@@ -118,6 +126,7 @@ class SettingsIn(BaseModel):
     notify_weekly: StrictBool | None = None
     notify_weekly_day: StrictInt | None = Field(default=None, ge=0, le=6)  # 0 = Monday
     notify_weekly_hour: StrictInt | None = Field(default=None, ge=0, le=23)
+    notify_weekly_tz: Annotated[StrictStr, Field(max_length=64), AfterValidator(_zone)] | None = None
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -137,6 +146,15 @@ class SettingsOut(BaseModel):
     notify_weekly: bool
     notify_weekly_day: int
     notify_weekly_hour: int
+    notify_weekly_tz: str
+
+
+class AboutOut(BaseModel):
+    version: str
+    commit: str | None  # "branch@sha", None when unknown
+    started_at: datetime
+    campaigns_at: datetime | None  # when the campaign list was last read from Twitch
+    server_tz: str  # what "" means for the weekly summary's zone
 
 
 class NotifyFieldOut(BaseModel):

@@ -13,8 +13,10 @@ from fastapi.staticfiles import StaticFiles
 
 from ..notify import CHANNELS, configured, send_all, summary
 from ..runner import State
+from ..version import VERSION, build_info, server_tz
 from .auth import LoginLimiter, private_auth, public, require_session
 from .models import (
+    AboutOut,
     ChannelIn,
     ChannelSuggestion,
     HistoryOut,
@@ -51,6 +53,7 @@ class AppContext:
     clock: Callable[[], datetime] = lambda: datetime.now(UTC)
     post: object = None  # notify's HTTP post; None = a real aiohttp session per send (tests inject a fake)
     images: object = None  # images.ImageCache: History's kept copies (None: Twitch's links only)
+    started_at: datetime | None = None  # set by create_app
 
 
 
@@ -104,6 +107,14 @@ async def get_suggestions(request: Request) -> SuggestionsOut:
     known = {c.login for c in out}
     out += [ChannelSuggestion(login=f, live=False, game=None, last_seen=None) for f in favs if f not in known]
     return SuggestionsOut(games=games, channels=out)
+
+
+@api.get("/about", response_model=AboutOut)
+async def about(request: Request) -> AboutOut:
+    ctx = _c(request)
+    runner = ctx.service.runner
+    return AboutOut(version=VERSION, commit=build_info(), started_at=ctx.started_at,
+                    campaigns_at=runner.campaigns_at if runner else None, server_tz=server_tz())
 
 
 @api.get("/settings", response_model=SettingsOut)
@@ -352,9 +363,11 @@ class HostCheck:
 
 def create_app(ctx: AppContext, web_dir: Path | None = None, hosts: Iterable[str] = ()) -> FastAPI:
     # the schema isn't served: `dropwatch openapi` builds it from app.openapi() for the page's types
-    app = FastAPI(title="Dropwatch", version="0.3.0", docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(title="Dropwatch", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
     app.add_middleware(HostCheck, hosts=list(hosts))
     app.state.ctx = ctx
+    if ctx.started_at is None and ctx.store is not None:
+        ctx.started_at = ctx.clock()
     app.state.login_limiter = LoginLimiter()
     app.include_router(public)
     app.include_router(private_auth)
