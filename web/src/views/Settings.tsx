@@ -12,6 +12,7 @@ export function SettingsView() {
   const { state, refreshState, refreshMe, say } = useApp();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [about, setAbout] = useState<About | null>(null);
+  const [restored, setRestored] = useState(0); // remounts Notifications so it re-reads its channels
   const [theme, setTheme] = useState<Theme>(savedTheme());
   const [confirm, setConfirm] = useState(false);
   const signOutBtn = useRef<HTMLButtonElement>(null);
@@ -55,7 +56,7 @@ export function SettingsView() {
           </div>
         )}
       </Set>
-      <Notifications settings={settings} put={put} serverTz={about?.server_tz} />
+      <Notifications key={restored} settings={settings} put={put} serverTz={about?.server_tz} />
       <Set title="Mining">
         <div className="opt">
           <div><label htmlFor="m-badges">Also mine badge and emote campaigns</label>
@@ -86,6 +87,11 @@ export function SettingsView() {
           }}>Sign out</button>
         </div>
       </Set>
+      <Backup onRestored={() => {
+        setRestored((n) => n + 1);
+        api.get<Settings>("/settings").then(setSettings).catch(() => undefined);
+        void refreshState();
+      }} />
       {about && (
         <Set title="About">
           <div className="opt"><div>
@@ -96,6 +102,64 @@ export function SettingsView() {
         </Set>
       )}
     </section>
+  );
+}
+
+/** Settings › Backup (approved mockup docs/design/pre-docker-mockup.html, 2026-10-10). Saving is a plain
+ * download link (the page cookie goes with it); restoring reads the file here and asks before replacing. */
+function Backup({ onRestored }: { onRestored: () => void }) {
+  const { say } = useApp();
+  const [secrets, setSecrets] = useState(false);
+  const [pending, setPending] = useState<{ data: unknown; made: string | null } | null>(null);
+  const [note, setNote] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const tell = (text: string) => { setNote(text); say(text); };
+
+  async function pick(file: File | undefined) {
+    if (!file) return;
+    if (fileRef.current) fileRef.current.value = ""; // the same file can be picked again
+    let data: unknown;
+    try { data = JSON.parse(await file.text()); } catch { tell("That file isn't a Dropwatch backup."); return; }
+    const made = data && typeof data === "object" && "made_at" in data && typeof data.made_at === "string" ? data.made_at : null;
+    setNote("");
+    setPending({ data, made });
+  }
+  async function replace() {
+    if (!pending) return;
+    const { data } = pending;
+    setPending(null);
+    try {
+      const r = await api.post<{ skipped: string[] }>("/restore", data);
+      tell(r.skipped.length ? `Backup restored. Skipped what this version doesn't know: ${r.skipped.join(", ")}.` : "Backup restored.");
+      onRestored();
+    } catch (e) { tell(e instanceof ApiError ? e.message : "Couldn't restore it."); }
+  }
+
+  return (
+    <Set title="Backup">
+      <div className="opt">
+        <div><div>Save a backup</div>
+          <div className="d">Priority, Never, pins, favourite channels, settings and notification channels, in one file.</div>
+          <label className="chk"><input type="checkbox" checked={secrets} onChange={(e) => setSecrets(e.target.checked)} />
+            Include notification secrets (tokens and webhook URLs)</label></div>
+        <a className="btn" href={secrets ? "/api/backup?secrets=true" : "/api/backup"} download>Save a backup</a>
+      </div>
+      <div className="opt">
+        <div><div>Restore from a backup</div>
+          <div className="d">Replaces your lists and settings with the file's. Your Twitch sign-in, page password and History stay as they are.</div>
+          {note && <div className="d" role="status">{note}</div>}</div>
+        <label className="btn">Choose a file…<input ref={fileRef} type="file" accept="application/json,.json" className="sr"
+          aria-label="Restore from a backup" onChange={(e) => void pick(e.target.files?.[0])} /></label>
+        {pending && (
+          <div className="confirm"><span>Replace your lists, settings and notification channels with this backup
+            {pending.made ? ` from ${day(pending.made)} ${clock(pending.made)}` : ""}?</span>
+            <span className="acts">
+              <button className="btn quiet" type="button" onClick={() => setPending(null)}>Keep mine</button>
+              <button className="btn" type="button" onClick={() => void replace()}>Replace</button>
+            </span></div>
+        )}
+      </div>
+    </Set>
   );
 }
 

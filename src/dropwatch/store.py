@@ -197,6 +197,10 @@ class Store:
         channels.setdefault(kind, {}).update(values)
         self.set_setting("notify_channels", json.dumps(channels))
 
+    def set_channels(self, channels: dict[str, dict[str, str]]) -> None:
+        """Replaces every channel at once (restoring a backup)."""
+        self.set_setting("notify_channels", json.dumps(channels))
+
     def delete_channel(self, kind: str) -> None:
         channels = self.get_channels()
         channels.pop(kind, None)

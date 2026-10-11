@@ -150,6 +150,10 @@ class SettingsOut(BaseModel):
     notify_weekly_tz: str
 
 
+class RestoreOut(BaseModel):
+    skipped: list[str]  # what a newer Dropwatch wrote that this one doesn't know
+
+
 class AboutOut(BaseModel):
     version: str
     commit: str | None  # "branch@sha", None when unknown

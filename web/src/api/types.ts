@@ -21,6 +21,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/backup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Backup
+         * @description Settings › Backup: a file to keep. Notification secrets only when asked for.
+         */
+        get: operations["get_backup_api_backup_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/channel": {
         parameters: {
             query?: never;
@@ -285,6 +305,26 @@ export interface paths {
          * @description The idle card's "Check now": re-read campaigns and live channels immediately.
          */
         post: operations["check_now_api_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Restore
+         * @description Replaces lists, pins, settings and notification channels with a backup's (all or nothing).
+         */
+        post: operations["post_restore_api_restore_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -754,6 +794,11 @@ export interface components {
             /** Pins */
             pins?: string[];
         };
+        /** RestoreOut */
+        RestoreOut: {
+            /** Skipped */
+            skipped: string[];
+        };
         /** RewardOut */
         RewardOut: {
             /** Image Url */
@@ -938,6 +983,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AboutOut"];
+                };
+            };
+        };
+    };
+    get_backup_api_backup_get: {
+        parameters: {
+            query?: {
+                secrets?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1404,6 +1480,26 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    post_restore_api_restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestoreOut"];
+                };
             };
         };
     };

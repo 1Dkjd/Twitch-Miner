@@ -8,9 +8,10 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
+from ..backup import BadBackup, make_backup, restore_backup
 from ..notify import CHANNELS, configured, send_all, summary
 from ..runner import State
 from ..version import VERSION, build_info, server_tz
@@ -32,6 +33,7 @@ from .models import (
     NotifyTestOut,
     PauseIn,
     Pins,
+    RestoreOut,
     SettingsIn,
     SettingsOut,
     SignInStatus,
@@ -107,6 +109,33 @@ async def get_suggestions(request: Request) -> SuggestionsOut:
     known = {c.login for c in out}
     out += [ChannelSuggestion(login=f, live=False, game=None, last_seen=None) for f in favs if f not in known]
     return SuggestionsOut(games=games, channels=out)
+
+
+@api.get("/backup")
+async def get_backup(request: Request, secrets: bool = False) -> JSONResponse:
+    """Settings › Backup: a file to keep. Notification secrets only when asked for."""
+    ctx = _c(request)
+    now = ctx.clock()
+    return JSONResponse(make_backup(ctx.store, now, secrets=secrets), headers={
+        "Content-Disposition": f'attachment; filename="dropwatch-backup-{now:%Y-%m-%d}.json"',
+        "Cache-Control": "no-store"})
+
+
+@api.post("/restore", response_model=RestoreOut)
+async def post_restore(request: Request) -> RestoreOut:
+    """Replaces lists, pins, settings and notification channels with a backup's (all or nothing)."""
+    ctx = _c(request)
+    try:
+        data = await request.json()
+    except ValueError as e:
+        raise HTTPException(422, "That file isn't a Dropwatch backup.") from e
+    try:
+        skipped = restore_backup(ctx.store, data)
+    except BadBackup as e:
+        raise HTTPException(422, str(e)) from e
+    if ctx.service.runner is not None:
+        await ctx.service.runner.replan()
+    return RestoreOut(skipped=skipped)
 
 
 @api.get("/about", response_model=AboutOut)
