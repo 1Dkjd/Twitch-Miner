@@ -30,7 +30,9 @@ After changing the API: `uv run dropwatch openapi --out docs/api/openapi.json`, 
 
 ## Releasing
 
-Push a tag like `v0.2.0`. The `docker` workflow builds the image and publishes `ghcr.io/kernelpanic-studios/dropwatch:<version>` and `:latest`.
+1. Bump `version` in `pyproject.toml`, run `uv lock`, then regenerate the API schema (`uv run dropwatch openapi --out docs/api/openapi.json`); its test fails otherwise.
+2. Add the release to the top of `<Changes>` in `unraid/dropwatch.xml`. Community Applications shows it on the listing. Say what the release does for users, newest first.
+3. Push a tag like `v0.2.0`. The `docker` workflow tests, then publishes `ghcr.io/kernelpanic-studios/dropwatch:<version>` and `:latest`.
 
 ## Early live runs (2026-10-09)
 
