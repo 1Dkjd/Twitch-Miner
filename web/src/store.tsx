@@ -18,9 +18,24 @@ interface ToastItem extends Required<Pick<ToastSpec, "title" | "tone">> {
   ms: number;
 }
 const TOAST_MS = 4000; // a plain notice
-const TOAST_ACTION_MS = 8000; // one with Undo / Retry: time to reach the button
+const TOAST_LONG_MS = 8000; // one with Undo / Retry (time to reach the button) or an error (time to read it)
 const TOAST_MAX = 3;
+const TOAST_KEY = "KeyN"; // Alt+N moves focus to the newest notice (Alt+T is Firefox's Tools menu)
 let toastSeq = 0;
+
+/** Newest first, at most TOAST_MAX: when one has to go, the oldest plain notice goes before any with an
+ * action, so a fresh burst of "Setting saved" can't take an Undo away (polish 2026-10-12). */
+function trimDeck(ts: ToastItem[]): ToastItem[] {
+  const out = [...ts];
+  while (out.length > TOAST_MAX) {
+    let drop = out.length - 1;
+    for (let i = out.length - 1; i >= 0; i--) {
+      if (!out[i]!.action) { drop = i; break; }
+    }
+    out.splice(drop, 1);
+  }
+  return out;
+}
 
 /** One store for the page (spec §11): who is signed in to the page, the miner's state, whether the
  * miner is reachable, and the latest sign-in event. Views read it; only actions write. */
@@ -82,14 +97,16 @@ export function AppProvider({ children, initialMe = null, retryMs = 5000 }: { ch
   const say = useCallback((what: string | ToastSpec, undo?: () => void) => {
     const spec: ToastSpec = typeof what === "string" ? { title: what } : what;
     const action = spec.action ?? (undo ? { label: "Undo", run: undo } : undefined);
-    const text = spec.detail ? `${spec.title}. ${spec.detail}` : spec.title;
+    const said = spec.detail ? `${spec.title}. ${spec.detail}` : spec.title;
+    const text = action ? `${said} Alt+N to reach ${action.label}.` : said;
     // clear first so repeating the same message is announced again (as in the mockup)
     setAnnouncement("");
     clearTimeout(sayTimer.current);
     sayTimer.current = setTimeout(() => setAnnouncement(text), 30);
-    const item: ToastItem = { id: ++toastSeq, title: spec.title, detail: spec.detail, tone: spec.tone ?? "ok", action,
-      ms: action ? TOAST_ACTION_MS : TOAST_MS };
-    setToasts((ts) => [item, ...ts].slice(0, TOAST_MAX));
+    const tone = spec.tone ?? "ok";
+    const item: ToastItem = { id: ++toastSeq, title: spec.title, detail: spec.detail, tone, action,
+      ms: action || tone === "bad" ? TOAST_LONG_MS : TOAST_MS };
+    setToasts((ts) => trimDeck([item, ...ts]));
   }, []);
   const sayError = useCallback((e: unknown, title: string) => {
     say({ title, detail: e instanceof ApiError ? e.message : undefined, tone: "bad" });
@@ -148,14 +165,39 @@ export function Toasts() {
   const [hover, setHover] = useState(false);
   const [focus, setFocus] = useState(false);
   const paused = hover || focus;
-  const close = (id: number) => { setFocus(false); dismissToast(id); };
+  const deck = useRef<HTMLDivElement>(null);
+  const returnTo = useRef<HTMLElement | null>(null); // where Alt+N came from, to go back after a button closes
+  const close = (id: number) => {
+    setFocus(false);
+    dismissToast(id);
+    const back = returnTo.current;
+    returnTo.current = null;
+    if (back?.isConnected) back.focus();
+  };
   // the deck unmounts under the pointer when its last notice closes, so no leave arrives either
   useEffect(() => { if (!toasts.length) setHover(false); }, [toasts.length]);
+  // Alt+N: keyboard and screen-reader users reach Undo without tabbing across the page (the announcement
+  // says so). Focusing the deck also pauses its timers.
+  useEffect(() => {
+    if (!toasts.length) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.code !== TOAST_KEY) return;
+      const first = deck.current?.querySelector<HTMLButtonElement>(".toast button");
+      if (!first) return;
+      e.preventDefault();
+      const from = document.activeElement;
+      if (from instanceof HTMLElement && !deck.current!.contains(from)) returnTo.current = from;
+      first.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [toasts.length]);
   if (!toasts.length) return null;
   return (
-    <div className="toasts" role="region" aria-label="Notices" data-paused={paused || undefined}
+    <div ref={deck} className="toasts" role="region" aria-label="Notices" data-paused={paused || undefined}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      onFocus={() => setFocus(true)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setFocus(false); }}>
+      onFocus={() => setFocus(true)}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setFocus(false); returnTo.current = null; } }}>
       {toasts.map((t, i) => (
         <div key={t.id} className={`toast ${t.tone}`} role="group" aria-label={t.title} data-depth={i}>
           <svg className="toast-i" viewBox="0 0 24 24" aria-hidden="true">
@@ -165,7 +207,7 @@ export function Toasts() {
           {t.action && (
             <button className="toast-a" type="button" onClick={() => { t.action!.run(); close(t.id); }}>{t.action.label}</button>
           )}
-          <button className="toast-x" type="button" aria-label="Dismiss" onClick={() => close(t.id)}>×</button>
+          <button className="toast-x" type="button" aria-label={`Dismiss: ${t.title}`} onClick={() => close(t.id)}>×</button>
           <DrainBar ms={t.ms} onDone={() => dismissToast(t.id)} />
         </div>
       ))}
