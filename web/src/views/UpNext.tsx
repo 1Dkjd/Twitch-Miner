@@ -22,6 +22,11 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   const [filter, setFilter] = useState("");
   const [arrange, setArrange] = useState<boolean | null>(null);
   const [pins, setPins] = useState<string[]>([]);
+  const [showOutside, setShowOutside] = useState(false);
+  // Priority only (approved 2026-10-12): just Priority games are mined; the rest fold into one line
+  const po = !!state.priority_only;
+  const outside = state.outside ?? [];
+  useEffect(() => { if (!po) setShowOutside(false); }, [po]);  // fold closed again next time it's switched on
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
@@ -34,7 +39,7 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   useEffect(() => {
     api.get<{ pins: string[] }>("/pins").then((p) => setPins(p.pins)).catch(() => undefined);
   }, [state.last_refresh]);
-  if (!state.up_next.length) return null;
+  if (!state.up_next.length && !(po && outside.length)) return null;
 
   async function savePins(next: string[], said: string) {
     try { setPins((await api.put<{ pins: string[] }>("/pins", { pins: next })).pins); say(said); }
@@ -68,12 +73,14 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   const hits = needle ? state.up_next.filter((c) => `${c.name} ${c.game}`.toLowerCase().includes(needle)) : state.up_next;
   const shown = needle || all ? hits : hits.slice(0, SHOWN);
   const more = state.up_next.length - SHOWN;
-  const manual = !!arrange && !needle;
+  // pins don't count while Priority only is on, so neither does Arrange myself (its switch is hidden then)
+  const arr = !po && !!arrange;
+  const manual = arr && !needle;
   const pinnedShown = shown.filter((c) => c.pinned).map((c) => c.id);
   const curGame = state.current?.campaign.game;
 
   const row = (c: Campaign) => (
-    <UpNextRow key={c.id} c={c} pr={priorityOf(c.game)} arrange={!!arrange} pinned={!!arrange && c.pinned}
+    <UpNextRow key={c.id} c={c} pr={priorityOf(c.game)} arrange={arr} pinned={arr && c.pinned}
       pinIndex={visiblePins.indexOf(c.id)} pinCount={visiblePins.length}
       onMineNow={async () => {
         try { await api.post("/mine-now", { campaign_id: c.id }); say(`Mining ${c.name} now`); }
@@ -88,11 +95,12 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   );
   const header = (
     <>
-      {curGame && !arrange && <span className="aside">Starts when {curGame} is done or its streams go offline</span>}
-      <label className="arr"><input type="checkbox" role="switch" className="sw" aria-label="Arrange myself" disabled={arrange === null}
-        checked={!!arrange} onChange={(e) => void toggle(e.target.checked)} /><span aria-hidden="true">Arrange myself</span></label>
-      <label className="filter"><input type="search" aria-label="Filter Up next" placeholder="Filter by game or campaign"
-        value={filter} onChange={(e) => setFilter(e.target.value)} />{needle && <span className="n">{hits.length} of {state.up_next.length}</span>}</label>
+      {curGame && !arr && state.up_next.length > 0 && <span className="aside">Starts when {curGame} is done or its streams go offline</span>}
+      {po && !state.up_next.length && <span className="aside">Priority only is on</span>}
+      {!po && <label className="arr"><input type="checkbox" role="switch" className="sw" aria-label="Arrange myself" disabled={arrange === null}
+        checked={!!arrange} onChange={(e) => void toggle(e.target.checked)} /><span aria-hidden="true">Arrange myself</span></label>}
+      {state.up_next.length > 0 && <label className="filter"><input type="search" aria-label="Filter Up next" placeholder="Filter by game or campaign"
+        value={filter} onChange={(e) => setFilter(e.target.value)} />{needle && <span className="n">{hits.length} of {state.up_next.length}</span>}</label>}
     </>
   );
   const pinnedRows = shown.filter((c) => manual && c.pinned);
@@ -111,6 +119,23 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
           <div className="auto-h">{pins.length ? "Then automatic · most urgent first" : "Automatic · most urgent first · pin any to put it first"}</div>
         )}
         {restRows.map(row)}
+        {po && outside.length > 0 && (
+          <button className="ign-foot" type="button" aria-expanded={showOutside} aria-controls="outside-list"
+            aria-label={`Not mined: ${outside.length} ${outside.length === 1 ? "campaign" : "campaigns"} outside Priority · ${showOutside ? "Hide" : "Show"}`}
+            onClick={() => setShowOutside(!showOutside)}>
+            Not mined: {outside.length} {outside.length === 1 ? "campaign" : "campaigns"} outside Priority
+            <span className="sep">·</span><u>{showOutside ? "Hide" : "Show"}</u>
+          </button>
+        )}
+        {po && showOutside && (
+          <div id="outside-list">
+            {outside.map((c) => (
+              <UpNextRow key={c.id} c={c} pr={null} arrange={false} pinned={false} pinIndex={-1} pinCount={0} outside
+                onMineNow={() => undefined} onNever={() => onNever(c.game)} onPriority={() => onPriority(c.game)}
+                onPin={() => undefined} onUnpin={() => undefined} onMove={() => undefined} />
+            ))}
+          </div>
+        )}
       </div>
       {!needle && more > 0 && (
         <button className="btn quiet more" type="button" aria-expanded={all} aria-controls="up-next-list" onClick={() => setAll(!all)}>
@@ -126,8 +151,9 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   );
 }
 
-function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, onMineNow, onNever, onPriority, onPin, onUnpin, onMove }: {
+function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, outside, onMineNow, onNever, onPriority, onPin, onUnpin, onMove }: {
   c: Campaign; pr: string | null; arrange: boolean; pinned: boolean; pinIndex: number; pinCount: number;
+  outside?: boolean;  // Priority only: not mined, so no Mine now
   onMineNow: () => void; onNever: () => void; onPriority: () => void; onPin: () => void; onUnpin: () => void;
   onMove: (by: number) => void;
 }) {
@@ -158,7 +184,7 @@ function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, onMineNow, onNe
           </div>
         )}
         {!arrange && <>
-          <button className="btn" type="button" aria-label={`Mine ${c.name} now`} onClick={onMineNow}>Mine now</button>
+          {!outside && <button className="btn" type="button" aria-label={`Mine ${c.name} now`} onClick={onMineNow}>Mine now</button>}
           {addToPriority}
           <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={onNever}>Never mine</button>
         </>}

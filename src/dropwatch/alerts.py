@@ -234,7 +234,9 @@ class Notifier:
         told = set(json.loads(self._store.get_setting("notify_needs_you_sent") or "[]"))
         current = {cid for cid, _, _ in campaigns}
         new = [c for c in campaigns if c[0] not in told]
-        keep = (told & current) | {c[0] for c in new}  # forget ones that left Needs you: they may come back
+        # forget ones that left Needs you: they may come back. Not while Priority only is on: then they only
+        # left because of the switch, and turning it off would announce them again (review fix 2026-10-12)
+        keep = (told if s.get("priority_only") else told & current) | {c[0] for c in new}
         if keep != told:
             self._store.set_setting("notify_needs_you_sent", json.dumps(sorted(keep)))
         if not new:

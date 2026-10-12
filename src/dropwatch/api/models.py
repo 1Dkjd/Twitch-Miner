@@ -91,6 +91,8 @@ class StateOut(BaseModel):
     next_check_at: datetime | None = None  # the runner's next Twitch refresh (or retry)
     never: list[CampaignOut] = []  # running campaigns of Never games: never mined, listed for their art
     needs_ignored: list[CampaignOut] = []  # Needs you campaigns hidden with Ignore, until they end
+    priority_only: bool = False  # Settings > Mining: only Priority games are mined
+    outside: list[CampaignOut] = []  # Priority only: what would be mined otherwise, in queue order
     first_in_line: list[str] = []  # idle: names of the next campaigns to mine once a channel goes live
     streak_visit: StreakVisitOut | None = None  # watching a favourite for its watch streak; drops wait
     build: str = ""  # version+commit running; the page offers a reload when it changes
@@ -157,6 +159,7 @@ class SettingsIn(BaseModel):
     notify_weekly_tz: Annotated[StrictStr, Field(max_length=64), AfterValidator(_zone)] | None = None
     campaigns_every_minutes: Literal[15, 30, 60, 120, 240] | None = None  # the choices Settings offers
     points_watch_streak: StrictBool | None = None
+    priority_only: StrictBool | None = None
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -179,6 +182,7 @@ class SettingsOut(BaseModel):
     notify_weekly_tz: str
     campaigns_every_minutes: int
     points_watch_streak: bool
+    priority_only: bool
 
 
 class ActivityEvent(BaseModel):
@@ -304,7 +308,7 @@ class MissedOut(BaseModel):
     box_art_url: str
     link_url: str
     ends_at: datetime
-    # never_list | dropwatch_off | not_linked | ran_out_of_time | no_live_channels | outranked
+    # never_list | dropwatch_off | not_linked | ran_out_of_time | no_live_channels | priority_only | outranked
     reason: str
     rewards: list[MissedReward]
     rewards_total: int

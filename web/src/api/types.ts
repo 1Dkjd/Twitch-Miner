@@ -1043,6 +1043,8 @@ export interface components {
             notify_weekly_tz?: string | null;
             /** Points Watch Streak */
             points_watch_streak?: boolean | null;
+            /** Priority Only */
+            priority_only?: boolean | null;
         };
         /** SettingsOut */
         SettingsOut: {
@@ -1082,6 +1084,8 @@ export interface components {
             notify_weekly_tz: string;
             /** Points Watch Streak */
             points_watch_streak: boolean;
+            /** Priority Only */
+            priority_only: boolean;
         };
         /** SignInStatus */
         SignInStatus: {
@@ -1134,8 +1138,18 @@ export interface components {
             never: components["schemas"]["CampaignOut"][];
             /** Next Check At */
             next_check_at?: string | null;
+            /**
+             * Outside
+             * @default []
+             */
+            outside: components["schemas"]["CampaignOut"][];
             /** Paused Until */
             paused_until: string | null;
+            /**
+             * Priority Only
+             * @default false
+             */
+            priority_only: boolean;
             /** Signed In */
             signed_in: boolean;
             /** State */

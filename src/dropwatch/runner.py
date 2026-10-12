@@ -244,6 +244,7 @@ class Runner:
                 "never": c.game.name in prefs.never, "priority": c.game.name in prefs.priority,
                 "pinned": c.id in prefs.pins, "live": any(qualifies(c, ch) for ch in self.live),
                 "watched": max((d.current_minutes for d in c.drops), default=0),
+                "outside": prefs.priority_only and c.game.name not in prefs.priority,
             })
         log(now, rows)
 

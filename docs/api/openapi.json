@@ -1357,6 +1357,17 @@
        }
       ],
       "title": "Points Watch Streak"
+     },
+     "priority_only": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Priority Only"
      }
     },
     "title": "SettingsIn",
@@ -1435,6 +1446,10 @@
      "points_watch_streak": {
       "title": "Points Watch Streak",
       "type": "boolean"
+     },
+     "priority_only": {
+      "title": "Priority Only",
+      "type": "boolean"
      }
     },
     "required": [
@@ -1455,7 +1470,8 @@
      "notify_weekly_hour",
      "notify_weekly_tz",
      "campaigns_every_minutes",
-     "points_watch_streak"
+     "points_watch_streak",
+     "priority_only"
     ],
     "title": "SettingsOut",
     "type": "object"
@@ -1622,6 +1638,14 @@
       ],
       "title": "Next Check At"
      },
+     "outside": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/CampaignOut"
+      },
+      "title": "Outside",
+      "type": "array"
+     },
      "paused_until": {
       "anyOf": [
        {
@@ -1633,6 +1657,11 @@
        }
       ],
       "title": "Paused Until"
+     },
+     "priority_only": {
+      "default": false,
+      "title": "Priority Only",
+      "type": "boolean"
      },
      "signed_in": {
       "title": "Signed In",

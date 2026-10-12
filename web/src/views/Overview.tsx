@@ -59,7 +59,8 @@ export function OverviewView() {
     }), `${game} is off Priority.`));
   }
   const needs = <NeedsYou key="needs" state={state} onNever={never} />;
-  const now = <NowSlot key="now" state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf} />;
+  const now = <NowSlot key="now" state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf}
+    priority={lists ? lists.priority : null} />;
   return (
     <section className="view" id="v-overview" aria-labelledby="h-overview">
       <h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1>
@@ -143,7 +144,7 @@ function Banner({ state, lost, lostSince }: { state: State; lost: boolean; lostS
 }
 
 /* ---------- Mining now ---------- */
-function NowSlot({ state, lost, lostSince, priorityOf }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string, ordinal?: boolean) => string | null }) {
+function NowSlot({ state, lost, lostSince, priorityOf, priority }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string, ordinal?: boolean) => string | null; priority: string[] | null }) {
   const cur = state.current;
   if (state.state === "signed_out") {
     return (
@@ -152,7 +153,7 @@ function NowSlot({ state, lost, lostSince, priorityOf }: { state: State; lost: b
     );
   }
   if (state.streak_visit) return <StreakVisit visit={state.streak_visit} next={cur?.campaign.name ?? null} />;
-  if (!cur) return <Idle state={state} />;
+  if (!cur) return state.priority_only ? <PriorityIdle state={state} priority={priority} /> : <Idle state={state} />;
   return <NowCard state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf} />;
 }
 
@@ -295,6 +296,52 @@ function Idle({ state }: { state: State }) {
         catch (e) { sayError(e, "Couldn't check"); }
         finally { setBusy(false); void refreshState(); }
       }}>Check now</button></div>
+    </section>
+  );
+}
+
+/** Priority only, nothing being mined: nothing in the Priority games can be mined (no campaign, or it needs a
+ * link, or hasn't started), or a Priority campaign is waiting for someone to go live (approved mockup
+ * 2026-10-12; the first heading softened after review, since the planner can't tell those apart).
+ * priority is null until the lists have loaded. */
+function PriorityIdle({ state, priority }: { state: State; priority: string[] | null }) {
+  const { refreshState, say, sayError } = useApp();
+  const [busy, setBusy] = useState(false);
+  const line = state.first_in_line;
+  const next = state.next_check_at ? minutesUntil(state.next_check_at) : null;
+  const names = !priority?.length ? "" : priority.length > 1 ? `${priority.slice(0, -1).join(", ")} and ${priority.at(-1)}` : priority[0];
+  async function setPriorityOnly(on: boolean) {
+    try {
+      await api.put("/settings", { priority_only: on });
+      if (!on) say({ title: "Priority only is off", detail: "Every game can be mined again." }, () => void setPriorityOnly(true));
+      else say("Priority only is back on");
+    } catch (e) { sayError(e, "Couldn't change it"); }
+    void refreshState();
+  }
+  const off = <button className="btn quiet" type="button" onClick={() => void setPriorityOnly(false)}>Turn off Priority only</button>;
+  if (!line.length) {
+    return (
+      <section className="idle" aria-labelledby="h-idle">
+        <h2 id="h-idle">Nothing to mine in your Priority games</h2>
+        <p>Priority only is on, so other games aren't mined.{" "}
+          {priority === null ? "" : priority.length ? `${names} ${priority.length === 1 ? "has" : "have"} nothing Dropwatch can mine right now.`
+            : "Your Priority list is empty."}</p>
+        <div className="acts"><button className="btn" type="button" onClick={() => go("priorities")}>Edit Priority</button>{off}</div>
+      </section>
+    );
+  }
+  return (
+    <section className="idle" aria-labelledby="h-idle">
+      <h2 id="h-idle">Waiting for a Priority game to go live</h2>
+      <p>Priority only is on, so other games aren't mined. {line[0]} is first in line{line[1] ? `, then ${line[1]}` : ""}.
+        {next !== null ? ` Checking again in ${dur(Math.max(1, next))}.` : ""}</p>
+      <div className="acts"><button className="btn" type="button" aria-disabled={busy} onClick={async () => {
+        if (busy) return;
+        setBusy(true);
+        try { await api.post("/refresh"); say("Checked for live channels."); }
+        catch (e) { sayError(e, "Couldn't check"); }
+        finally { setBusy(false); void refreshState(); }
+      }}>Check now</button>{off}</div>
     </section>
   );
 }

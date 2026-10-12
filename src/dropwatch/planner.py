@@ -36,6 +36,7 @@ class Plan:
     also_credited: tuple[str, ...] = ()
     waiting: tuple[str, ...] = ()  # could be mined but nobody qualifying is live, in queue order
     needs_ignored: tuple[str, ...] = ()  # would be in Needs you, but Ignore was pressed on them
+    outside: tuple[str, ...] = ()  # Priority only: live and earnable, but the game isn't in Priority
 
 
 def qualifies(c: Campaign, ch: LiveChannel) -> bool:
@@ -69,8 +70,11 @@ def plan(
     current_campaign: str | None = None,
 ) -> Plan:
     considered = [c for c in campaigns if campaign_active(c, now) and c.game.name not in prefs.never]
+    # Priority only: just these games are mined or asked about (Needs you, and so its alert and the weekly
+    # summary); the rest only show as "outside" on the page
+    in_scope = (lambda c: c.game.name in prefs.priority) if prefs.priority_only else (lambda c: True)
     asks = [
-        c.id for c in sorted(considered, key=lambda c: (c.ends_at, c.id))
+        c.id for c in sorted((c for c in considered if in_scope(c)), key=lambda c: (c.ends_at, c.id))
         if c.linked is False and not c.has_badge_or_emote and campaign_minutes_needed(c, now) > 0
     ]
     # ignored ones leave Needs you, and so its alert and the weekly summary, which read plan.needs_you
@@ -114,9 +118,11 @@ def plan(
         return (2, 0, link_rank(c), campaign_ratio(c, now), c.ends_at, c.id)
 
     eligible.sort(key=order)
-    waiting = tuple(c.id for c in sorted(offline, key=order))
+    outside = tuple(c.id for c in eligible if not in_scope(c))
+    eligible = [c for c in eligible if in_scope(c)]
+    waiting = tuple(c.id for c in sorted(offline, key=order) if in_scope(c))
     if not eligible:
-        return Plan(None, (), needs_you, done, verdicts, (), waiting, needs_ignored)
+        return Plan(None, (), needs_you, done, verdicts, (), waiting, needs_ignored, outside)
 
     chosen = next((c for c in eligible if c.id == override_campaign), eligible[0])
     if chosen.id != override_campaign:
@@ -147,7 +153,7 @@ def plan(
     queue = tuple(c.id for c in eligible if c.id != chosen.id)
     return Plan(
         Choice(chosen.id, channel.login, reason, channel_reason),
-        queue, needs_you, done, verdicts, also, waiting, needs_ignored,
+        queue, needs_you, done, verdicts, also, waiting, needs_ignored, outside,
     )
 
 
