@@ -9,7 +9,17 @@
   <Privileged>false</Privileged>
   <Support>https://forums.unraid.net/topic/200875-support-kernelpanic-studios-dropwatch/</Support>
   <Project>https://github.com/KernelPanic-Studios/dropwatch</Project>
-  <Overview>Dropwatch earns Twitch Drops for you in the background. It picks which campaign to watch, moves to another channel when a stream goes offline, and claims each reward as soon as it's earned. It also collects channel points and watch-streak bonuses on your favourite channels. A web dashboard shows what's being mined, what's next, and anything that needs you, such as a game account to link. From there you can set game priorities, skip games, pin campaigns and look back at your history. Optional notifications go to Discord, Telegram, ntfy, Slack, Pushover, Gotify or any webhook. One Twitch account per container. After starting it, open the WebUI to set a page password and sign in to Twitch with a one-time code.</Overview>
+  <Overview>Dropwatch earns Twitch Drops for you in the background and claims each reward as soon as it's earned.
+
+**What it does**
+- Picks which campaign to watch, and moves to another channel when a stream goes offline
+- Collects channel points and watch-streak bonuses on your favourite channels
+- Lists anything that needs you, such as a game account to link
+- Web dashboard for priorities, skipped games, pinned campaigns and history, phone included
+- Optional notifications to Discord, Telegram, ntfy, Slack, Pushover, Gotify or any webhook
+
+**Getting started**
+Open the WebUI, choose a page password, then sign in to Twitch with a one-time code. One Twitch account per container.</Overview>
   <Changes>
 ### 0.1.1 (2026-10-11)
 - First release in Community Applications, published by KernelPanic Studios.
