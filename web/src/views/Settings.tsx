@@ -55,7 +55,7 @@ export function SettingsView() {
   const summary: Record<Section, string> = {
     mining: settings ? `Badges ${settings.mine_badges ? "on" : "off"} · ${everyLabel(settings.campaigns_every_minutes).toLowerCase()}` : "",
     points: settings ? (settings.claim_points ? `Chests on · streaks ${settings.points_watch_streak ? "on" : "off"}` : "Off") : "",
-    notifications: notifySummary(settings, chans),
+    notifications: notifySummary(settings, chans, about?.server_tz),
     account: [state ? (state.signed_in ? state.login : "Not signed in") : "",
       sessions ? `${sessions.length} ${sessions.length === 1 ? "browser" : "browsers"}` : ""].filter(Boolean).join(" · "),
     appearance: theme.charAt(0).toUpperCase() + theme.slice(1),
@@ -70,7 +70,8 @@ export function SettingsView() {
         <nav className="snav" aria-label="Settings sections">
           {SECTIONS.map((s) => (
             <a key={s.id} href={`#settings/${s.id}`} aria-current={open === s.id ? "page" : undefined}>
-              <span>{s.name}</span>{summary[s.id] && <small>{summary[s.id]}</small>}
+              {/* the summary line is there from the start, so the list doesn't grow as data arrives */}
+              <span>{s.name}</span><small>{summary[s.id] || NBSP}</small>
             </a>
           ))}
         </nav>
@@ -177,12 +178,23 @@ export function SettingsView() {
   );
 }
 
-/** "5 of 6 alerts · weekly Sun 21:00 · Discord" */
-function notifySummary(settings: Settings | null, chans: NotifyChannels | null): string {
+/** "EDT", "UTC", "GMT+2": the zone's short name right now, or "" if the browser doesn't know the zone. */
+function zoneAbbr(zone: string | undefined): string {
+  if (!zone) return "";
+  try {
+    return new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: "short" })
+      .formatToParts(new Date()).find((p) => p.type === "timeZoneName")?.value ?? "";
+  } catch { return ""; }
+}
+
+/** "5 of 6 alerts · weekly Sun 21:00 EDT · Discord" (the zone is the chosen one, else the server's) */
+function notifySummary(settings: Settings | null, chans: NotifyChannels | null, serverTz?: string): string {
   if (!settings) return "";
   const parts = [`${TOGGLES.filter((t) => settings[t.key]).length} of ${TOGGLES.length} alerts`];
   if (settings.notify_weekly) {
-    parts.push(`weekly ${DAYS[settings.notify_weekly_day ?? 6]!.slice(0, 3)} ${String(settings.notify_weekly_hour ?? 18).padStart(2, "0")}:00`);
+    const zone = zoneAbbr(settings.notify_weekly_tz || serverTz);
+    const when = `${DAYS[settings.notify_weekly_day ?? 6]!.slice(0, 3)} ${String(settings.notify_weekly_hour ?? 18).padStart(2, "0")}:00`;
+    parts.push(`weekly ${when}${zone ? ` ${zone}` : ""}`);
   }
   if (chans) {
     const set = chans.channels.filter((c) => c.configured).map((c) => c.name);
@@ -249,6 +261,7 @@ function Backup({ onRestored }: { onRestored: () => void }) {
   );
 }
 
+const NBSP = String.fromCharCode(160); // keeps an empty summary line its height
 const EVERY: [number, string][] = [[15, "Every 15 min"], [30, "Every 30 min"], [60, "Every hour"], [120, "Every 2 hours"], [240, "Every 4 hours"]];
 const everyLabel = (m: number | undefined) => EVERY.find(([n]) => n === (m ?? 60))?.[1] ?? `Every ${m} min`;
 
