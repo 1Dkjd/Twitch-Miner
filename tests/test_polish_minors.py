@@ -95,3 +95,16 @@ async def test_live_events_end_when_the_page_session_does():
 
     # without the check the stream pings forever: fail in 1 s rather than hang
     assert await asyncio.wait_for(rest(), 1) == [] and bus.subscribers == 0
+
+
+async def test_parallel_wrong_passwords_still_hit_the_lockout(tmp_path):
+    # review fix: with the check in a worker thread, a burst of parallel guesses all passed the limiter
+    # before any failure was recorded
+    from dropwatch.api.auth import LOGIN_TRIES
+    app, _ = make_app(tmp_path)
+    c = await logged_in_client(app)
+    rs = await asyncio.gather(*(c.post("/api/login", json={"password": f"wrong {i}"}) for i in range(10)))
+    codes = [r.status_code for r in rs]
+    assert codes.count(401) <= LOGIN_TRIES, codes
+    assert codes.count(429) >= 10 - LOGIN_TRIES, codes
+    await c.aclose()

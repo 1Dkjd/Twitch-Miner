@@ -1,6 +1,7 @@
 """FastAPI application: public auth routes plus the session-protected API (spec §8)."""
 from __future__ import annotations
 
+import asyncio
 import ipaddress
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
@@ -519,6 +520,7 @@ def create_app(ctx: AppContext, web_dir: Path | None = None, hosts: Iterable[str
     if ctx.started_at is None and ctx.store is not None:
         ctx.started_at = ctx.clock()
     app.state.login_limiter = LoginLimiter()
+    app.state.login_lock = asyncio.Lock()
     app.include_router(public)
     app.include_router(private_auth)
     app.include_router(api)

@@ -111,19 +111,27 @@ async def setup(body: PasswordIn, request: Request, response: Response) -> None:
 async def login(body: PasswordIn, request: Request, response: Response) -> None:
     ctx = _ctx(request)
     limiter: LoginLimiter = request.app.state.login_limiter
-    who, now = _who(request), ctx.clock()
-    if wait := limiter.wait(who, now):
-        minutes = -(-wait // 60)
-        raise HTTPException(status_code=429, headers={"Retry-After": str(wait)},
-                            detail=f"Too many wrong passwords. Try again in {minutes} min.")
-    # argon2 is slow by design: verify in a worker thread so the miner and other requests keep going;
-    # the hash is read here, on the loop, because the database connection belongs to this thread
-    h = ctx.store.password_hash()
-    if h is None or not await asyncio.to_thread(Store.verify_password, h, body.password):
-        limiter.failed(who, now)
-        await asyncio.sleep(0.5)  # blunt online guessing
+    who = _who(request)
+    # one password check at a time: the limiter's check, the verify and the failure record happen together,
+    # so a burst of parallel guesses can't all get past the limiter before any failure is counted (review
+    # fix 2026-10-12). The rest of the app keeps running meanwhile.
+    async with request.app.state.login_lock:
+        now = ctx.clock()
+        if wait := limiter.wait(who, now):
+            minutes = -(-wait // 60)
+            raise HTTPException(status_code=429, headers={"Retry-After": str(wait)},
+                                detail=f"Too many wrong passwords. Try again in {minutes} min.")
+        # argon2 is slow by design: verify in a worker thread so the miner and other requests keep going;
+        # the hash is read here, on the loop, because the database connection belongs to this thread
+        h = ctx.store.password_hash()
+        ok = h is not None and await asyncio.to_thread(Store.verify_password, h, body.password)
+        if ok:
+            limiter.succeeded(who)
+        else:
+            limiter.failed(who, now)
+    if not ok:
+        await asyncio.sleep(0.5)  # blunt online guessing (outside the lock: it slows the guesser, not others)
         raise HTTPException(status_code=401, detail="Wrong password.")
-    limiter.succeeded(who)
     _set_cookie(response, ctx.store.create_web_session(ctx.clock(), request.headers.get("user-agent", "")))
 
 
