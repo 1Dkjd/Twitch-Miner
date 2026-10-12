@@ -69,7 +69,7 @@ test("pointing at or tabbing into the deck pauses every line", async () => {
   expect(deck).toHaveAttribute("data-paused");
   fireEvent.mouseLeave(deck);
   expect(deck).not.toHaveAttribute("data-paused");
-  fireEvent.focus(screen.getByRole("button", { name: "Dismiss: Setting saved" }));
+  act(() => screen.getByRole("button", { name: "Dismiss: Setting saved" }).focus());  // real focus, as a browser moves it
   expect(deck).toHaveAttribute("data-paused");
 });
 
@@ -146,4 +146,35 @@ test("the announcement for a notice with Undo says how to reach it", async () =>
   setup(<><Said /><Sayer spec={{ title: "Moved to Never", detail: "Palia won't be mined.", action: { label: "Undo", run: () => undefined } }} /></>);
   await userEvent.click(screen.getByRole("button", { name: "go" }));
   await waitFor(() => expect(screen.getByTestId("said")).toHaveTextContent("Moved to Never. Palia won't be mined. Alt+N to reach Undo."));
+});
+
+/* Review fixes (2026-10-12). */
+test("a new notice is never the one dropped, even when the other three all have Undo", async () => {
+  const undo = (t: string) => ({ title: t, action: { label: "Undo", run: () => undefined } });
+  setup(<><Sayer spec={undo("A1")} /><Sayer spec={undo("A2")} /><Sayer spec={undo("A3")} /><Sayer error={new ApiError(503, "x")} /></>);
+  for (const b of screen.getAllByRole("button", { name: "go" })) await userEvent.click(b);
+  expect(toasts().map((t) => t.getAttribute("aria-label"))).toEqual(["Couldn't save", "A3", "A2"]);
+});
+
+test("if the focused notice is pushed out of the deck, the others don't stay paused", async () => {
+  setup(<><Sayer spec="One" /><Sayer spec="Two" /><Sayer spec="Three" /><Sayer spec="Four" /></>);
+  const [one, two, three, four] = screen.getAllByRole("button", { name: "go" });
+  for (const b of [one!, two!, three!]) await userEvent.click(b);
+  act(() => screen.getByRole("button", { name: "Dismiss: One" }).focus());
+  const deck = screen.getByRole("region", { name: "Notices" });
+  expect(deck).toHaveAttribute("data-paused");
+  act(() => { four!.click(); });  // "One" is the oldest plain notice: it goes, and with it the focus
+  expect(screen.queryByRole("group", { name: "One" })).not.toBeInTheDocument();
+  expect(deck).not.toHaveAttribute("data-paused");
+});
+
+test("Option+N on a Mac still types ˜ in a text field", async () => {
+  setup(<><input aria-label="somewhere" /><Sayer spec={{ title: "Moved to Never", action: { label: "Undo", run: () => undefined } }} /></>);
+  await userEvent.click(screen.getByRole("button", { name: "go" }));
+  const field = screen.getByRole("textbox", { name: "somewhere" });
+  act(() => field.focus());
+  const e = new KeyboardEvent("keydown", { key: "Dead", code: "KeyN", altKey: true, bubbles: true, cancelable: true });
+  act(() => { field.dispatchEvent(e); });
+  expect(e.defaultPrevented).toBe(false);
+  expect(field).toHaveFocus();
 });

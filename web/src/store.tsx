@@ -24,12 +24,13 @@ const TOAST_KEY = "KeyN"; // Alt+N moves focus to the newest notice (Alt+T is Fi
 let toastSeq = 0;
 
 /** Newest first, at most TOAST_MAX: when one has to go, the oldest plain notice goes before any with an
- * action, so a fresh burst of "Setting saved" can't take an Undo away (polish 2026-10-12). */
+ * action, so a fresh burst of "Setting saved" can't take an Undo away (polish 2026-10-12). The new notice
+ * (index 0) is never the one dropped: with three Undos showing, the oldest Undo goes instead. */
 function trimDeck(ts: ToastItem[]): ToastItem[] {
   const out = [...ts];
   while (out.length > TOAST_MAX) {
     let drop = out.length - 1;
-    for (let i = out.length - 1; i >= 0; i--) {
+    for (let i = out.length - 1; i >= 1; i--) {
       if (!out[i]!.action) { drop = i; break; }
     }
     out.splice(drop, 1);
@@ -176,12 +177,24 @@ export function Toasts() {
   };
   // the deck unmounts under the pointer when its last notice closes, so no leave arrives either
   useEffect(() => { if (!toasts.length) setHover(false); }, [toasts.length]);
+  // a newer notice can push out the one holding focus: no blur arrives then either, so check, and hand
+  // focus back to where Alt+N came from
+  useEffect(() => {
+    if (!focus || deck.current?.contains(document.activeElement)) return;
+    setFocus(false);
+    const back = returnTo.current;
+    returnTo.current = null;
+    if (back?.isConnected) back.focus();
+  }, [toasts, focus]);
   // Alt+N: keyboard and screen-reader users reach Undo without tabbing across the page (the announcement
   // says so). Focusing the deck also pauses its timers.
   useEffect(() => {
     if (!toasts.length) return;
     const onKey = (e: KeyboardEvent) => {
       if (!e.altKey || e.ctrlKey || e.metaKey || e.code !== TOAST_KEY) return;
+      // on a Mac, Option+N is the dead key for ˜: leave it alone while someone is typing
+      const t = e.target as HTMLElement | null;
+      if (e.key === "Dead" && t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
       const first = deck.current?.querySelector<HTMLButtonElement>(".toast button");
       if (!first) return;
       e.preventDefault();
