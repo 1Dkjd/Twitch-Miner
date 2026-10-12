@@ -102,6 +102,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
         paused_until=runner.paused_until, last_refresh=runner.last_refresh, current=current,
         needs_you=keep(plan.needs_you if plan else ()), up_next=up_next,
         needs_ignored=keep(plan.needs_ignored if plan else ()),
+        priority_only=store.get_prefs().priority_only, outside=keep(plan.outside if plan else ()),
         done=keep(plan.done if plan else ()), catalog=_catalog(runner),
         last_switch=_switch(runner, now), next_check_at=runner.next_check_at,
         never=[campaign_out(c, now, None) for c in never],

@@ -99,6 +99,7 @@ class Prefs:
     mine_badges: bool = False
     pins: tuple[str, ...] = ()  # Up next "Arrange myself": campaign ids mined first after Priority
     ignored: frozenset[str] = frozenset()  # Needs you > Ignore: campaign ids not asked about until they end
+    priority_only: bool = False  # Settings > Mining: mine only games in Priority (approved 2026-10-12)
 
 
 def preconditions_met(c: Campaign, d: Drop) -> bool:

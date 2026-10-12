@@ -230,14 +230,17 @@ async def get_settings(request: Request) -> SettingsOut:
     return SettingsOut(**_c(request).store.get_settings())
 
 
+# settings the planner reads (store.get_prefs): changing one re-plans at once
+PLANNER_SETTINGS = {"arrange_up_next", "mine_badges", "claim_points", "points_watch_streak", "priority_only"}
+
+
 @api.put("/settings", response_model=SettingsOut)
 async def put_settings(body: SettingsIn, request: Request) -> SettingsOut:
     values = body.model_dump(exclude_none=True)
     ctx = _c(request)
     out = SettingsOut(**ctx.store.put_settings(values))
     # settings the planner reads take effect now, not at the next 5-minute refresh
-    if (values.keys() & {"arrange_up_next", "mine_badges", "claim_points", "points_watch_streak"}
-            and ctx.service.runner is not None):
+    if values.keys() & PLANNER_SETTINGS and ctx.service.runner is not None:
         await ctx.service.runner.replan()
     return out
 
@@ -389,9 +392,15 @@ async def resume(request: Request) -> None:
 
 @api.post("/mine-now", status_code=204)
 async def mine_now(body: MineNowIn, request: Request) -> None:
-    r = _runner(_c(request))
-    if not any(c.id == body.campaign_id for c in r.campaigns):
+    ctx = _c(request)
+    r = _runner(ctx)
+    camp = next((c for c in r.campaigns if c.id == body.campaign_id), None)
+    if camp is None:
         raise HTTPException(status_code=404, detail="No such campaign.")
+    prefs = ctx.store.get_prefs()
+    if prefs.priority_only and camp.game.name not in prefs.priority:
+        raise HTTPException(status_code=409, detail=f"Priority only is on: add {camp.game.name} to Priority "
+                            "to mine it.")
     r.mine_now(body.campaign_id)
     await r.replan()
     if not (r.plan and r.plan.current and r.plan.current.campaign_id == body.campaign_id):
