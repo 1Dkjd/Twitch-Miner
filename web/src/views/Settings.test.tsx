@@ -153,7 +153,7 @@ test("each section in the list says what's set", async () => {
     "GET /api/sessions": sessions, "GET /api/about": ABOUT,
   });
   const link = (name: RegExp) => screen.getByRole("link", { name });
-  await waitFor(() => expect(link(/^Notifications/)).toHaveTextContent("5 of 6 alerts · weekly Sun 21:00 · Discord"));
+  await waitFor(() => expect(link(/^Notifications/)).toHaveTextContent("5 of 6 alerts · weekly Sun 21:00 UTC · Discord"));
   expect(link(/^Mining/)).toHaveTextContent("Badges on · every hour");
   expect(link(/^Channel points/)).toHaveTextContent("Chests on · streaks off");
   await waitFor(() => expect(link(/^Account/)).toHaveTextContent("kernelpanicattack · 6 browsers"));
@@ -165,4 +165,21 @@ test("with channel points off the list says Off, and no channel set says so", as
     "GET /api/notify/channels": { channels: [], available: [] } });
   await waitFor(() => expect(screen.getByRole("link", { name: /^Channel points/ })).toHaveTextContent(/Channel pointsOff$/));
   await waitFor(() => expect(screen.getByRole("link", { name: /^Notifications/ })).toHaveTextContent(/alerts · nowhere to send them$/));
+});
+
+/* Polish (2026-10-12): the weekly time names its zone, and the section list keeps its height while loading. */
+test("the weekly summary time says which zone it's in", async () => {
+  setup("about", {
+    "GET /api/settings": { ...SETTINGS, notify_weekly: true, notify_weekly_day: 6, notify_weekly_hour: 21,
+      notify_weekly_tz: "America/New_York" },
+    "GET /api/notify/channels": { channels: [], available: [] }, "GET /api/about": ABOUT,
+  });
+  await waitFor(() => expect(screen.getByRole("link", { name: /^Notifications/ })).toHaveTextContent(/weekly Sun 21:00 E[SD]T/));
+});
+
+test("every section already has its summary line before the data arrives", () => {
+  setup("mining");
+  const links = screen.getAllByRole("link");
+  expect(links).toHaveLength(7);
+  for (const l of links) expect(l.querySelector("small")).not.toBeNull();
 });

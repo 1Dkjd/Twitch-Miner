@@ -45,7 +45,11 @@ def restore_backup(store, data: object) -> list[str]:
         raise BadBackup("That isn't a Dropwatch backup, or it's from a newer version.")
     skipped: list[str] = []
     try:
-        lists = ListsIn.model_validate(data.get("lists") or {})
+        # only the list fields this version knows, as with settings: a newer backup may carry more
+        raw_lists = data.get("lists") or {}
+        if not isinstance(raw_lists, dict):
+            raise BadBackup("The backup's lists aren't readable.")
+        lists = ListsIn.model_validate({k: v for k, v in raw_lists.items() if k in ListsIn.model_fields})
         pins = Pins.model_validate({"pins": data.get("pins") or []})
         raw = data.get("settings") or {}
         if not isinstance(raw, dict):

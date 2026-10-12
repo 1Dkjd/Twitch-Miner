@@ -1,6 +1,7 @@
 """FastAPI application: public auth routes plus the session-protected API (spec §8)."""
 from __future__ import annotations
 
+import asyncio
 import ipaddress
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
@@ -410,9 +411,17 @@ async def channel(body: ChannelIn, request: Request) -> None:
         raise HTTPException(status_code=409, detail="That channel can't earn the campaign being mined.")
 
 
+def session_alive(ctx: AppContext, token: str | None) -> Callable[[], bool]:
+    """For the live-event stream: is this browser's page session still valid? (signed out, here or from
+    another browser, or expired: the stream ends)"""
+    return lambda: ctx.store.valid_web_session(token, ctx.clock())
+
+
 @api.get("/events")
 async def events(request: Request) -> StreamingResponse:
-    return StreamingResponse(sse_stream(_c(request).bus, request.is_disconnected),
+    ctx = _c(request)
+    return StreamingResponse(sse_stream(ctx.bus, request.is_disconnected,
+                                        allowed=session_alive(ctx, request.cookies.get(COOKIE))),
                              media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
@@ -517,6 +526,7 @@ def create_app(ctx: AppContext, web_dir: Path | None = None, hosts: Iterable[str
     if ctx.started_at is None and ctx.store is not None:
         ctx.started_at = ctx.clock()
     app.state.login_limiter = LoginLimiter()
+    app.state.login_lock = asyncio.Lock()
     app.include_router(public)
     app.include_router(private_auth)
     app.include_router(api)

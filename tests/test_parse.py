@@ -93,3 +93,27 @@ def test_real_directory_channels():
 def test_real_stream_info():
     ch = stream_channel(load("stream_info.json"))
     assert ch is None or (ch.login and ch.broadcast_id)
+
+
+def test_campaign_drop_and_reward_names_are_trimmed_game_names_are_not():
+    # Twitch sends "DbD: October of Horror " (trailing space); it showed as a double space in notices.
+    # Game names stay exactly as Twitch sends them: they are the keys of the saved Priority and Never lists.
+    raw = {
+        "id": "c", "name": "  DbD: October of Horror ", "status": "ACTIVE",
+        "game": {"id": "1", "displayName": "Dead by Daylight ", "slug": "dbd", "boxArtURL": "u-285x380.jpg"},
+        "self": {"isAccountConnected": False}, "accountLinkURL": "",
+        "startAt": "2026-10-01T00:00:00Z", "endAt": "2026-10-20T00:00:00Z",
+        "allow": {"channels": None, "isEnabled": True},
+        "timeBasedDrops": [{
+            "id": "d", "name": " Week 1 ", "startAt": "2026-10-01T00:00:00Z",
+            "endAt": "2026-10-20T00:00:00Z", "requiredMinutesWatched": 60, "preconditionDrops": None,
+            "benefitEdges": [{"benefit": {"id": "b1", "name": "Corvidicus Malificus ",
+                                          "distributionType": "DIRECT_ENTITLEMENT",
+                                          "imageAssetURL": "i"}}],
+        }],
+    }
+    c = to_campaign(raw, {})
+    assert c.name == "DbD: October of Horror"
+    assert c.drops[0].name == "Week 1"
+    assert c.drops[0].rewards[0].name == "Corvidicus Malificus"
+    assert c.game.name == "Dead by Daylight "

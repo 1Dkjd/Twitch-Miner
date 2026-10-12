@@ -165,6 +165,8 @@ class Watcher:
             if r.status in (401, 403, 404):
                 self._media.pop(channel.login, None)
             return False
+        if "#EXT-X-ENDLIST" in r.text:
+            return False  # the broadcast ended: nothing more will play, so this is no longer watching
         segments = playlist_urls(r.text, url)
         if not segments:
             return False

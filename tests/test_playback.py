@@ -157,3 +157,12 @@ async def test_video_requests_use_the_session_clients_user_agent():
     net = Rec([media("a.ts")])
     await Watcher(net, lambda: tv, FakeGql(), clock=lambda: 1000.0).send(CH, NOW)
     assert seen and set(seen) == {SMARTBOX.user_agent}
+
+
+async def test_an_ended_stream_is_not_counted_as_playback():
+    # an ended broadcast's playlist carries #EXT-X-ENDLIST and stops growing; with every segment already
+    # seen, nothing new was played, so the send used to count as success forever (phase-1 deferred minor)
+    net = Net([media("a.ts", "b.ts"), media("a.ts", "b.ts") + "#EXT-X-ENDLIST\n"])
+    w = Watcher(net, lambda: S, FakeGql(), clock=lambda: 0.0)
+    assert await w.send(CH, NOW) is True
+    assert await w.send(CH, NOW) is False

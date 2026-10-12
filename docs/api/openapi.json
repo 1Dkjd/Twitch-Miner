@@ -251,6 +251,7 @@
     "type": "object"
    },
    "ChannelIn": {
+    "additionalProperties": false,
     "properties": {
      "login": {
       "maxLength": 50,
@@ -586,9 +587,11 @@
     "type": "object"
    },
    "ListsIn": {
+    "additionalProperties": false,
     "properties": {
      "favourites": {
       "items": {
+       "maxLength": 200,
        "type": "string"
       },
       "maxItems": 200,
@@ -597,6 +600,7 @@
      },
      "never": {
       "items": {
+       "maxLength": 200,
        "type": "string"
       },
       "maxItems": 200,
@@ -605,6 +609,7 @@
      },
      "priority": {
       "items": {
+       "maxLength": 200,
        "type": "string"
       },
       "maxItems": 200,
@@ -666,6 +671,7 @@
     "type": "object"
    },
    "MineNowIn": {
+    "additionalProperties": false,
     "properties": {
      "campaign_id": {
       "maxLength": 100,
@@ -786,6 +792,7 @@
     "type": "object"
    },
    "NotifyChannelIn": {
+    "additionalProperties": false,
     "properties": {
      "values": {
       "additionalProperties": {
@@ -970,6 +977,7 @@
     "type": "object"
    },
    "PasswordIn": {
+    "additionalProperties": false,
     "properties": {
      "password": {
       "maxLength": 200,
@@ -984,6 +992,7 @@
     "type": "object"
    },
    "PauseIn": {
+    "additionalProperties": false,
     "properties": {
      "minutes": {
       "anyOf": [
