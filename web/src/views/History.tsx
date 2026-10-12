@@ -184,6 +184,7 @@ const REASON: Record<string, { chip: string; tone: string; why: (m: MissedRow) =
     ? "Other Priority games came first; move it up in Priority to mine it sooner."
     : `Not in Priority; add ${m.game} there, or pin it in Up next, to mine it sooner.` },
   no_live_channels: { chip: "No live channels", tone: "", why: () => "No channel with drops for it was live near the end." },
+  priority_only: { chip: "Priority only was on", tone: "", why: (m) => `${m.game} isn't in Priority, so it wasn't mined. Add it to Priority to mine it next time.` },
   // no look in its last hour: off, paused, signed out or unable to reach Twitch (review fix 2026-10-10)
   dropwatch_off: { chip: "Dropwatch wasn't mining", tone: "", why: () => "Dropwatch was off, paused or signed out when it ended." },
 };

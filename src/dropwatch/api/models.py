@@ -308,7 +308,7 @@ class MissedOut(BaseModel):
     box_art_url: str
     link_url: str
     ends_at: datetime
-    # never_list | dropwatch_off | not_linked | ran_out_of_time | no_live_channels | outranked
+    # never_list | dropwatch_off | not_linked | ran_out_of_time | no_live_channels | priority_only | outranked
     reason: str
     rewards: list[MissedReward]
     rewards_total: int

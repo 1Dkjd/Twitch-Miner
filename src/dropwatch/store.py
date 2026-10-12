@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS campaign_log (id TEXT PRIMARY KEY, name TEXT NOT NULL
   box_art_url TEXT NOT NULL, link_url TEXT NOT NULL, ends_at TEXT NOT NULL, rewards TEXT NOT NULL,
   first_seen TEXT NOT NULL, impossible_at_first INTEGER NOT NULL, last_seen TEXT NOT NULL,
   linked INTEGER, badge INTEGER NOT NULL, never INTEGER NOT NULL, priority INTEGER NOT NULL,
-  pinned INTEGER NOT NULL, live INTEGER NOT NULL, watched INTEGER NOT NULL);
+  pinned INTEGER NOT NULL, live INTEGER NOT NULL, watched INTEGER NOT NULL,
+  outside INTEGER NOT NULL DEFAULT 0);
 """
 CAMPAIGN_LOG_KEEP = timedelta(days=400)  # History's longest period is a year
 MISSED_OFF_AFTER = timedelta(hours=1)  # no look in the last hour before it ended: Dropwatch was off
@@ -98,6 +99,9 @@ class Store:
         for col in ("created_at", "last_seen_at", "user_agent"):
             if col not in have:
                 self._db.execute(f"ALTER TABLE web_sessions ADD COLUMN {col} TEXT")
+        # 2026-10-12: Priority only kept it from being mined (History's reason); older rows read back as 0
+        if "outside" not in {row[1] for row in self._db.execute("PRAGMA table_info(campaign_log)")}:
+            self._db.execute("ALTER TABLE campaign_log ADD COLUMN outside INTEGER NOT NULL DEFAULT 0")
         self._db.commit()
 
     def close(self) -> None:
@@ -243,17 +247,22 @@ class Store:
         at = now.astimezone(UTC).isoformat()
         with self._db:
             self._db.executemany(
-                "INSERT INTO campaign_log VALUES (:id, :name, :game, :box_art_url, :link_url, :ends_at,"
+                "INSERT INTO campaign_log (id, name, game, box_art_url, link_url, ends_at, rewards,"
+                " first_seen, impossible_at_first, last_seen, linked, badge, never, priority, pinned, live,"
+                " watched, outside)"
+                " VALUES (:id, :name, :game, :box_art_url, :link_url, :ends_at,"
                 " :rewards, :at, :impossible, :at, :linked, :badge, :never, :priority, :pinned, :live,"
-                " :watched)"
+                " :watched, :outside)"
                 " ON CONFLICT(id) DO UPDATE SET name = excluded.name, game = excluded.game,"
                 " box_art_url = excluded.box_art_url, link_url = excluded.link_url,"
                 " ends_at = excluded.ends_at,"
                 " rewards = excluded.rewards, last_seen = excluded.last_seen, linked = excluded.linked,"
                 " badge = excluded.badge, never = excluded.never, priority = excluded.priority,"
-                " pinned = excluded.pinned, live = excluded.live, watched = excluded.watched",
+                " pinned = excluded.pinned, live = excluded.live, watched = excluded.watched,"
+                " outside = excluded.outside",
                 [{**r, "at": at, "ends_at": r["ends_at"].astimezone(UTC).isoformat(),
                   "rewards": json.dumps(r["rewards"]), "impossible": int(r["impossible"]),
+                  "outside": int(r.get("outside", False)),
                   "linked": None if r["linked"] is None else int(r["linked"]),
                   **{k: int(r[k]) for k in ("badge", "never", "priority", "pinned", "live")}} for r in rows])
             self._db.execute("DELETE FROM campaign_log WHERE ends_at < ?",
@@ -284,11 +293,11 @@ class Store:
         for row in self._db.execute(
                 "SELECT id, name, game, box_art_url, link_url, ends_at, rewards, first_seen,"
                 " impossible_at_first,"
-                " last_seen, linked, badge, never, priority, pinned, live, watched FROM campaign_log"
+                " last_seen, linked, badge, never, priority, pinned, live, watched, outside FROM campaign_log"
                 " WHERE ends_at > ? AND ends_at <= ? ORDER BY ends_at DESC",
                 (since.astimezone(UTC).isoformat(), now.astimezone(UTC).isoformat())):
             (cid, name, game, art, link, ends, rewards, _first, impossible, last, linked, badge, never,
-             priority, pinned, live, watched) = row
+             priority, pinned, live, watched, outside) = row
             rw = json.loads(rewards)
             # a reward History recorded as claimed counts as claimed even if the last look predates it
             have = Counter(r["name"] for (rows,) in self._db.execute(
@@ -309,6 +318,8 @@ class Store:
                 reason = "ran_out_of_time"
             elif not live:
                 reason = "no_live_channels"
+            elif outside:
+                reason = "priority_only"
             else:
                 reason = "outranked"
             out.append({"campaign_id": cid, "name": name, "game": game, "box_art_url": art, "link_url": link,

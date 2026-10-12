@@ -75,3 +75,65 @@ async def test_api_switch_state_and_mine_now(tmp_path):
     r2 = await c.post("/api/mine-now", json={"campaign_id": "albion"})
     assert r2.status_code == 409 and "Priority only" in r2.json()["detail"]
     await c.aclose()
+
+
+# --- review fixes (2026-10-12)
+def test_offline_campaigns_outside_priority_are_not_first_in_line(now):
+    palia, albion = mk(now, "palia", PALIA), mk(now, "albion", ALBION)
+    p = plan([palia, albion], [], Prefs(priority=("Palia",), priority_only=True), now)
+    assert p.waiting == ("palia",)
+
+
+def test_a_mine_now_override_cannot_pick_a_game_outside_priority(now):
+    palia, albion = mk(now, "palia", PALIA, end_h=300), mk(now, "albion", ALBION, end_h=3)
+    prefs = Prefs(priority=("Palia",), priority_only=True)
+    p = plan([palia, albion], [ch("a", PALIA), ch("c", ALBION)], prefs, now, override_campaign="albion")
+    assert p.current.campaign_id == "palia"
+
+
+def test_toggling_priority_only_does_not_re_alert_campaigns_already_announced(tmp_path, now):
+    from dropwatch.alerts import Notifier
+    st = Store(tmp_path / "d.db")
+    st.put_settings({"notify_needs_you": True})
+    n = Notifier(st, clock=lambda: now)
+    both = [("a", "A", "Palia"), ("b", "B", "Albion Online")]
+    assert len(n._needs_you(both, st.get_settings())) == 1  # one message for the two
+    st.put_settings({"priority_only": True})
+    assert n._needs_you(both[:1], st.get_settings()) == []  # b left Needs you only because of the switch
+    st.put_settings({"priority_only": False})
+    assert n._needs_you(both, st.get_settings()) == []  # so it isn't "new" when the switch goes off
+
+
+def test_history_says_priority_only_kept_a_campaign_from_being_mined(tmp_path, now):
+    from datetime import timedelta
+    st = Store(tmp_path / "d.db")
+    row = {"id": "c1", "name": "AOCP", "game": "Albion Online", "box_art_url": "", "link_url": "",
+           "ends_at": now + timedelta(minutes=30), "linked": True, "badge": False,
+           "rewards": [{"name": "R", "image_url": "", "claimed": False}], "impossible": False,
+           "never": False, "priority": False, "pinned": False, "live": True, "watched": 0, "outside": True}
+    st.log_campaigns(now, [row])
+    missed = st.missed_between(now - timedelta(hours=1), now + timedelta(hours=1))
+    assert [m["reason"] for m in missed] == ["priority_only"]
+    st.log_campaigns(now, [{**row, "id": "c2", "outside": False}])
+    missed = st.missed_between(now - timedelta(hours=1), now + timedelta(hours=1))
+    assert {m["campaign_id"]: m["reason"] for m in missed}["c2"] == "outranked"
+
+
+def test_an_existing_database_gets_the_new_column(tmp_path):
+    import sqlite3
+    path = tmp_path / "d.db"
+    old = sqlite3.connect(path)  # campaign_log as it was before 2026-10-12, with one row in it
+    old.execute("CREATE TABLE campaign_log (id TEXT PRIMARY KEY, name TEXT NOT NULL, game TEXT NOT NULL,"
+                " box_art_url TEXT NOT NULL, link_url TEXT NOT NULL, ends_at TEXT NOT NULL,"
+                " rewards TEXT NOT NULL,"
+                " first_seen TEXT NOT NULL, impossible_at_first INTEGER NOT NULL, last_seen TEXT NOT NULL,"
+                " linked INTEGER, badge INTEGER NOT NULL, never INTEGER NOT NULL, priority INTEGER NOT NULL,"
+                " pinned INTEGER NOT NULL, live INTEGER NOT NULL, watched INTEGER NOT NULL)")
+    old.execute("INSERT INTO campaign_log VALUES ('c0','n','g','','','2026-01-01T00:00:00+00:00','[]',"
+                "'2026-01-01T00:00:00+00:00',0,'2026-01-01T00:00:00+00:00',1,0,0,0,0,1,0)")
+    old.commit()
+    old.close()
+    st = Store(path)
+    cols = {r[1] for r in st._db.execute("PRAGMA table_info(campaign_log)")}
+    assert "outside" in cols
+    assert st._db.execute("SELECT outside FROM campaign_log WHERE id = 'c0'").fetchone() == (0,)
