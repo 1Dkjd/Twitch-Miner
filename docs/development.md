@@ -30,9 +30,14 @@ After changing the API: `uv run dropwatch openapi --out docs/api/openapi.json`, 
 
 ## Releasing
 
+How Dropwatch reaches people: GitHub Actions builds the image into GitHub's registry (`ghcr.io/kernelpanic-studios/dropwatch`), and Unraid's Community Applications lists it from `unraid/dropwatch.xml` in this repo. Docker Hub is deliberately not used (decided 2026-10-11): one registry, published by the same workflow that runs the tests, with no extra account or token.
+
 1. Bump `version` in `pyproject.toml`, run `uv lock`, then regenerate the API schema (`uv run dropwatch openapi --out docs/api/openapi.json`); its test fails otherwise.
 2. Add the release to the top of `<Changes>` in `unraid/dropwatch.xml`. Community Applications shows it on the listing. Say what the release does for users, newest first.
-3. Push a tag like `v0.2.0`. The `docker` workflow tests, then publishes `ghcr.io/kernelpanic-studios/dropwatch:<version>` and `:latest`.
+3. If the dashboard looks different, retake the screenshots in `docs/screenshots/` (the README and the listing both use them; keep the Twitch login out of them).
+4. Push a tag like `v0.2.0`. The `docker` workflow tests, then publishes `ghcr.io/kernelpanic-studios/dropwatch:<version>` and `:latest`. Unraid servers then show "update ready" for Dropwatch.
+
+Template text (description, changelog, screenshots) needs no tag: Community Applications re-reads `unraid/dropwatch.xml` from `main` on its next catalog refresh. In the description, line breaks and `**bold**` show in the listing's popup; square brackets and four-space indents don't survive.
 
 ## Early live runs (2026-10-09)
 
