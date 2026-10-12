@@ -53,7 +53,7 @@ export function SettingsView() {
   }
 
   const summary: Record<Section, string> = {
-    mining: settings ? `Badges ${settings.mine_badges ? "on" : "off"} · ${everyLabel(settings.campaigns_every_minutes).toLowerCase()}` : "",
+    mining: settings ? `${settings.priority_only ? "Priority only · badges" : "Badges"} ${settings.mine_badges ? "on" : "off"} · ${everyLabel(settings.campaigns_every_minutes).toLowerCase()}` : "",
     points: settings ? (settings.claim_points ? `Chests on · streaks ${settings.points_watch_streak ? "on" : "off"}` : "Off") : "",
     notifications: notifySummary(settings, chans, about?.server_tz),
     account: [state ? (state.signed_in ? state.login : "Not signed in") : "",
@@ -78,6 +78,12 @@ export function SettingsView() {
         <div className="spane">
           {open === "mining" && (
             <Set title="Mining">
+              <div className="opt">
+                <div><label htmlFor="m-prio">Only mine games in Priority</label>
+                  <div className="d">Nothing else is mined, not even pinned or badge campaigns. When no Priority game is live, Dropwatch waits instead of mining something else.</div></div>
+                <input type="checkbox" className="sw" id="m-prio" disabled={!settings} checked={!!settings?.priority_only}
+                  onChange={(e) => void put({ priority_only: e.target.checked })} />
+              </div>
               <div className="opt">
                 <div><label htmlFor="m-badges">Also mine badge and emote campaigns</label>
                   <div className="d">Campaigns whose rewards are only Twitch badges or emotes. They need no game account.</div></div>
