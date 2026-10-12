@@ -60,7 +60,7 @@ export function OverviewView() {
   }
   const needs = <NeedsYou key="needs" state={state} onNever={never} />;
   const now = <NowSlot key="now" state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf}
-    priority={lists?.priority ?? []} />;
+    priority={lists ? lists.priority : null} />;
   return (
     <section className="view" id="v-overview" aria-labelledby="h-overview">
       <h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1>
@@ -144,7 +144,7 @@ function Banner({ state, lost, lostSince }: { state: State; lost: boolean; lostS
 }
 
 /* ---------- Mining now ---------- */
-function NowSlot({ state, lost, lostSince, priorityOf, priority }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string, ordinal?: boolean) => string | null; priority: string[] }) {
+function NowSlot({ state, lost, lostSince, priorityOf, priority }: { state: State; lost: boolean; lostSince: Date | null; priorityOf: (g: string, ordinal?: boolean) => string | null; priority: string[] | null }) {
   const cur = state.current;
   if (state.state === "signed_out") {
     return (
@@ -300,14 +300,16 @@ function Idle({ state }: { state: State }) {
   );
 }
 
-/** Priority only, nothing being mined: either no Priority game has a campaign with drops left, or one does
- * but nobody is live (approved mockup 2026-10-12). */
-function PriorityIdle({ state, priority }: { state: State; priority: string[] }) {
+/** Priority only, nothing being mined: nothing in the Priority games can be mined (no campaign, or it needs a
+ * link, or hasn't started), or a Priority campaign is waiting for someone to go live (approved mockup
+ * 2026-10-12; the first heading softened after review, since the planner can't tell those apart).
+ * priority is null until the lists have loaded. */
+function PriorityIdle({ state, priority }: { state: State; priority: string[] | null }) {
   const { refreshState, say, sayError } = useApp();
   const [busy, setBusy] = useState(false);
   const line = state.first_in_line;
   const next = state.next_check_at ? minutesUntil(state.next_check_at) : null;
-  const names = priority.length > 1 ? `${priority.slice(0, -1).join(", ")} and ${priority.at(-1)}` : priority[0];
+  const names = !priority?.length ? "" : priority.length > 1 ? `${priority.slice(0, -1).join(", ")} and ${priority.at(-1)}` : priority[0];
   async function setPriorityOnly(on: boolean) {
     try {
       await api.put("/settings", { priority_only: on });
@@ -320,9 +322,9 @@ function PriorityIdle({ state, priority }: { state: State; priority: string[] })
   if (!line.length) {
     return (
       <section className="idle" aria-labelledby="h-idle">
-        <h2 id="h-idle">No Priority game has a campaign right now</h2>
+        <h2 id="h-idle">Nothing to mine in your Priority games</h2>
         <p>Priority only is on, so other games aren't mined.{" "}
-          {priority.length ? `${names} ${priority.length === 1 ? "has" : "have"} no campaign with drops left.`
+          {priority === null ? "" : priority.length ? `${names} ${priority.length === 1 ? "has" : "have"} nothing Dropwatch can mine right now.`
             : "Your Priority list is empty."}</p>
         <div className="acts"><button className="btn" type="button" onClick={() => go("priorities")}>Edit Priority</button>{off}</div>
       </section>

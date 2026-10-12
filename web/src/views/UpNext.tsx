@@ -26,6 +26,7 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   // Priority only (approved 2026-10-12): just Priority games are mined; the rest fold into one line
   const po = !!state.priority_only;
   const outside = state.outside ?? [];
+  useEffect(() => { if (!po) setShowOutside(false); }, [po]);  // fold closed again next time it's switched on
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
@@ -72,12 +73,14 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   const hits = needle ? state.up_next.filter((c) => `${c.name} ${c.game}`.toLowerCase().includes(needle)) : state.up_next;
   const shown = needle || all ? hits : hits.slice(0, SHOWN);
   const more = state.up_next.length - SHOWN;
-  const manual = !!arrange && !needle;
+  // pins don't count while Priority only is on, so neither does Arrange myself (its switch is hidden then)
+  const arr = !po && !!arrange;
+  const manual = arr && !needle;
   const pinnedShown = shown.filter((c) => c.pinned).map((c) => c.id);
   const curGame = state.current?.campaign.game;
 
   const row = (c: Campaign) => (
-    <UpNextRow key={c.id} c={c} pr={priorityOf(c.game)} arrange={!!arrange} pinned={!!arrange && c.pinned}
+    <UpNextRow key={c.id} c={c} pr={priorityOf(c.game)} arrange={arr} pinned={arr && c.pinned}
       pinIndex={visiblePins.indexOf(c.id)} pinCount={visiblePins.length}
       onMineNow={async () => {
         try { await api.post("/mine-now", { campaign_id: c.id }); say(`Mining ${c.name} now`); }
@@ -92,8 +95,8 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   );
   const header = (
     <>
-      {curGame && !arrange && <span className="aside">Starts when {curGame} is done or its streams go offline</span>}
-      {po && !curGame && <span className="aside">Priority only is on</span>}
+      {curGame && !arr && state.up_next.length > 0 && <span className="aside">Starts when {curGame} is done or its streams go offline</span>}
+      {po && !state.up_next.length && <span className="aside">Priority only is on</span>}
       {!po && <label className="arr"><input type="checkbox" role="switch" className="sw" aria-label="Arrange myself" disabled={arrange === null}
         checked={!!arrange} onChange={(e) => void toggle(e.target.checked)} /><span aria-hidden="true">Arrange myself</span></label>}
       {state.up_next.length > 0 && <label className="filter"><input type="search" aria-label="Filter Up next" placeholder="Filter by game or campaign"

@@ -24,10 +24,10 @@ function overview(s: State, extra: Record<string, unknown> = {}) {
 const idleNone = () => state({ current: null, up_next: [], needs_you: [], priority_only: true, outside: [ALBION, KIRKA],
   first_in_line: [] });
 
-test("with no Priority game running a campaign, it says so and names the Priority games", async () => {
+test("with nothing to mine in the Priority games, it says so and names them", async () => {
   overview(idleNone());
-  expect(await screen.findByRole("heading", { name: "No Priority game has a campaign right now" })).toBeInTheDocument();
-  expect(screen.getByText(/Palia, Phasmophobia, AION 2, ARC Raiders and Riders Republic have no campaign/)).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "Nothing to mine in your Priority games" })).toBeInTheDocument();
+  expect(await screen.findByText(/Palia, Phasmophobia, AION 2, ARC Raiders and Riders Republic have nothing Dropwatch can mine/)).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Edit Priority" })).toBeInTheDocument();
 });
 
@@ -83,4 +83,32 @@ test("Settings › Mining has the switch first, and the summary leads with Prior
   await u.click(sw);
   await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ priority_only: true }));
   await waitFor(() => expect(screen.getByRole("link", { name: /^Mining/ })).toHaveTextContent("Priority only · badges on · every 30 min"));
+});
+
+/* Review fixes (2026-10-12). */
+test("with Arrange myself already on, Priority only still shows the normal list (pins don't count then)", async () => {
+  const palia = campaign({ id: "p1", name: "Frights & Delights", game: "Palia", pinned: true });
+  overview(state({ priority_only: true, up_next: [palia], outside: [] }),
+    { "GET /api/settings": { arrange_up_next: true }, "GET /api/pins": { pins: ["p1"] } });
+  const sec = (await screen.findByRole("heading", { name: "Up next" })).closest("section") as HTMLElement;
+  expect(await within(sec).findByRole("button", { name: "Mine Frights & Delights now" })).toBeInTheDocument();
+  expect(within(sec).queryByRole("button", { name: /^Unpin/ })).not.toBeInTheDocument();
+  expect(within(sec).queryByText(/Pinned · mined first/)).not.toBeInTheDocument();
+});
+
+test("before the Priority list has loaded, the card doesn't claim it's empty", async () => {
+  // no /api/lists route: the request fails, so the lists never load (useLists keeps them null)
+  mockApi({ "GET /api/state": idleNone(),
+    "GET /api/settings": { arrange_up_next: false }, "GET /api/pins": { pins: [] } });
+  vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  render(<AppProvider initialMe={ME}><OverviewView /></AppProvider>);
+  await screen.findByRole("heading", { name: /Priority/, level: 2 });
+  expect(screen.queryByText(/Your Priority list is empty/)).not.toBeInTheDocument();
+});
+
+test("with nothing in Up next, the header doesn't say what it starts after", async () => {
+  overview(state({ priority_only: true, up_next: [], outside: [ALBION] }));
+  const sec = (await screen.findByRole("heading", { name: "Up next" })).closest("section") as HTMLElement;
+  expect(within(sec).queryByText(/Starts when/)).not.toBeInTheDocument();
+  expect(within(sec).getByText("Priority only is on")).toBeInTheDocument();
 });
