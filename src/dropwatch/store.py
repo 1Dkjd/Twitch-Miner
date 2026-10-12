@@ -363,14 +363,20 @@ class Store:
             raise ValueError(f"password must be at least {MIN_PASSWORD} characters")
         self.set_setting("page_password_hash", _ph.hash(plain))
 
-    def check_password(self, plain: str) -> bool:
-        h = self.get_setting("page_password_hash")
-        if h is None:
-            return False
+    def password_hash(self) -> str | None:
+        return self.get_setting("page_password_hash")
+
+    @staticmethod
+    def verify_password(h: str, plain: str) -> bool:
+        """No database access, so it can run in a worker thread (argon2 is deliberately slow)."""
         try:
             return _ph.verify(h, plain)
         except VerificationError:
             return False
+
+    def check_password(self, plain: str) -> bool:
+        h = self.password_hash()
+        return h is not None and Store.verify_password(h, plain)
 
     @staticmethod
     def _token_hash(token: str) -> str:

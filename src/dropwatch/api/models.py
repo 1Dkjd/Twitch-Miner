@@ -96,10 +96,25 @@ class StateOut(BaseModel):
     build: str = ""  # version+commit running; the page offers a reload when it changes
 
 
-class ListsIn(BaseModel):
-    priority: list[str] = Field(default_factory=list, max_length=200)
-    never: list[str] = Field(default_factory=list, max_length=200)
-    favourites: list[str] = Field(default_factory=list, max_length=200)
+class StrictIn(BaseModel):
+    """A request body: a misspelt or unknown field is an error, not silently ignored (polish 2026-10-12)."""
+    model_config = ConfigDict(extra="forbid")
+
+
+def _no_blanks(names: list[str]) -> list[str]:
+    # blank entries are dropped; real names are kept exactly as given (Twitch's game names, trailing space
+    # and all, are what the lists match on)
+    return [n for n in names if n.strip()]
+
+
+ListName = Annotated[str, Field(max_length=200)]
+NameList = Annotated[list[ListName], AfterValidator(_no_blanks)]
+
+
+class ListsIn(StrictIn):
+    priority: NameList = Field(default_factory=list, max_length=200)
+    never: NameList = Field(default_factory=list, max_length=200)
+    favourites: NameList = Field(default_factory=list, max_length=200)
 
 
 class Pins(BaseModel):
@@ -229,7 +244,7 @@ class NotifyChannelsOut(BaseModel):
     available: list[NotifyKind]  # the "Add a channel" menu: the rest
 
 
-class NotifyChannelIn(BaseModel):
+class NotifyChannelIn(StrictIn):
     values: dict[str, str] = Field(default_factory=dict, max_length=5)  # only the fields given change
 
 
@@ -246,19 +261,19 @@ class NotifyTestOut(BaseModel):
     results: list[NotifyResult]
 
 
-class PasswordIn(BaseModel):
+class PasswordIn(StrictIn):
     password: str = Field(max_length=200)
 
 
-class PauseIn(BaseModel):
+class PauseIn(StrictIn):
     minutes: int | None = Field(default=None, ge=1, le=1440)
 
 
-class MineNowIn(BaseModel):
+class MineNowIn(StrictIn):
     campaign_id: str = Field(min_length=1, max_length=100)
 
 
-class ChannelIn(BaseModel):
+class ChannelIn(StrictIn):
     login: str = Field(min_length=1, max_length=50, pattern=r"^[A-Za-z0-9_]+$")
 
 

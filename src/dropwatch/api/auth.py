@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
-from ..store import MIN_PASSWORD, SESSION_TTL
+from ..store import MIN_PASSWORD, SESSION_TTL, Store
 from .models import MeOut, PasswordIn
 
 COOKIE = "dm_session"
@@ -116,7 +116,10 @@ async def login(body: PasswordIn, request: Request, response: Response) -> None:
         minutes = -(-wait // 60)
         raise HTTPException(status_code=429, headers={"Retry-After": str(wait)},
                             detail=f"Too many wrong passwords. Try again in {minutes} min.")
-    if not ctx.store.check_password(body.password):
+    # argon2 is slow by design: verify in a worker thread so the miner and other requests keep going;
+    # the hash is read here, on the loop, because the database connection belongs to this thread
+    h = ctx.store.password_hash()
+    if h is None or not await asyncio.to_thread(Store.verify_password, h, body.password):
         limiter.failed(who, now)
         await asyncio.sleep(0.5)  # blunt online guessing
         raise HTTPException(status_code=401, detail="Wrong password.")

@@ -412,7 +412,9 @@ async def channel(body: ChannelIn, request: Request) -> None:
 
 @api.get("/events")
 async def events(request: Request) -> StreamingResponse:
-    return StreamingResponse(sse_stream(_c(request).bus, request.is_disconnected),
+    ctx, token = _c(request), request.cookies.get(COOKIE)
+    return StreamingResponse(sse_stream(ctx.bus, request.is_disconnected,
+                                        allowed=lambda: ctx.store.valid_web_session(token, ctx.clock())),
                              media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
