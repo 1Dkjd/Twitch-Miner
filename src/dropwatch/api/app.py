@@ -411,11 +411,17 @@ async def channel(body: ChannelIn, request: Request) -> None:
         raise HTTPException(status_code=409, detail="That channel can't earn the campaign being mined.")
 
 
+def session_alive(ctx: AppContext, token: str | None) -> Callable[[], bool]:
+    """For the live-event stream: is this browser's page session still valid? (signed out, here or from
+    another browser, or expired: the stream ends)"""
+    return lambda: ctx.store.valid_web_session(token, ctx.clock())
+
+
 @api.get("/events")
 async def events(request: Request) -> StreamingResponse:
-    ctx, token = _c(request), request.cookies.get(COOKIE)
+    ctx = _c(request)
     return StreamingResponse(sse_stream(ctx.bus, request.is_disconnected,
-                                        allowed=lambda: ctx.store.valid_web_session(token, ctx.clock())),
+                                        allowed=session_alive(ctx, request.cookies.get(COOKIE))),
                              media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 

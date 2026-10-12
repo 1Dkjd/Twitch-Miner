@@ -108,3 +108,47 @@ async def test_parallel_wrong_passwords_still_hit_the_lockout(tmp_path):
     assert codes.count(401) <= LOGIN_TRIES, codes
     assert codes.count(429) >= 10 - LOGIN_TRIES, codes
     await c.aclose()
+
+
+def test_restore_refuses_lists_that_are_not_an_object(tmp_path):
+    # review fix: a hand-edited "lists": [...] was a 500 instead of "can't use this backup"
+    import pytest
+
+    from dropwatch.backup import BadBackup
+    st = Store(tmp_path / "d.db")
+    for bad in (["Palia"], "Palia"):
+        with pytest.raises(BadBackup):
+            restore_backup(st, {"dropwatch_backup": 1, "lists": bad})
+
+
+def test_null_names_from_twitch_do_not_break_the_campaign_list():
+    # review fix: trimming names must not turn Twitch's occasional null into an AttributeError, which the
+    # campaign loop doesn't catch (it would abort the whole refresh instead of one campaign)
+    from dropwatch.twitch.parse import to_campaign
+    raw = {
+        "id": "c", "name": None, "status": "ACTIVE",
+        "game": {"id": "1", "displayName": "G", "slug": "g", "boxArtURL": "u-285x380.jpg"},
+        "self": {"isAccountConnected": True}, "accountLinkURL": "",
+        "startAt": "2026-10-01T00:00:00Z", "endAt": "2026-10-20T00:00:00Z",
+        "allow": {"channels": None, "isEnabled": True},
+        "timeBasedDrops": [{"id": "d", "name": None, "startAt": "2026-10-01T00:00:00Z",
+                            "endAt": "2026-10-20T00:00:00Z", "requiredMinutesWatched": 60,
+                            "preconditionDrops": None,
+                            "benefitEdges": [{"benefit": {"id": "b1", "name": None, "imageAssetURL": "i"}}]}],
+    }
+    c = to_campaign(raw, {})
+    assert c.name is None and c.drops[0].name is None and c.drops[0].rewards[0].name is None
+
+
+async def test_the_event_stream_checks_this_browsers_own_session(tmp_path):
+    # review fix: the wiring in /api/events had no test; it now goes through session_alive()
+    from datetime import UTC, datetime
+
+    from dropwatch.api.app import session_alive
+    app, ctx = make_app(tmp_path)
+    token = ctx.store.create_web_session(datetime.now(UTC))
+    alive = session_alive(ctx, token)
+    assert alive() is True
+    ctx.store.delete_web_session(token)
+    assert alive() is False
+    assert session_alive(ctx, None)() is False
