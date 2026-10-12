@@ -47,7 +47,7 @@ def merge(primary: dict, secondary: dict) -> dict:
 
 def _drop(d: dict, claimed: dict[str, datetime]) -> Drop:
     rewards = tuple(
-        Reward(b["benefit"]["id"], b["benefit"]["name"], b["benefit"].get("imageAssetURL", ""),
+        Reward(b["benefit"]["id"], b["benefit"]["name"].strip(), b["benefit"].get("imageAssetURL", ""),
                b["benefit"].get("distributionType", "UNKNOWN"))
         for b in (d.get("benefitEdges") or [])
     )
@@ -63,7 +63,7 @@ def _drop(d: dict, claimed: dict[str, datetime]) -> Drop:
     required = d["requiredMinutesWatched"]
     if is_claimed:
         current = required
-    return Drop(d["id"], d["name"], rewards, start, end, required, current, is_claimed, claim_id,
+    return Drop(d["id"], d["name"].strip(), rewards, start, end, required, current, is_claimed, claim_id,
                 tuple(p["id"] for p in (d.get("preconditionDrops") or [])))
 
 
@@ -75,7 +75,9 @@ def to_campaign(raw: dict, claimed: dict[str, datetime]) -> Campaign | None:
         ch["name"] for ch in (allow.get("channels") or [])
     ) if allow.get("isEnabled", True) else ()
     return Campaign(
-        raw["id"], raw["name"], _game(raw["game"]), ts(raw["startAt"]), ts(raw["endAt"]),
+        # display names are trimmed (Twitch sends "DbD: October of Horror "); game names are not: they key
+        # the saved Priority and Never lists
+        raw["id"], raw["name"].strip(), _game(raw["game"]), ts(raw["startAt"]), ts(raw["endAt"]),
         # no "self" (catalogue records): Twitch hasn't told us whether the account is linked
         bool(raw["self"].get("isAccountConnected")) if isinstance(raw.get("self"), dict) else None,
         raw.get("accountLinkURL") or "",
