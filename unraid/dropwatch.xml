@@ -34,6 +34,11 @@ Open the WebUI, choose a page password, then sign in to Twitch with a one-time c
   <WebUI>http://[IP]:[PORT:5800]</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/unraid/dropwatch.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/brand/png/icon-256.png</Icon>
+  <Screenshot>https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/docs/screenshots/overview.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/docs/screenshots/priorities.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/docs/screenshots/history.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/docs/screenshots/settings.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/docs/screenshots/phone.png</Screenshot>
   <ExtraParams>--restart unless-stopped --log-opt max-size=10m --log-opt max-file=3</ExtraParams>
   <PostArgs/>
   <CPUset/>
