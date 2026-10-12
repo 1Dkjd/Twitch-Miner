@@ -37,19 +37,26 @@ It runs as a single Docker container, made for Unraid but fine on any Docker hos
 
 ## Install on Unraid
 
-Until Dropwatch is listed in Community Applications, add its template by hand once:
+Dropwatch is in Community Applications:
 
-1. Open the Unraid terminal (the `>_` icon at the top right) and run:
-
-   ```
-   wget -O /boot/config/plugins/dockerMan/templates-user/my-dropwatch.xml https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/unraid/dropwatch.xml
-   ```
-
-2. Go to **Docker**, then **Add Container**, and pick **dropwatch** from the **Template** list.
-3. Check the data path (default `/mnt/user/appdata/dropwatch`) and port (default `5800`), then **Apply**.
-4. Open the WebUI and follow the two first-run steps below.
+1. Go to **Apps** and search for **Dropwatch** (by KernelPanic Studios).
+2. Click **Install**, check the data path (default `/mnt/user/appdata/dropwatch`) and port (default `5800`), then **Apply**.
+3. Open the WebUI and follow the two first-run steps below.
 
 Updates show up on the Docker tab like any other container's.
+
+<details>
+<summary>Without Community Applications</summary>
+
+Add the template by hand once. In the Unraid terminal (the `>_` icon at the top right), run:
+
+```
+wget -O /boot/config/plugins/dockerMan/templates-user/my-dropwatch.xml https://raw.githubusercontent.com/KernelPanic-Studios/dropwatch/main/unraid/dropwatch.xml
+```
+
+Then go to **Docker**, **Add Container**, pick **dropwatch** from the **Template** list, and carry on from step 2.
+
+</details>
 
 ## Install with Docker
 
