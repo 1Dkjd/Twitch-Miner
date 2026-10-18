@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -18,10 +19,44 @@ from .parse import ts
 
 log = logging.getLogger("dropwatch.catalog")
 CATALOG_URL = "https://twitch-drops-api.sunkwi.com/v2/drops"
+MAX_BODY = 25 * 1024 * 1024  # the real catalogue is well under 1 MB; anything this big isn't it
+# a fetch that suddenly lists far fewer campaigns than the last good one is more likely a broken or
+# tampered catalogue than Twitch ending most campaigns at once: keep the last good copy instead
+COLLAPSE_MIN, COLLAPSE_RATIO = 20, 0.2
+IMAGE_HOST = "https://static-cdn.jtvnw.net/"  # the only image host taken from a third party
+LISTED = ("ACTIVE", "UPCOMING")
 FETCH_EVERY = timedelta(hours=1)
 RETRY_AFTER = timedelta(minutes=5)
 STALE_AFTER = timedelta(hours=6)
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; dropwatch)", "Accept": "application/json"}
+
+
+def catalog_url() -> str | None:
+    """DROPWATCH_CATALOG_URL: another catalogue with the same format (a mirror you run), or "off".
+    Off means campaigns come only from Twitch, which shows the TV login just the ones in progress."""
+    v = os.environ.get("DROPWATCH_CATALOG_URL", "").strip()
+    if v.lower() in ("off", "none", "false", "0", "disabled"):
+        return None
+    return v or CATALOG_URL
+
+
+def _image(url) -> str:
+    return url if isinstance(url, str) and url.startswith(IMAGE_HOST) else ""
+
+
+def _sanitize(raw: dict) -> dict:
+    """A third party's record, cut down to what it can be trusted for: images only from Twitch's CDN
+    (the page loads them, so another host would see every visit) and account links only over https."""
+    raw["game"]["boxArtURL"] = _image(raw["game"].get("boxArtURL"))
+    link = raw.get("accountLinkURL")
+    raw["accountLinkURL"] = link if isinstance(link, str) and link.startswith("https://") else ""
+    for d in raw.get("timeBasedDrops") or []:
+        for b in (d.get("benefitEdges") or []) if isinstance(d, dict) else []:
+            ben = b.get("benefit") if isinstance(b, dict) else None
+            if isinstance(ben, dict):
+                ben["imageAssetURL"] = _image(ben.get("imageAssetURL"))
+    raw.pop("self", None)  # account state only ever comes from Twitch
+    return raw
 
 
 def flatten(body: dict) -> tuple[dict[str, dict], datetime | None]:
@@ -36,7 +71,9 @@ def flatten(body: dict) -> tuple[dict[str, dict], datetime | None]:
                     g["boxArtURL"] = game["gameBoxArtURL"]
                 raw["game"] = g
                 ts(raw["endAt"])
-                out[raw["id"]] = raw
+                if not isinstance(raw["id"], str) or not raw["id"]:
+                    continue
+                out[raw["id"]] = _sanitize(raw)
             except (KeyError, TypeError, ValueError, AttributeError):  # e.g. endAt null
                 continue
     updated = body.get("lastUpdatedAt")
@@ -45,8 +82,8 @@ def flatten(body: dict) -> tuple[dict[str, dict], datetime | None]:
 
 class Catalog:
     def __init__(self, transport, cache_path: Path, *,
-                 clock: Callable[[], datetime] = lambda: datetime.now(UTC)):
-        self._t, self._cache, self._clock = transport, cache_path, clock
+                 clock: Callable[[], datetime] = lambda: datetime.now(UTC), url: str = CATALOG_URL):
+        self._t, self._cache, self._clock, self._url = transport, cache_path, clock, url
         self._data: dict[str, dict] | None = None
         self._updated: datetime | None = None
         self._next_fetch: datetime | None = None
@@ -65,16 +102,22 @@ class Catalog:
         now = self._clock()
         if force or self._next_fetch is None or now >= self._next_fetch:
             await self._fetch(now)
+        # UPCOMING too: the page lists them under Coming up; the planner only mines started ones
         return {cid: raw for cid, raw in (self._data or {}).items()
-                if raw.get("status") == "ACTIVE" and ts(raw["endAt"]) > now}
+                if raw.get("status") in LISTED and ts(raw["endAt"]) > now}
 
     async def _fetch(self, now: datetime) -> None:
         try:
-            r = await self._t.request("GET", CATALOG_URL, headers=dict(HEADERS))
+            r = await self._t.request("GET", self._url, headers=dict(HEADERS))
             if r.status != 200:
                 raise ValueError(f"HTTP {r.status}")
+            if len(r.text) > MAX_BODY:
+                raise ValueError(f"response too large ({len(r.text)} bytes)")
             body = json.loads(r.text)
             data, updated = flatten(body)
+            before = len(self._data or {})
+            if before >= COLLAPSE_MIN and len(data) < before * COLLAPSE_RATIO:
+                raise ValueError(f"listed {len(data)} campaigns after {before}; keeping the last good list")
         except Exception as exc:  # noqa: BLE001  a broken catalogue must never stop mining
             log.warning("Campaign catalogue unavailable: %s: %s", type(exc).__name__, exc)
             self._next_fetch = now + RETRY_AFTER

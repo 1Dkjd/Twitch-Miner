@@ -31,6 +31,7 @@ docker run -d --name dropwatch --restart unless-stopped \
 | `TZ` | The server's time zone (the weekly summary's default zone and log times). Default UTC. |
 | `DROPWATCH_HOSTS` | Only for a public domain name, such as a reverse proxy's (`dropwatch.example.com`), comma-separated. IP addresses, `localhost`, bare server names (`tower`) and private suffixes (`.local`, `.lan`, `.home`, `.home.arpa`, `.internal`, `.localdomain`) always work. Other names are refused so a web page can't reach Dropwatch through DNS rebinding. `*` turns the check off. |
 | `FORWARDED_ALLOW_IPS` | Behind a reverse proxy, the proxy's address, so the login lockout sees each visitor's own address instead of the proxy's (otherwise five wrong guesses through the proxy lock everyone out). |
+| `DROPWATCH_CATALOG_URL` | Where campaigns are discovered. Empty: the public catalogue (`twitch-drops-api.sunkwi.com`), only ever sent a plain GET with no Twitch data. A URL: a mirror in the same format. `off`: Twitch only, which shows the TV sign-in just the campaigns already in progress on the account, so most new campaigns go unseen. Whatever the source, only Twitch-CDN images and https account links are taken from it, and a fetch that suddenly lists far fewer campaigns is ignored in favour of the last good list. |
 | `--log-opt` | Docker keeps the miner's log (it writes to standard output); this caps it at 3 files of 10 MB. |
 
 ## Health

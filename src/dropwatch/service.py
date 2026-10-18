@@ -21,7 +21,7 @@ class Parts:
 
 
 def build_parts(store, session, emit) -> Parts:
-    from .twitch.catalog import Catalog
+    from .twitch.catalog import Catalog, catalog_url
     from .twitch.client import TwitchClient
     from .twitch.gql import Gql
     from .twitch.pubsub import PubSub
@@ -30,7 +30,12 @@ def build_parts(store, session, emit) -> Parts:
 
     transport = AiohttpTransport()
     catalog_transport = AiohttpTransport()  # its own cookie jar: nothing of Twitch's goes to the catalogue
-    catalog = Catalog(catalog_transport, store.path.parent / "catalog.json")
+    url = catalog_url()
+    catalog = Catalog(catalog_transport, store.path.parent / "catalog.json", url=url) if url else None
+    if url is None:
+        logging.getLogger("dropwatch.catalog").warning(
+            "Campaign catalogue off (DROPWATCH_CATALOG_URL=off): a TV sign-in only finds campaigns already "
+            "in progress on the account")
     pubsub = PubSub(lambda: session.access_token)
     gql = Gql(transport, lambda: session)
     runner = Runner(TwitchClient(gql, session.user_id, catalog=catalog),

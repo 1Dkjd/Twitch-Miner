@@ -11,11 +11,11 @@ NOW = datetime(2026, 10, 10, 12, tzinfo=UTC)
 def reward(cid, end="2026-10-20T00:00:00Z", status="ACTIVE"):
     return {"id": cid, "name": cid, "status": status, "startAt": "2026-10-01T00:00:00Z", "endAt": end,
             "game": {"id": "1", "displayName": "Palia", "slug": "palia"}, "allow": {"isEnabled": False},
-            "accountLinkURL": "https://link", "timeBasedDrops": []}
+            "accountLinkURL": "https://link.example/palia", "timeBasedDrops": []}
 
 
 def body(*rewards, updated=NOW):
-    game = {"gameId": "1", "gameDisplayName": "Palia", "gameBoxArtURL": "https://art/palia-120x160.jpg",
+    game = {"gameId": "1", "gameDisplayName": "Palia", "gameBoxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1-120x160.jpg",
             "rewards": list(rewards)}
     return json.dumps({"lastUpdatedAt": updated.isoformat().replace("+00:00", "Z"),
                        "refreshIntervalSeconds": 60, "data": [game]})
@@ -42,13 +42,13 @@ async def test_flattens_and_filters_ended(tmp_path):
     cat, _ = make(tmp_path, HttpResponse(200, body(reward("a"), reward("old", end="2026-10-09T00:00:00Z"),
                                                     reward("up", status="UPCOMING"))))
     got = await cat.campaigns()
-    assert set(got) == {"a"}
+    assert set(got) == {"a", "up"}  # upcoming listed (Coming up); the planner only mines started ones
     assert cat.status == ("ok", None)
 
 
 async def test_box_art_copied_into_game(tmp_path):
     cat, _ = make(tmp_path, HttpResponse(200, body(reward("a"))))
-    assert (await cat.campaigns())["a"]["game"]["boxArtURL"] == "https://art/palia-120x160.jpg"
+    assert (await cat.campaigns())["a"]["game"]["boxArtURL"] == "https://static-cdn.jtvnw.net/ttv-boxart/1-120x160.jpg"
 
 
 async def test_fetches_at_most_hourly(tmp_path):
@@ -121,3 +121,55 @@ async def test_cache_written_lf_only(tmp_path):
     await cat.campaigns()
     raw = (tmp_path / "catalog.json").read_bytes()
     assert b"\r" not in raw and json.loads(raw)["data"]
+
+
+def test_catalog_url_from_env(monkeypatch):
+    from dropwatch.twitch.catalog import catalog_url
+    monkeypatch.delenv("DROPWATCH_CATALOG_URL", raising=False)
+    assert catalog_url() == CATALOG_URL
+    monkeypatch.setenv("DROPWATCH_CATALOG_URL", "off")
+    assert catalog_url() is None
+    monkeypatch.setenv("DROPWATCH_CATALOG_URL", "https://mirror.lan/drops")
+    assert catalog_url() == "https://mirror.lan/drops"
+
+
+async def test_uses_configured_url(tmp_path):
+    cat = Catalog(Net(HttpResponse(200, body(reward("a")))), tmp_path / "c.json", clock=lambda: NOW,
+                  url="https://mirror.lan/drops")
+    await cat.campaigns()
+    assert cat._t.calls[0][1] == "https://mirror.lan/drops"
+
+
+async def test_third_party_images_links_and_account_state_are_dropped(tmp_path):
+    r = reward("a")
+    r["accountLinkURL"] = "http://plain.example"
+    r["self"] = {"isAccountConnected": True}
+    r["timeBasedDrops"] = [{"benefitEdges": [{"benefit": {"imageAssetURL": "https://tracker.example/x.png"}}]},
+                           {"benefitEdges": [{"benefit": {"imageAssetURL": "https://static-cdn.jtvnw.net/x.png"}}]}]
+    b = json.loads(body(r))
+    b["data"][0]["gameBoxArtURL"] = "https://tracker.example/art.jpg"
+    cat, _ = make(tmp_path, HttpResponse(200, json.dumps(b)))
+    got = (await cat.campaigns())["a"]
+    assert got["game"]["boxArtURL"] == ""
+    assert got["accountLinkURL"] == ""
+    assert "self" not in got
+    imgs = [e["benefit"]["imageAssetURL"] for d in got["timeBasedDrops"] for e in d["benefitEdges"]]
+    assert imgs == ["", "https://static-cdn.jtvnw.net/x.png"]
+
+
+async def test_a_sudden_collapse_keeps_the_last_good_list(tmp_path):
+    many = body(*[reward(f"c{i}") for i in range(30)])
+    cat, clock = make(tmp_path, HttpResponse(200, many), HttpResponse(200, body(reward("only"))))
+    assert len(await cat.campaigns()) == 30
+    clock[0] = NOW + timedelta(hours=2)
+    got = await cat.campaigns()
+    assert len(got) == 30
+    assert cat.status[0] == "unreachable"
+
+
+async def test_oversized_response_is_refused(tmp_path, monkeypatch):
+    import dropwatch.twitch.catalog as mod
+    monkeypatch.setattr(mod, "MAX_BODY", 100)
+    cat, _ = make(tmp_path, HttpResponse(200, body(reward("a"))))
+    assert await cat.campaigns() == {}
+    assert cat.status[0] == "unreachable"
