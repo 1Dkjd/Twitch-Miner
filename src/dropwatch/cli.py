@@ -156,7 +156,11 @@ async def serve(store: Store, host: str, port: int) -> int:
         await service.stop()
         await service.start()
 
-    signin = SignInManager(store, bus, provider, on_signed_in)
+    def transport():
+        t = AiohttpTransport()
+        return t, t.close
+
+    signin = SignInManager(store, bus, provider, on_signed_in, transport)
     images = ImageCache(store.path.parent / "images")
     app = create_app(AppContext(store=store, bus=bus, service=service, signin=signin, images=images),
                      web_dir=web_dir(), hosts=os.environ.get("DROPWATCH_HOSTS", "").split(","))

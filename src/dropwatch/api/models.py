@@ -102,6 +102,7 @@ class StateOut(BaseModel):
     build: str = ""  # version+commit running; the page offers a reload when it changes
     # announced campaigns not started yet (not Never games), Priority games first, then soonest
     upcoming: list[CampaignOut] = []
+    signin_kind: str | None = None  # "android" (full campaign list) | "tv" (code sign-in) | None
 
 
 class StrictIn(BaseModel):
@@ -361,6 +362,14 @@ class KnownGame(BaseModel):
     game: str
     box_art_url: str  # "" when Twitch never sent one
     last_ends_at: datetime  # when its latest campaign ends (or ended)
+
+
+class SessionImportIn(BaseModel):
+    access_token: str  # from dropwatch-session.json, written by the PC sign-in helper
+
+
+class SessionImportOut(BaseModel):
+    login: str
 
 
 class SuggestionsOut(BaseModel):

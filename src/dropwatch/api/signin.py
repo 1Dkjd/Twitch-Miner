@@ -14,8 +14,10 @@ class SignInManager:
     """provider_factory() -> (provider, close). provider.start() -> DeviceCode;
     provider.wait(code, cancel) -> TwitchSession."""
 
-    def __init__(self, store, bus, provider_factory, on_signed_in: Callable[[], Awaitable[None]]):
+    def __init__(self, store, bus, provider_factory, on_signed_in: Callable[[], Awaitable[None]],
+                 transport_factory=None):
         self._store, self._bus, self._factory, self._on = store, bus, provider_factory, on_signed_in
+        self._transport = transport_factory  # () -> (transport, close), for importing a PC sign-in
         self._state: dict = {"status": "idle", "message": ""}
         self._cancel: asyncio.Event | None = None
         self._task: asyncio.Task | None = None
@@ -61,6 +63,33 @@ class SignInManager:
         """Start over (after a Twitch sign-out): stop any wait and forget the last outcome."""
         self.cancel()
         self._set("idle")
+
+    async def import_android(self, token: str) -> str:
+        """A PC sign-in (pc_signin_helper.py): an Android-app token, checked with Twitch before anything
+        changes. It replaces the current session and restarts mining. Returns the Twitch login."""
+        from ..twitch.auth_browser import device_id, validate_token
+        from ..twitch.constants import ANDROID_APP
+        from ..twitch.session import TwitchSession
+
+        token = token.strip().removeprefix("OAuth ").removeprefix("oauth:").strip()
+        if not token or len(token) > 200 or not token.isalnum():
+            raise SignInError("That isn't a Twitch token.")
+        if self._transport is None:
+            raise SignInError("Importing isn't available in this build.")
+        transport, close = self._transport()
+        try:
+            user_id, login = await validate_token(transport, token)
+            dev = await device_id(transport)
+        finally:
+            await close()
+        import secrets
+        self.cancel()  # a code sign-in still waiting must not overwrite this one
+        self._store.set_session(
+            TwitchSession(token, user_id, login, dev, ANDROID_APP.client_id, secrets.token_hex(8)))
+        await self._on()
+        self._set("done", f"Signed in as {login} (PC sign-in).")
+        log.info("Imported a PC sign-in for %s", login)
+        return login
 
     async def wait(self) -> None:
         if self._task is not None:

@@ -48,12 +48,20 @@ def campaign_out(c: Campaign, now: datetime, verdict: str | None,
     )
 
 
+def signin_kind(session) -> str | None:
+    if session is None:
+        return None
+    from ..twitch.constants import SMARTBOX
+    return "tv" if session.client_id == SMARTBOX.client_id else "android"
+
+
 def state_view(runner, store, now: datetime) -> StateOut:
     session = store.get_session()
     if runner is None:
         return StateOut(state="signed_out" if session is None else "idle", signed_in=session is not None,
                         login=session.login if session else None, paused_until=None, last_refresh=None,
-                        current=None, needs_you=[], up_next=[], done=[], catalog=None)
+                        current=None, needs_you=[], up_next=[], done=[], catalog=None,
+                        signin_kind=signin_kind(session))
     by_id = {c.id: c for c in runner.campaigns}
     plan = runner.plan
     began, seen = store.first_seen() if hasattr(store, "first_seen") else (None, {})
@@ -117,6 +125,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
         upcoming=[campaign_out(c, now, None).model_copy(update={"priority": prefs.in_priority(c.game.name)})
                   for c in upcoming],
         first_in_line=[o.name for o in keep(plan.waiting[:2])] if plan and not plan.current else [],
+        signin_kind=signin_kind(session),
         streak_visit=(StreakVisitOut(channel=v[0], until=v[1])
                       if (v := getattr(runner, "streak_visit", None)) else None),
     )

@@ -499,3 +499,8 @@ svg.i { width: 16px; height: 16px; flex: none; }
 .bucket-toggle .chev { margin-left: auto; align-self: center; transition: transform .15s; }
 .bucket-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .bucket.folded .bucket-toggle { border-bottom: 0; }
+.pc-signin .steps { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+.pc-signin .steps code { background: var(--surface-2); padding: 1px 6px; border-radius: 5px; font-size: 12px; overflow-wrap: anywhere; color: var(--fg); }
+.pc-signin .steps a { color: var(--accent-text); }
+.linkish { background: none; border: 0; padding: 0; margin-top: 6px; color: var(--accent-text); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
+.btn.disabled { opacity: .6; pointer-events: none; }

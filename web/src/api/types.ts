@@ -569,6 +569,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/twitch/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Session
+         * @description A PC sign-in: an Android-app token from the helper. Checked with Twitch first; on failure nothing
+         *     changes and the miner keeps its current sign-in.
+         */
+        post: operations["import_session_api_twitch_session_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/twitch/signin": {
         parameters: {
             query?: never;
@@ -583,6 +604,26 @@ export interface paths {
         post: operations["signin_start_api_twitch_signin_post"];
         /** Signin Cancel */
         delete: operations["signin_cancel_api_twitch_signin_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/twitch/signin-helper": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Signin Helper
+         * @description The PC sign-in helper, as a download (see twitch/pc_signin_helper.py).
+         */
+        get: operations["signin_helper_api_twitch_signin_helper_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1135,6 +1176,16 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** SessionImportIn */
+        SessionImportIn: {
+            /** Access Token */
+            access_token: string;
+        };
+        /** SessionImportOut */
+        SessionImportOut: {
+            /** Login */
+            login: string;
+        };
         /** SessionOut */
         SessionOut: {
             /** Created At */
@@ -1300,6 +1351,8 @@ export interface components {
             priority_only: boolean;
             /** Signed In */
             signed_in: boolean;
+            /** Signin Kind */
+            signin_kind?: string | null;
             /** State */
             state: string;
             streak_visit?: components["schemas"]["StreakVisitOut"] | null;
@@ -2254,6 +2307,39 @@ export interface operations {
             };
         };
     };
+    import_session_api_twitch_session_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SessionImportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionImportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     signin_status_api_twitch_signin_get: {
         parameters: {
             query?: never;
@@ -2305,6 +2391,24 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    signin_helper_api_twitch_signin_helper_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -125,7 +125,9 @@ export function SettingsView() {
               <div className="sub">Twitch</div>
               {state?.signed_in ? (
                 <div className="opt">
-                  <div><div>Signed in as <b>{state.login}</b></div>
+                  <div><div>Signed in as <b>{state.login}</b>
+                    {state.signin_kind && <> <span className={`chip${state.signin_kind === "android" ? " green" : ""}`}>
+                      {state.signin_kind === "android" ? "PC sign-in · full campaign list" : "TV code sign-in"}</span></>}</div>
                     <div className="d">Twitch reported no end date for this sign-in. If it ever ends, Overview says so.</div></div>
                   <button ref={signOutBtn} className="btn" type="button" onClick={() => setConfirm(true)}>Sign out</button>
                   {confirm && (
@@ -142,6 +144,7 @@ export function SettingsView() {
                   <button className="btn strong" type="button" onClick={() => go("connect")}>Get a sign-in code</button>
                 </div>
               )}
+              <PcSignIn kind={state?.signin_kind ?? null} />
               <div className="sub">This page</div>
               <Browsers rows={sessions} reload={loadSessions} />
               <div className="opt">
@@ -306,4 +309,56 @@ function Browsers({ rows, reload }: { rows: Sessions["sessions"] | null; reload:
 
 function Set({ title, children }: { title: string; children: ReactNode }) {
   return <div className="set"><h2>{title}</h2>{children}</div>;
+}
+
+/** Settings › Account › PC sign-in (2026-10-18). Twitch shows the TV code sign-in no campaign list and no account
+ * links; an Android-app token does. Twitch only issues one through a real browser now, so a helper run on a PC
+ * makes one (twitch/pc_signin_helper.py) and the file it writes is imported here. */
+function PcSignIn({ kind }: { kind: string | null }) {
+  const { say, refreshState } = useApp();
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const tell = (text: string, tone: "ok" | "bad" = "ok") => { setNote(text); say({ title: text, tone }); };
+
+  async function pick(file: File | undefined) {
+    if (!file) return;
+    if (fileRef.current) fileRef.current.value = "";
+    let token = "";
+    try {
+      const data: unknown = JSON.parse(await file.text());
+      if (data && typeof data === "object" && "access_token" in data && typeof data.access_token === "string") token = data.access_token;
+    } catch { /* checked below */ }
+    if (!token) { tell("That isn't a dropwatch-session.json file.", "bad"); return; }
+    setBusy(true);
+    try {
+      const r = await api.post<{ login: string }>("/twitch/session", { access_token: token });
+      tell(`Signed in as ${r.login} with the PC sign-in. Delete the file now: it holds your Twitch token.`);
+      void refreshState();
+    } catch (e) { tell(e instanceof ApiError ? e.message : "Couldn't import it.", "bad"); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <div className="opt pc-signin">
+      <div><div>PC sign-in {kind === "android" && <span className="chip green">In use</span>}</div>
+        <div className="d">Shows every campaign straight from Twitch, with whether each game account is linked, before it starts.
+          The code sign-in can't: Twitch hides that from TV logins. It takes a sign-in in Chrome or Edge on a PC, once.</div>
+        <button className="linkish" type="button" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? "Hide the steps" : "How to"}</button>
+        {open && (
+          <ol className="steps">
+            <li>Save the helper: <a href="/api/twitch/signin-helper" download>dropwatch-signin.py</a>.</li>
+            <li>On the PC, install uv once (PowerShell): <code>powershell -c "irm https://astral.sh/uv/install.ps1 | iex"</code></li>
+            <li>In the folder you saved it to: <code>uv run dropwatch-signin.py</code>. A browser opens on Twitch's login page:
+              sign in there as usual, verification code included.</li>
+            <li>It writes <b>dropwatch-session.json</b> beside the helper. Import it here, then delete the file.</li>
+          </ol>
+        )}
+        {note && <div className="d" role="status">{note}</div>}</div>
+      <label className={`btn${busy ? " disabled" : ""}`}>{busy ? "Checking with Twitch…" : "Import a PC sign-in…"}
+        <input ref={fileRef} type="file" accept="application/json,.json" className="sr" disabled={busy}
+          aria-label="Import a PC sign-in" onChange={(e) => void pick(e.target.files?.[0])} /></label>
+    </div>
+  );
 }

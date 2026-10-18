@@ -11,13 +11,14 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi import Path as PathParam
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from ..backup import BadBackup, make_backup, restore_backup
 from ..notify import CHANNELS, configured, send_all, summary
 from ..runner import State
 from ..store import EVENT_RETENTION
+from ..twitch.auth_browser import SignInError
 from ..version import VERSION, build_info, server_tz
 from .auth import COOKIE, LoginLimiter, private_auth, public, require_session
 from .models import (
@@ -44,6 +45,8 @@ from .models import (
     Pins,
     PointsOut,
     RestoreOut,
+    SessionImportIn,
+    SessionImportOut,
     SessionOut,
     SessionsOut,
     SettingsIn,
@@ -475,6 +478,26 @@ async def signin_status(request: Request) -> SignInStatus:
 @api.delete("/twitch/signin", status_code=204)
 async def signin_cancel(request: Request) -> None:
     _c(request).signin.cancel()
+
+
+@api.post("/twitch/session", response_model=SessionImportOut)
+async def import_session(body: SessionImportIn, request: Request) -> SessionImportOut:
+    """A PC sign-in: an Android-app token from the helper. Checked with Twitch first; on failure nothing
+    changes and the miner keeps its current sign-in."""
+    try:
+        login = await _c(request).signin.import_android(body.access_token)
+    except SignInError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
+    return SessionImportOut(login=login)
+
+
+@api.get("/twitch/signin-helper", response_class=Response)
+async def signin_helper() -> Response:
+    """The PC sign-in helper, as a download (see twitch/pc_signin_helper.py)."""
+    from ..twitch import pc_signin_helper
+    data = await asyncio.to_thread(Path(pc_signin_helper.__file__).read_bytes)
+    return Response(data, media_type="text/x-python", headers={
+        "Content-Disposition": 'attachment; filename="dropwatch-signin.py"', "Cache-Control": "no-store"})
 
 
 @api.post("/twitch/signout", status_code=204)

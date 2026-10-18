@@ -1349,6 +1349,32 @@
     "title": "RewardOut",
     "type": "object"
    },
+   "SessionImportIn": {
+    "properties": {
+     "access_token": {
+      "title": "Access Token",
+      "type": "string"
+     }
+    },
+    "required": [
+     "access_token"
+    ],
+    "title": "SessionImportIn",
+    "type": "object"
+   },
+   "SessionImportOut": {
+    "properties": {
+     "login": {
+      "title": "Login",
+      "type": "string"
+     }
+    },
+    "required": [
+     "login"
+    ],
+    "title": "SessionImportOut",
+    "type": "object"
+   },
    "SessionOut": {
     "properties": {
      "created_at": {
@@ -1939,6 +1965,17 @@
      "signed_in": {
       "title": "Signed In",
       "type": "boolean"
+     },
+     "signin_kind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Signin Kind"
      },
      "state": {
       "title": "State",
@@ -3001,6 +3038,45 @@
     "summary": "Get Suggestions"
    }
   },
+  "/api/twitch/session": {
+   "post": {
+    "description": "A PC sign-in: an Android-app token from the helper. Checked with Twitch first; on failure nothing\nchanges and the miner keeps its current sign-in.",
+    "operationId": "import_session_api_twitch_session_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SessionImportIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SessionImportOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Import Session"
+   }
+  },
   "/api/twitch/signin": {
    "delete": {
     "operationId": "signin_cancel_api_twitch_signin_delete",
@@ -3042,6 +3118,18 @@
      }
     },
     "summary": "Signin Start"
+   }
+  },
+  "/api/twitch/signin-helper": {
+   "get": {
+    "description": "The PC sign-in helper, as a download (see twitch/pc_signin_helper.py).",
+    "operationId": "signin_helper_api_twitch_signin_helper_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Signin Helper"
    }
   },
   "/api/twitch/signout": {
