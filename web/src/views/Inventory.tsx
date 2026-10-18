@@ -5,6 +5,7 @@ import { useLists } from "../lists";
 import { useApp } from "../store";
 import { NB, boxArt, clock, day, dur } from "../ui/format";
 import { Icon } from "../ui/Icons";
+import { LinkedButton } from "./LinkedButton";
 
 type Inventory = components["schemas"]["InventoryOut"];
 type InvGame = components["schemas"]["InventoryGame"];
@@ -286,6 +287,7 @@ function CampaignBlock({ c, game, acts, onDetail }: { c: InvCampaign; game?: Inv
             <a className="btn" href={c.link_url} target="_blank" rel="noopener noreferrer" aria-label={`Link your ${c.game} account (opens the game's site)`}>
               <Icon name="link" />Link<Icon name="ext" /></a>
           )}
+          {c.link_url && c.linked !== true && (c.status === "needs_link" || c.status === "upcoming") && <LinkedButton game={c.game} compact />}
           {canMine && <button className="btn" type="button" aria-label={`Mine ${c.name} now`} onClick={() => acts.mineNow(c)}>Mine now</button>}
           {done && <button className="btn quiet" type="button" aria-label={`Fold ${c.name}`} onClick={() => setOpen(false)}>Fold</button>}
         </div>

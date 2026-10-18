@@ -883,6 +883,40 @@
     "title": "KnownGame",
     "type": "object"
    },
+   "LinkedIn": {
+    "additionalProperties": false,
+    "properties": {
+     "game": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Game",
+      "type": "string"
+     }
+    },
+    "required": [
+     "game"
+    ],
+    "title": "LinkedIn",
+    "type": "object"
+   },
+   "LinkedOut": {
+    "properties": {
+     "game": {
+      "title": "Game",
+      "type": "string"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "game",
+     "status"
+    ],
+    "title": "LinkedOut",
+    "type": "object"
+   },
    "ListsIn": {
     "additionalProperties": false,
     "properties": {
@@ -1883,6 +1917,11 @@
       "title": "First In Line",
       "type": "array"
      },
+     "full_list_lost": {
+      "default": false,
+      "title": "Full List Lost",
+      "type": "boolean"
+     },
      "last_refresh": {
       "anyOf": [
        {
@@ -2157,6 +2196,136 @@
     ],
     "title": "ValidationError",
     "type": "object"
+   },
+   "WidgetKeyOut": {
+    "properties": {
+     "exists": {
+      "title": "Exists",
+      "type": "boolean"
+     },
+     "key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Key"
+     }
+    },
+    "required": [
+     "exists"
+    ],
+    "title": "WidgetKeyOut",
+    "type": "object"
+   },
+   "WidgetOut": {
+    "description": "GET /api/widget?key=\u2026: a small read-only summary for dashboards such as Homepage (2026-10-18).",
+    "properties": {
+     "campaign": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Campaign"
+     },
+     "channel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Channel"
+     },
+     "claimed_today": {
+      "title": "Claimed Today",
+      "type": "integer"
+     },
+     "claimed_week": {
+      "title": "Claimed Week",
+      "type": "integer"
+     },
+     "coming_up": {
+      "title": "Coming Up",
+      "type": "integer"
+     },
+     "game": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Game"
+     },
+     "needs_you": {
+      "title": "Needs You",
+      "type": "integer"
+     },
+     "next_in_minutes": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Next In Minutes"
+     },
+     "next_reward": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Next Reward"
+     },
+     "progress": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Progress"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "status",
+     "game",
+     "campaign",
+     "channel",
+     "progress",
+     "next_reward",
+     "next_in_minutes",
+     "needs_you",
+     "coming_up",
+     "claimed_today",
+     "claimed_week"
+    ],
+    "title": "WidgetOut",
+    "type": "object"
    }
   }
  },
@@ -2387,6 +2556,45 @@
      }
     },
     "summary": "Get Inventory"
+   }
+  },
+  "/api/linked": {
+   "post": {
+    "description": "\"I've linked it\" (2026-10-18): re-read campaigns now and say what Twitch reports for this game.",
+    "operationId": "linked_api_linked_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LinkedIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LinkedOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Linked"
    }
   },
   "/api/lists": {
@@ -3156,6 +3364,91 @@
      }
     },
     "summary": "Signout"
+   }
+  },
+  "/api/widget": {
+   "get": {
+    "operationId": "widget_api_widget_get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "key",
+      "required": false,
+      "schema": {
+       "default": "",
+       "maxLength": 200,
+       "title": "Key",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WidgetOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Widget"
+   }
+  },
+  "/api/widget/key": {
+   "delete": {
+    "operationId": "widget_key_delete_api_widget_key_delete",
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Widget Key Delete"
+   },
+   "get": {
+    "operationId": "widget_key_api_widget_key_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WidgetKeyOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Widget Key"
+   },
+   "post": {
+    "description": "A new key (replacing any old one). It is shown this once.",
+    "operationId": "widget_key_new_api_widget_key_post",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WidgetKeyOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Widget Key New"
    }
   }
  }

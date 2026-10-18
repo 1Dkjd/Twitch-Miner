@@ -103,6 +103,8 @@ class StateOut(BaseModel):
     # announced campaigns not started yet (not Never games), Priority games first, then soonest
     upcoming: list[CampaignOut] = []
     signin_kind: str | None = None
+    # a login-page sign-in that Twitch stopped sending its campaign list to: sign in on its page again
+    full_list_lost: bool = False
     # skipped: no reward left can finish before its window closes (Settings > Mining)
     too_late: list[CampaignOut] = []  # "android" (full campaign list) | "tv" (code sign-in) | None
 
@@ -366,6 +368,35 @@ class KnownGame(BaseModel):
     game: str
     box_art_url: str  # "" when Twitch never sent one
     last_ends_at: datetime  # when its latest campaign ends (or ended)
+
+
+class LinkedIn(StrictIn):
+    game: Annotated[StrictStr, Field(min_length=1, max_length=200)]
+
+
+class LinkedOut(BaseModel):
+    game: str
+    status: str  # linked | not_linked | unknown: what Twitch says right after re-reading
+
+
+class WidgetKeyOut(BaseModel):
+    exists: bool
+    key: str | None = None  # only right after it's made: Dropwatch keeps just a hash
+
+
+class WidgetOut(BaseModel):
+    """GET /api/widget?key=…: a small read-only summary for dashboards such as Homepage (2026-10-18)."""
+    status: str  # mining | idle | paused | signed_out | twitch_unreachable | starting
+    game: str | None
+    campaign: str | None
+    channel: str | None
+    progress: int | None  # percent of the campaign's rewards earned so far, by watch time
+    next_reward: str | None
+    next_in_minutes: int | None
+    needs_you: int
+    coming_up: int
+    claimed_today: int
+    claimed_week: int
 
 
 class BrowserSignInOut(BaseModel):

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ApiError, api, type About, type NotifyChannels, type Sessions, type Settings } from "../api/client";
 import { TwitchLogin } from "./TwitchLogin";
+import { WidgetSettings } from "./WidgetSettings";
 import { go, useSub } from "../router";
 import { useApp } from "../store";
 import { clock, day } from "../ui/format";
@@ -17,6 +18,7 @@ const SECTIONS = [
   { id: "account", name: "Account & security" },
   { id: "appearance", name: "Appearance" },
   { id: "backup", name: "Backup" },
+  { id: "widget", name: "Homepage widget" },
   { id: "about", name: "About" },
 ] as const;
 type Section = (typeof SECTIONS)[number]["id"];
@@ -61,6 +63,7 @@ export function SettingsView() {
       sessions ? `${sessions.length} ${sessions.length === 1 ? "browser" : "browsers"}` : ""].filter(Boolean).join(" · "),
     appearance: theme.charAt(0).toUpperCase() + theme.slice(1),
     backup: "Save or restore",
+    widget: "Dashboard summary",
     about: about?.version ?? "",
   };
 
@@ -176,6 +179,9 @@ export function SettingsView() {
           )}
           {open === "backup" && (
             <Backup onRestored={() => { void loadSettings(); void loadChans(); void refreshState(); }} />
+          )}
+          {open === "widget" && (
+            <Set title="Homepage widget"><WidgetSettings /></Set>
           )}
           {open === "about" && (
             <Set title="About">

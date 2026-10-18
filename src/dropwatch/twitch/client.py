@@ -17,18 +17,25 @@ from . import parse
 from .gql import GqlError, op
 
 log = logging.getLogger("dropwatch.client")
+LIST_LOST_MIN = 5  # an empty Twitch list counts as lost only when the catalogue lists at least this many
 
 
 class TwitchClient:
-    def __init__(self, gql, user_id: int, catalog=None):
+    def __init__(self, gql, user_id: int, catalog=None, expect_dashboard: bool = False):
         self._gql, self._user_id = gql, user_id
         self.catalog = catalog  # campaign list when Twitch hides it (TV login, spec §4)
+        # a login-page (Android) sign-in gets Twitch's full campaign list; False here means Twitch stopped
+        # sending it while the catalogue still lists plenty (2026-10-18), None: not known (yet) or a TV login
+        self.expect_dashboard = expect_dashboard
+        self.full_list: bool | None = None
 
     async def campaigns(self) -> list[Campaign]:
         inv = await self._gql.run(op("Inventory"))
         claimed = parse.claimed_benefits(inv)
         data = parse.inventory_campaigns(inv)
         dash = parse.dashboard_campaigns(await self._gql.run(op("Campaigns")))
+        if self.expect_dashboard and dash:
+            self.full_list = True
         if dash:
             ids = list(dash)
             details = await self._gql.run_many(
@@ -41,7 +48,10 @@ class TwitchClient:
             data = parse.merge(data, fetched)
         elif self.catalog is not None:
             # the TV login sees no dashboard: discover from the catalogue, the account's Inventory wins
-            data = parse.merge(data, await self.catalog.campaigns())
+            listed = await self.catalog.campaigns()
+            if self.expect_dashboard and len(listed) >= LIST_LOST_MIN:
+                self.full_list = False  # Twitch went quiet for this sign-in, not for everyone
+            data = parse.merge(data, listed)
         out = []
         for raw in data.values():
             try:

@@ -1,4 +1,4 @@
-import { act, render, screen, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { State } from "../api/client";
 import { AppProvider } from "../store";
@@ -203,4 +203,19 @@ test("campaigns skipped for lack of time fold into one line under Up next, with 
   await u.click(fold);
   await u.click(screen.getByRole("button", { name: "Mine Last Call now" }));
   expect(calls.find((c) => c.path === "/api/mine-now")?.body).toEqual({ campaign_id: "z" });
+});
+
+test("a lost campaign list shows a banner that leads to signing in on Twitch's page", async () => {
+  setPhone(false);
+  setup(state({ full_list_lost: true, signin_kind: "android" }));
+  expect(await screen.findByText("Twitch stopped sending the full campaign list")).toBeInTheDocument();
+  await userEvent.setup().click(screen.getByRole("button", { name: "Sign in on Twitch's page" }));
+  expect(location.hash).toBe("#settings/account");
+});
+
+test("I've linked it asks Twitch now and says what it found", async () => {
+  setPhone(false);
+  const calls = setup(state(), { "POST /api/linked": { game: "007 First Light", status: "linked" } });
+  await userEvent.setup().click(await screen.findByRole("button", { name: "I've linked 007 First Light: check with Twitch" }));
+  await waitFor(() => expect(calls.find((c) => c.path === "/api/linked")?.body).toEqual({ game: "007 First Light" }));
 });

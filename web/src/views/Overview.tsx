@@ -6,6 +6,7 @@ import { useApp } from "../store";
 import { NB, boxArt, clock, day, dur, mark, minutesUntil, span } from "../ui/format";
 import { Icon } from "../ui/Icons";
 import { MenuButton } from "./Menu";
+import { LinkedButton } from "./LinkedButton";
 import { UpNext } from "./UpNext";
 import { Track, milestones } from "./Track";
 
@@ -106,7 +107,18 @@ function Banner({ state, lost, lostSince }: { state: State; lost: boolean; lostS
       <div className="banner" data-tone="alert" role="alert"><Icon name="key" />
         <div><div className="banner-t">Twitch signed you out</div>
           <div className="banner-b">Mining is stopped until you sign in again. Drop progress is kept.</div></div>
-        <div className="banner-acts"><button className="btn strong" type="button" onClick={() => go("connect")}><Icon name="key" />Get a sign-in code</button></div>
+        <div className="banner-acts">
+          {state.signin_kind === "android" && <button className="btn strong" type="button" onClick={() => { location.hash = "#settings/account"; }}>Sign in on Twitch's page</button>}
+          <button className={`btn${state.signin_kind === "android" ? "" : " strong"}`} type="button" onClick={() => go("connect")}><Icon name="key" />Get a sign-in code</button></div>
+      </div>
+    );
+  }
+  if (state.full_list_lost) {
+    return (
+      <div className="banner" data-tone="warn" role="status"><Icon name="key" />
+        <div><div className="banner-t">Twitch stopped sending the full campaign list</div>
+          <div className="banner-b">Mining carries on from the backup catalogue, but account links are unknown again until a campaign starts. Signing in again on Twitch's page usually fixes it.</div></div>
+        <div className="banner-acts"><button className="btn strong" type="button" onClick={() => { location.hash = "#settings/account"; }}>Sign in on Twitch's page</button></div>
       </div>
     );
   }
@@ -443,6 +455,7 @@ function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) =>
                   <a className="btn strong" href={c.link_url} target="_blank" rel="noopener noreferrer" aria-label={`Link your ${c.game} account (opens the game's site)`}>
                     <Icon name="link" />Link account<Icon name="ext" /></a>
                 )}
+                <LinkedButton game={c.game} />
                 {c.maybe_unlinked && (
                   <button className="btn" type="button" aria-label={`Try ${c.name} again`} onClick={async () => {
                     try { await api.post("/mine-now", { campaign_id: c.id }); say(`Trying ${c.name} again`); }
@@ -495,6 +508,7 @@ function ComingUp({ state, onPriority }: { state: State; onPriority: (game: stri
                   <a className="btn" href={c.link_url} target="_blank" rel="noopener noreferrer" aria-label={`Link your ${c.game} account (opens the game's site)`}>
                     <Icon name="link" />Link account<Icon name="ext" /></a>
                 )}
+                {c.link_url && c.linked !== true && <LinkedButton game={c.game} />}
                 {c.linked === true && <span className="chip green">Account linked</span>}
                 {!c.priority && (
                   <button className="btn quiet" type="button" aria-label={`Move ${c.game} to Priority`} onClick={() => onPriority(c.game)}>Prioritise</button>

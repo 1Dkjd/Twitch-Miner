@@ -21,6 +21,7 @@ from .models import (
     StateOut,
     StreakVisitOut,
     SwitchOut,
+    WidgetOut,
 )
 
 SWITCH_NOTICE_FOR = timedelta(minutes=10)
@@ -126,6 +127,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
                   for c in upcoming],
         first_in_line=[o.name for o in keep(plan.waiting[:2])] if plan and not plan.current else [],
         signin_kind=signin_kind(session),
+        full_list_lost=bool(getattr(runner, "full_list_lost", False)),
         too_late=keep(getattr(plan, "too_late", ()) if plan else ()),
         streak_visit=(StreakVisitOut(channel=v[0], until=v[1])
                       if (v := getattr(runner, "streak_visit", None)) else None),
@@ -229,3 +231,31 @@ def inventory_view(runner, store, now: datetime, claims: list[dict], images=None
     rewards = [(d.claimed, len(d.rewards)) for c in camps for d in c.drops]
     return InventoryOut(games=games, total_rewards=sum(n for _, n in rewards),
                         claimed_rewards=sum(n for done, n in rewards if done), mine_badges=prefs.mine_badges)
+
+
+def widget_view(runner, store, now: datetime) -> WidgetOut:
+    """Homepage's numbers (2026-10-18): what is being mined, how far along, and what is waiting."""
+    state = str(runner.state) if runner is not None else ("idle" if store.get_session() else "signed_out")
+    plan = runner.plan if runner is not None else None
+    by_id = {c.id: c for c in runner.campaigns} if runner is not None else {}
+    cur = by_id.get(plan.current.campaign_id) if plan and plan.current else None
+    progress = next_reward = next_in = None
+    if cur is not None:
+        open_ = [d for d in cur.drops if not d.claimed and d.required_minutes > 0 and d.ends_at > now]
+        if open_:
+            far = max(open_, key=lambda d: d.required_minutes)
+            progress = min(100, round(100 * far.current_minutes / far.required_minutes))
+            nxt = min(open_, key=lambda d: d.required_minutes - d.current_minutes)
+            next_reward = nxt.rewards[0].name if nxt.rewards else nxt.name
+            next_in = max(0, nxt.required_minutes - nxt.current_minutes)
+    midnight = now.astimezone().replace(hour=0, minute=0, second=0, microsecond=0)
+    count = (lambda since: sum(len(c["rewards"]) for c in store.claims_since(since))) \
+        if hasattr(store, "claims_since") else (lambda since: 0)
+    return WidgetOut(
+        status="mining" if state in ("mining", "switched") else state,
+        game=cur.game.name if cur else None, campaign=cur.name if cur else None,
+        channel=runner.watching.login if runner is not None and runner.watching else None,
+        progress=progress, next_reward=next_reward, next_in_minutes=next_in,
+        needs_you=len(plan.needs_you) if plan else 0,
+        coming_up=sum(1 for c in by_id.values() if c.starts_at > now),
+        claimed_today=count(midnight), claimed_week=count(now - timedelta(days=7)))

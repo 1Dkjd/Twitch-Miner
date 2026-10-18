@@ -180,7 +180,7 @@ test("the weekly summary time says which zone it's in", async () => {
 test("every section already has its summary line before the data arrives", () => {
   setup("mining");
   const links = screen.getAllByRole("link");
-  expect(links).toHaveLength(7);
+  expect(links).toHaveLength(8);
   for (const l of links) expect(l.querySelector("small")).not.toBeNull();
 });
 
@@ -192,4 +192,17 @@ test("the skip-too-late switch is on by default and saves", async () => {
   expect(sw).toBeChecked();
   await userEvent.click(sw);
   await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ skip_too_late: false }));
+});
+
+test("the Homepage widget key is made, shown once with a ready entry, and can be revoked", async () => {
+  const calls = setup("widget", { "GET /api/widget/key": { exists: false, key: null },
+    "POST /api/widget/key": { exists: true, key: "k3y" }, "DELETE /api/widget/key": undefined });
+  const u = userEvent.setup();
+  await u.click(await screen.findByRole("button", { name: "Make a key" }));
+  const yaml = await screen.findByLabelText("Homepage entry");
+  expect(yaml.textContent).toContain("type: customapi");
+  expect(yaml.textContent).toContain("/api/widget?key=k3y");
+  await u.click(screen.getByRole("button", { name: "Revoke" }));
+  expect(calls.some((c) => c.method === "DELETE" && c.path === "/api/widget/key")).toBe(true);
+  expect(screen.queryByLabelText("Homepage entry")).toBeNull();
 });

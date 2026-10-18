@@ -2,7 +2,8 @@
 
 Failures, each said once when it starts and once when it clears (a recovery only follows an alert that was
 actually sent, so a switched-off alert stays silent both ways):
-- Twitch sign-in stopped working (state signed_out, or the service's "signin expired")
+- Twitch sign-in stopped working (state signed_out, or the service's "signin expired"), and, for a login-page
+  sign-in, Twitch going quiet on its campaign list while the catalogue still lists plenty (2026-10-18)
 - Can't reach Twitch: twitch_unreachable for notify_unreachable_minutes (default 15)
 - Mining isn't earning: mining for notify_not_earning_minutes (default 30) since mining began or the last
   progress event, not counting paused or idle time
@@ -52,6 +53,9 @@ class Snapshot:
     campaign: str | None  # what is being mined, for the "isn't earning" message
     channel: str | None
     needs_you: list[tuple[str, str, str]] = field(default_factory=list)  # (campaign id, name, game)
+    list_lost: bool = False  # a login-page sign-in lost Twitch's campaign list (runner.full_list_lost)
+    # announced campaigns, for the weekly summary: (game, campaign, starts_at, linked: True/False/None)
+    upcoming: list[tuple[str, str, datetime, bool | None]] = field(default_factory=list)
 
 
 class Notifier:
@@ -82,6 +86,14 @@ class Notifier:
         self._sent.discard(track)
         return [Alert(key, PREFIX + title, body)]
 
+    def _sign_in_again(self) -> str:
+        session = getattr(self._store, "get_session", lambda: None)()
+        from .twitch.constants import SMARTBOX
+        if session is not None and session.client_id != SMARTBOX.client_id:
+            return ("Open Dropwatch and sign in again on Twitch's page "
+                    "(Settings > Account & security), or get a sign-in code.")
+        return "Open Dropwatch and get a new sign-in code."
+
     def handle(self, kind: str, data: dict) -> list[Alert]:
         now = self._clock()
         out: list[Alert] = []
@@ -89,8 +101,7 @@ class Notifier:
         if expired or kind == "state" and data.get("state") == "signed_out":
             if "signin" not in self._sent:
                 out += self._alert("notify_signin", "Twitch sign-in stopped working",
-                                   "Mining has stopped. Open Dropwatch and get a new sign-in code.",
-                                   track="signin")
+                                   "Mining has stopped. " + self._sign_in_again(), track="signin")
             self._earning_since = None
             return out
         if kind == "state":
@@ -162,6 +173,13 @@ class Notifier:
                                f"{where} for {s['notify_not_earning_minutes']} minutes with no new "
                                f"minutes{on}. "
                                "Twitch may have changed something.", track="not_earning")
+        if snap.list_lost and "list" not in self._sent:
+            out += self._alert("notify_signin", "Twitch stopped sending the full campaign list",
+                               "Mining carries on from the backup catalogue, but account links are unknown "
+                               "again until a campaign starts. " + self._sign_in_again(), track="list")
+        elif not snap.list_lost:
+            out += self._clear("list", "notify_signin", "Twitch is sending the full campaign list again",
+                               "Account links are known again.")
         out += self._needs_you(snap.needs_you, s)
         if self._claims and now - self._claims_since >= CLAIM_BATCH:
             out += self._claimed_alert()
@@ -224,9 +242,33 @@ class Notifier:
         if games:
             parts.append(f"{len(games)} {'needs' if len(games) == 1 else 'need'} your account linked: "
                          f"{', '.join(games)}.")
+        parts += self._coming_up(now, local, snap)
         self._weekly_tried = now
         return [Alert("notify_weekly", f"{PREFIX}Your week", " ".join(parts),
                       after_sent=("notify_weekly_sent", key))]
+
+    def _coming_up(self, now: datetime, local: datetime, snap: Snapshot) -> list[str]:
+        """The week ahead (2026-10-18): campaigns starting in the next 7 days, Priority games first, and the
+        ones to link before they start (known with a login-page sign-in)."""
+        prefs = getattr(self._store, "get_prefs", None)
+        p = prefs() if prefs else None
+        soon = [u for u in snap.upcoming if u[2] <= now + timedelta(days=7)
+                and not (p and p.in_never(u[0]))]
+        if not soon:
+            return []
+        rank = (lambda g: p.priority_rank(g)) if p else (lambda g: None)
+        soon.sort(key=lambda u: (rank(u[0]) is None, rank(u[0]) or 0, u[2]))
+        first: dict[str, datetime] = {}  # one line per game, at its earliest start
+        for game, _, start, _ in soon:
+            first.setdefault(game, start)
+        shown = [f"{g}{' (Priority)' if rank(g) is not None else ''} on {u_day(at, local.tzinfo)}"
+                 for g, at in list(first.items())[:5]]
+        more = len(first) - len(shown)
+        out = [f"Starting this week: {', '.join(shown)}" + (f" and {more} more." if more > 0 else ".")]
+        link = list(dict.fromkeys(game for game, _, _, linked in soon if linked is False))
+        if link:
+            out.append(f"Link before they start: {', '.join(link)}.")
+        return out
 
     def _needs_you(self, campaigns: list[tuple[str, str, str]], s: dict) -> list[Alert]:
         if not s.get("notify_needs_you"):
@@ -293,6 +335,12 @@ class Notifier:
             bus.unsubscribe(q)
 
 
+def u_day(at: datetime, tz) -> str:
+    """'Sat 24 Oct' in the summary's zone."""
+    d = at.astimezone(tz) if tz else at.astimezone()
+    return d.strftime("%a ") + str(d.day) + d.strftime(" %b")
+
+
 def notable(m: dict) -> bool:
     """A missed campaign worth naming (the same rule as History's full rows): Dropwatch started it, it is a
     Priority or pinned game, or it needs an account linked."""
@@ -324,5 +372,9 @@ def snapshot_of(runner) -> Snapshot:
     by_id = {c.id: c for c in runner.campaigns}
     cur = by_id.get(plan.current.campaign_id) if plan.current else None
     watching = runner.watching.login if runner.watching else None
+    now = getattr(runner, "_clock", lambda: datetime.now(UTC))()
     return Snapshot(cur.name if cur else None, watching,
-                    [(c.id, c.name, c.game.name) for cid in plan.needs_you if (c := by_id.get(cid))])
+                    [(c.id, c.name, c.game.name) for cid in plan.needs_you if (c := by_id.get(cid))],
+                    list_lost=bool(getattr(runner, "full_list_lost", False)),
+                    upcoming=[(c.game.name, c.name, c.starts_at, None if c.has_badge_or_emote else c.linked)
+                              for c in runner.campaigns if c.starts_at > now])

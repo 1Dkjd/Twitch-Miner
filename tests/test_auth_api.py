@@ -7,6 +7,8 @@ PRIVATE = [
     ("GET", "/api/settings"), ("PUT", "/api/settings"),
     ("POST", "/api/twitch/signin"), ("DELETE", "/api/twitch/signin"), ("GET", "/api/twitch/signin"),
     ("POST", "/api/twitch/browser"), ("GET", "/api/twitch/browser"), ("DELETE", "/api/twitch/browser"),
+    ("POST", "/api/linked"), ("GET", "/api/widget/key"), ("POST", "/api/widget/key"),
+    ("DELETE", "/api/widget/key"),
     ("POST", "/api/twitch/signout"), ("POST", "/api/logout"), ("POST", "/api/refresh"),
     ("GET", "/api/notify/channels"), ("PUT", "/api/notify/channels/{kind}"),
     ("DELETE", "/api/notify/channels/{kind}"), ("POST", "/api/notify/test"),
@@ -29,7 +31,8 @@ async def test_every_private_route_requires_session(tmp_path):
 async def test_private_route_list_matches_app_routes(tmp_path):
     # read the schema, not app.routes: FastAPI 0.14x keeps included routers as lazy wrappers
     app, _ = make_app(tmp_path)
-    public = {"/api/health", "/api/health/miner", "/api/me", "/api/setup", "/api/login"}
+    public = {"/api/health", "/api/health/miner", "/api/me", "/api/setup", "/api/login",
+              "/api/widget"}  # its own key instead of the page login
     routes = {(m.upper(), path) for path, ops in app.openapi()["paths"].items() for m in ops}
     assert {x for x in routes if x[1] not in public} == set(PRIVATE)
 

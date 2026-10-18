@@ -513,3 +513,5 @@ svg.i { width: 16px; height: 16px; flex: none; }
 .tl-type input { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; color: var(--fg); font: inherit; min-width: 220px; flex: 1; max-width: 340px; }
 .tl-type .d { color: var(--muted); flex-basis: 100%; }
 .d.bad { color: var(--alert-text); }
+.widget-yaml pre { margin: 8px 0 0; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; font-size: 12px; overflow: auto; max-height: 320px; white-space: pre; }
+.g.link-row .g-act { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }

@@ -173,6 +173,10 @@ class Store:
         row = self._db.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
         return row[0] if row else default
 
+    def delete_setting(self, key: str) -> None:
+        with self._db:
+            self._db.execute("DELETE FROM settings WHERE key = ?", (key,))
+
     def set_setting(self, key: str, value: str) -> None:
         with self._db:
             self._db.execute(

@@ -141,6 +141,23 @@ class Runner:
         self._paused, self.paused_until = False, None
         self._set_state(State.MINING if self.watching else State.IDLE)
 
+    @property
+    def full_list_lost(self) -> bool:
+        """A login-page sign-in that Twitch stopped sending its campaign list to (still mining from the
+        catalogue; account links unknown again until signing in on Twitch's page again)."""
+        return getattr(self._client, "full_list", None) is False
+
+    async def linked_check(self, game: str) -> str:
+        """"I've linked it" (2026-10-18): forget this game's may-need-linking marks and re-read campaigns now.
+        linked | not_linked | unknown, as Twitch says right after."""
+        for c in self.campaigns:
+            if c.game.name.casefold() == game.casefold():
+                self.maybe_unlinked.pop(c.id, None)
+        await self.refresh(force_campaigns=True, manual=True)
+        states = {c.linked for c in self.campaigns
+                  if c.game.name.casefold() == game.casefold() and not c.has_badge_or_emote}
+        return "linked" if True in states else "not_linked" if False in states else "unknown"
+
     def mine_now(self, campaign_id: str) -> None:
         self._override_campaign = campaign_id
         # "Mine now" on a may-need-linking campaign means "I linked it, try again"

@@ -38,7 +38,10 @@ def build_parts(store, session, emit) -> Parts:
             "in progress on the account")
     pubsub = PubSub(lambda: session.access_token)
     gql = Gql(transport, lambda: session)
-    runner = Runner(TwitchClient(gql, session.user_id, catalog=catalog),
+    from .twitch.constants import SMARTBOX
+    client = TwitchClient(gql, session.user_id, catalog=catalog,
+                          expect_dashboard=session.client_id != SMARTBOX.client_id)
+    runner = Runner(client,
                     Watcher(transport, lambda: session, gql), pubsub, store,
                     user_id=session.user_id, emit=emit)
 

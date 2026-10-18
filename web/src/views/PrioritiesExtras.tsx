@@ -4,6 +4,7 @@ import type { components } from "../api/types";
 import { useApp } from "../store";
 import { boxArt } from "../ui/format";
 import { Icon } from "../ui/Icons";
+import { LinkedButton } from "./LinkedButton";
 
 type Inventory = components["schemas"]["InventoryOut"];
 type InvGame = components["schemas"]["InventoryGame"];
@@ -128,6 +129,7 @@ export function LinkedAccounts({ games, never }: { games: InvGame[] | null; neve
                   <a className="btn" href={l.url} target="_blank" rel="noopener noreferrer" aria-label={`Link your ${g.game} account (opens the game's site)`}>
                     <Icon name="link" />Link account<Icon name="ext" /></a>
                 )}
+                {l.state !== "linked" && <LinkedButton game={g.game} />}
               </div>
             </div>
           );

@@ -3,7 +3,10 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import hashlib
+import hmac
 import ipaddress
+import secrets
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -33,6 +36,8 @@ from .models import (
     IgnoredOut,
     InventoryOut,
     KnownGame,
+    LinkedIn,
+    LinkedOut,
     ListsIn,
     ListsOut,
     MineNowIn,
@@ -54,9 +59,11 @@ from .models import (
     SignInStatus,
     StateOut,
     SuggestionsOut,
+    WidgetKeyOut,
+    WidgetOut,
 )
 from .sse import sse_stream
-from .views import history_view, inventory_view, state_view
+from .views import history_view, inventory_view, state_view, widget_view
 
 api = APIRouter(prefix="/api", dependencies=[Depends(require_session)])
 
@@ -479,6 +486,50 @@ async def signin_status(request: Request) -> SignInStatus:
 @api.delete("/twitch/signin", status_code=204)
 async def signin_cancel(request: Request) -> None:
     _c(request).signin.cancel()
+
+
+@api.post("/linked", response_model=LinkedOut)
+async def linked(body: LinkedIn, request: Request) -> LinkedOut:
+    """"I've linked it" (2026-10-18): re-read campaigns now and say what Twitch reports for this game."""
+    status = await _runner(_c(request)).linked_check(body.game)
+    return LinkedOut(game=body.game, status=status)
+
+
+# Homepage and other dashboards (2026-10-18): a read-only summary behind its own key, so a dashboard needs
+# neither the page password nor a browser session. Only the key's hash is kept.
+WIDGET_KEY = "widget_key_hash"
+
+
+def _key_hash(key: str) -> str:
+    return hashlib.sha256(key.encode()).hexdigest()
+
+
+@api.get("/widget/key", response_model=WidgetKeyOut)
+async def widget_key(request: Request) -> WidgetKeyOut:
+    return WidgetKeyOut(exists=_c(request).store.get_setting(WIDGET_KEY) is not None)
+
+
+@api.post("/widget/key", response_model=WidgetKeyOut)
+async def widget_key_new(request: Request) -> WidgetKeyOut:
+    """A new key (replacing any old one). It is shown this once."""
+    key = secrets.token_urlsafe(24)
+    _c(request).store.set_setting(WIDGET_KEY, _key_hash(key))
+    return WidgetKeyOut(exists=True, key=key)
+
+
+@api.delete("/widget/key", status_code=204)
+async def widget_key_delete(request: Request) -> None:
+    _c(request).store.delete_setting(WIDGET_KEY)
+
+
+@public.get("/widget", response_model=WidgetOut)
+async def widget(request: Request, key: str = Query("", max_length=200)) -> JSONResponse:
+    ctx = _c(request)
+    stored = ctx.store.get_setting(WIDGET_KEY) if ctx.store is not None else None
+    if not stored or not key or not hmac.compare_digest(stored, _key_hash(key)):
+        raise HTTPException(status_code=401, detail="Wrong or missing key.")
+    out = widget_view(ctx.service.runner, ctx.store, ctx.clock())
+    return JSONResponse(out.model_dump(), headers={"Cache-Control": "no-store"})
 
 
 @api.post("/twitch/browser", response_model=BrowserSignInOut)
