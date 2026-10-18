@@ -67,6 +67,7 @@ export function OverviewView() {
       <Banner state={state} lost={lost} lostSince={lostSince} />
       {phone ? [needs, now] : [now, needs]}
       <UpNext state={state} priorityOf={priorityOf} onNever={never} onPriority={prioritise} />
+      <ComingUp state={state} onPriority={prioritise} />
       <Done state={state} />
     </section>
   );
@@ -462,6 +463,55 @@ function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) =>
   );
 }
 
+
+const COMING_UP_SHOWN = 5;
+
+/** Coming up (2026-10-18): campaigns Twitch has announced but not started. Nothing here is mined yet; it's
+ * the time to link a game account so the campaign can be mined from its first minute. */
+function ComingUp({ state, onPriority }: { state: State; onPriority: (game: string) => void }) {
+  const [all, setAll] = useState(false);
+  const list = state.upcoming ?? [];
+  if (!list.length) return null;
+  const shown = all ? list : list.slice(0, COMING_UP_SHOWN);
+  return (
+    <Sec id="upcoming" title="Coming up" count={list.length} aside="Announced, not started. Link accounts ahead of time">
+      <div className="list">
+        {shown.map((c) => {
+          const r = firstReward(c);
+          return (
+            <div className="row" key={c.id}>
+              {c.box_art_url ? <img className="box" src={boxArt(c.box_art_url)} alt="" /> : <span className="box ph" aria-hidden="true" />}
+              <div>
+                <div className="row-t">{c.game}{c.priority && <> <span className="chip gold">Priority</span></>}</div>
+                <div className="row-s">
+                  {c.name}
+                  {c.starts_at && <><span className="sep">·</span>starts {day(c.starts_at)}</>}
+                  <span className="sep">·</span>ends {day(c.ends_at)}
+                  {r && <><span className="sep">·</span>“{r.name}” after {dur(r.at)}</>}
+                </div>
+              </div>
+              <div className="row-acts">
+                {c.link_url && c.linked !== true && (
+                  <a className="btn" href={c.link_url} target="_blank" rel="noopener noreferrer" aria-label={`Link your ${c.game} account (opens the game's site)`}>
+                    <Icon name="link" />Link account<Icon name="ext" /></a>
+                )}
+                {c.linked === true && <span className="chip green">Account linked</span>}
+                {!c.priority && (
+                  <button className="btn quiet" type="button" aria-label={`Move ${c.game} to Priority`} onClick={() => onPriority(c.game)}>Prioritise</button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+        {list.length > COMING_UP_SHOWN && (
+          <button className="btn quiet" type="button" onClick={() => setAll(!all)}>
+            {all ? "Show fewer" : `Show all ${list.length}`}
+          </button>
+        )}
+      </div>
+    </Sec>
+  );
+}
 
 function Done({ state }: { state: State }) {
   const [open, setOpen] = useState(false);

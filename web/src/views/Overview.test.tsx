@@ -167,3 +167,27 @@ test("a watch-streak visit replaces the mining card and can be ended", async () 
   await act(async () => { await userEvent.click(screen.getByRole("button", { name: "Back to drops now" })); });
   expect(calls.some((c) => c.method === "POST" && c.path === "/api/streak/end")).toBe(true);
 });
+
+test("Coming up lists announced campaigns with a link button and Priority mark", async () => {
+  setPhone(false);
+  const { campaign, inDays } = await import("../test/fixtures");
+  setup(state({ upcoming: [
+    campaign({ id: "w", game: "WARDOGS", name: "Season 02", starts_at: inDays(5), ends_at: inDays(19), linked: null, priority: true }),
+    campaign({ id: "a", game: "Apex Legends", name: "Split 2", starts_at: inDays(2), ends_at: inDays(16), linked: true }),
+  ] }));
+  const sec = (await screen.findByRole("heading", { name: "Coming up" })).closest("section")!;
+  expect(sec).toHaveTextContent("WARDOGS");
+  expect(within(sec).getByText("Priority")).toHaveClass("chip");
+  expect(within(sec).getByRole("link", { name: /Link your WARDOGS account/ })).toBeInTheDocument();
+  expect(within(sec).queryByRole("link", { name: /Link your Apex Legends account/ })).toBeNull();
+  expect(within(sec).getByText("Account linked")).toBeInTheDocument();
+  expect(within(sec).getByRole("button", { name: "Move Apex Legends to Priority" })).toBeInTheDocument();
+  expect(within(sec).queryByRole("button", { name: "Move WARDOGS to Priority" })).toBeNull();
+});
+
+test("Coming up is hidden when nothing is announced", async () => {
+  setPhone(false);
+  setup(state());
+  await screen.findByRole("article");
+  expect(screen.queryByRole("heading", { name: "Coming up" })).toBeNull();
+});

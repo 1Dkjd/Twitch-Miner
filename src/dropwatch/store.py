@@ -38,6 +38,9 @@ CREATE TABLE IF NOT EXISTS points_log (at TEXT NOT NULL, channel TEXT, reason TE
 CREATE TABLE IF NOT EXISTS seen_channels (login TEXT PRIMARY KEY, game TEXT NOT NULL,
   last_seen TEXT NOT NULL);
 -- History "Missed" (2026-10-10): the last thing Dropwatch knew about each campaign, kept after it ends
+-- Priorities (2026-10-18): every game a campaign was listed for, kept after its campaigns end
+CREATE TABLE IF NOT EXISTS games_seen (game TEXT PRIMARY KEY, box_art_url TEXT NOT NULL,
+  last_ends_at TEXT NOT NULL, last_seen TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS campaign_log (id TEXT PRIMARY KEY, name TEXT NOT NULL, game TEXT NOT NULL,
   box_art_url TEXT NOT NULL, link_url TEXT NOT NULL, ends_at TEXT NOT NULL, rewards TEXT NOT NULL,
   first_seen TEXT NOT NULL, impossible_at_first INTEGER NOT NULL, last_seen TEXT NOT NULL,
@@ -268,9 +271,32 @@ class Store:
             self._db.execute("DELETE FROM campaign_log WHERE ends_at < ?",
                              ((now - CAMPAIGN_LOG_KEEP).astimezone(UTC).isoformat(),))
 
-    def logged_games(self) -> list[str]:
-        """Every game a campaign was ever seen for, ended ones included (for name suggestions)."""
-        return [r[0] for r in self._db.execute("SELECT DISTINCT game FROM campaign_log")]
+    def record_games(self, now: datetime, rows: list[tuple[str, str, datetime]]) -> None:
+        """(game, box art, latest campaign end) for each listed game. Art is kept when Twitch sends none;
+        the end date only moves forward."""
+        at = now.astimezone(UTC).isoformat()
+        with self._db:
+            self._db.executemany(
+                "INSERT INTO games_seen (game, box_art_url, last_ends_at, last_seen) VALUES (?, ?, ?, ?)"
+                " ON CONFLICT(game) DO UPDATE SET"
+                " box_art_url = CASE WHEN excluded.box_art_url != '' THEN excluded.box_art_url"
+                " ELSE games_seen.box_art_url END,"
+                " last_ends_at = MAX(games_seen.last_ends_at, excluded.last_ends_at),"
+                " last_seen = excluded.last_seen",
+                [(g, art or "", end.astimezone(UTC).isoformat(), at) for g, art, end in rows])
+
+    def known_games(self) -> list[dict]:
+        """Every game a campaign was ever seen for, ended ones included: name, box art and when its latest
+        campaign ends or ended. History's campaign log fills in games from before games_seen existed."""
+        out: dict[str, dict] = {}
+        for g, art, end in self._db.execute(
+                "SELECT game, box_art_url, MAX(ends_at) FROM campaign_log GROUP BY game"):
+            out[g] = {"game": g, "box_art_url": art or "", "last_ends_at": end}
+        for g, art, end in self._db.execute("SELECT game, box_art_url, last_ends_at FROM games_seen"):
+            old = out.get(g)
+            out[g] = {"game": g, "box_art_url": art or (old or {}).get("box_art_url", ""),
+                      "last_ends_at": max(end, old["last_ends_at"]) if old else end}
+        return sorted(out.values(), key=lambda r: r["game"].casefold())
 
     def first_seen(self) -> tuple[datetime | None, dict[str, datetime]]:
         """(when the log began, {campaign: when Dropwatch first saw it}) for Up next's "New"."""

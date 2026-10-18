@@ -28,6 +28,7 @@ from .models import (
     ChannelSuggestion,
     HistoryOut,
     IgnoredOut,
+    KnownGame,
     ListsIn,
     ListsOut,
     MineNowIn,
@@ -108,8 +109,9 @@ async def put_lists(body: ListsIn, request: Request) -> ListsOut:
 async def get_suggestions(request: Request) -> SuggestionsOut:
     ctx = _c(request)
     r = ctx.service.runner
+    past = ctx.store.known_games()
     running = {c.game.name for c in r.campaigns} if r else set()
-    games = sorted(running | set(ctx.store.logged_games()), key=str.casefold)  # ended ones too
+    games = sorted(running | {k["game"] for k in past}, key=str.casefold)  # ended ones too
     live = {ch.login: ch.game_name or None for ch in r.live} if r else {}
     seen = {row["login"]: row for row in ctx.store.seen_channels(ctx.clock())}
     out = [ChannelSuggestion(login=lg, live=True, game=g, last_seen=seen.get(lg, {}).get("last_seen"))
@@ -121,7 +123,7 @@ async def get_suggestions(request: Request) -> SuggestionsOut:
                               last_seen=seen[lg]["last_seen"]) for lg in offline if lg in keep]
     known = {c.login for c in out}
     out += [ChannelSuggestion(login=f, live=False, game=None, last_seen=None) for f in favs if f not in known]
-    return SuggestionsOut(games=games, channels=out)
+    return SuggestionsOut(games=games, channels=out, known_games=[KnownGame(**k) for k in past])
 
 
 # what Activity shows of each logged event: anything else stays in the database

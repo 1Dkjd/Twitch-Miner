@@ -32,6 +32,8 @@ class CampaignOut(BaseModel):
     box_art_url: str
     ends_at: datetime
     linked: bool | None
+    starts_at: datetime | None = None
+    priority: bool = False  # its game is in Priority (Coming up marks these)
     maybe_unlinked: bool = False
     link_url: str
     allowed_channels: list[str]
@@ -96,6 +98,8 @@ class StateOut(BaseModel):
     first_in_line: list[str] = []  # idle: names of the next campaigns to mine once a channel goes live
     streak_visit: StreakVisitOut | None = None  # watching a favourite for its watch streak; drops wait
     build: str = ""  # version+commit running; the page offers a reload when it changes
+    # announced campaigns not started yet (not Never games), Priority games first, then soonest
+    upcoming: list[CampaignOut] = []
 
 
 class StrictIn(BaseModel):
@@ -351,6 +355,14 @@ class ChannelSuggestion(BaseModel):
     last_seen: datetime | None  # last seen live; None if never seen (a favourite added by name)
 
 
+class KnownGame(BaseModel):
+    game: str
+    box_art_url: str  # "" when Twitch never sent one
+    last_ends_at: datetime  # when its latest campaign ends (or ended)
+
+
 class SuggestionsOut(BaseModel):
     games: list[str]
+    # every game Dropwatch has seen a campaign for, ended ones included (Priorities' art and dates)
+    known_games: list[KnownGame] = []
     channels: list[ChannelSuggestion]  # live first, then most recently seen, then never-seen favourites

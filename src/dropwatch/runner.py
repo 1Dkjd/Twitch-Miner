@@ -214,11 +214,23 @@ class Runner:
 
     def _bookkeeping(self, now: datetime, prefs) -> None:
         """History's campaign log and pin pruning: a failure is logged, never a reason to stop planning."""
-        for step in (self._forget_ended_pins, lambda n: self._log_campaigns(n, prefs)):
+        for step in (self._forget_ended_pins, lambda n: self._log_campaigns(n, prefs), self._record_games):
             try:
                 step(now)
             except Exception as exc:  # noqa: BLE001 - bookkeeping must never stop mining
                 log.warning("History bookkeeping failed: %s: %s", type(exc).__name__, exc)
+
+    def _record_games(self, now: datetime) -> None:
+        """Remember every game a campaign was listed for, upcoming ones included, so Priorities can
+        name, picture and date a game after its campaigns end."""
+        rec = getattr(self._store, "record_games", None)
+        if rec is None:
+            return
+        latest: dict[str, Campaign] = {}
+        for c in self.campaigns:
+            if c.game.name and (c.game.name not in latest or c.ends_at > latest[c.game.name].ends_at):
+                latest[c.game.name] = c
+        rec(now, [(c.game.name, c.game.box_art_url, c.ends_at) for c in latest.values()])
 
     def _log_campaigns(self, now: datetime, prefs) -> None:
         """Keep History's "Missed" able to say why: the latest view of every active campaign."""

@@ -31,6 +31,7 @@ def campaign_out(c: Campaign, now: datetime, verdict: str | None,
                  maybe_unlinked: bool = False) -> CampaignOut:
     return CampaignOut(
         id=c.id, name=c.name, game=c.game.name, box_art_url=c.game.box_art_url, ends_at=c.ends_at,
+        starts_at=c.starts_at,
         linked=c.linked, maybe_unlinked=maybe_unlinked, link_url=c.link_url,
         allowed_channels=list(c.allowed_logins),
         minutes_needed=campaign_minutes_needed(c, now), verdict=verdict,
@@ -97,6 +98,8 @@ def state_view(runner, store, now: datetime) -> StateOut:
     prefs = store.get_prefs()
     never = sorted((c for c in runner.campaigns if prefs.in_never(c.game.name) and campaign_active(c, now)),
                    key=lambda c: (c.ends_at, c.id))
+    upcoming = sorted((c for c in runner.campaigns if c.starts_at > now and not prefs.in_never(c.game.name)),
+                      key=lambda c: (not prefs.in_priority(c.game.name), c.starts_at, c.id))
     return StateOut(
         state=str(runner.state), signed_in=session is not None, login=session.login if session else None,
         paused_until=runner.paused_until, last_refresh=runner.last_refresh, current=current,
@@ -106,6 +109,8 @@ def state_view(runner, store, now: datetime) -> StateOut:
         done=keep(plan.done if plan else ()), catalog=_catalog(runner),
         last_switch=_switch(runner, now), next_check_at=runner.next_check_at,
         never=[campaign_out(c, now, None) for c in never],
+        upcoming=[campaign_out(c, now, None).model_copy(update={"priority": prefs.in_priority(c.game.name)})
+                  for c in upcoming],
         first_in_line=[o.name for o in keep(plan.waiting[:2])] if plan and not plan.current else [],
         streak_visit=(StreakVisitOut(channel=v[0], until=v[1])
                       if (v := getattr(runner, "streak_visit", None)) else None),

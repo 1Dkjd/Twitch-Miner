@@ -24,7 +24,7 @@ const EMPTY: Record<Zone, string> = {
 export function PrioritiesView() {
   const { state, say } = useApp();
   const { lists, save } = useLists();
-  const [sugg, setSugg] = useState<Suggestions>({ games: [], channels: [] });
+  const [sugg, setSugg] = useState<Suggestions>({ games: [], channels: [], known_games: [] });
   const [focus, setFocus] = useState<[string, string] | null>(null);
   const [draft, setDraft] = useState<Lists | null>(null);
   const [active, setActive] = useState<string | null>(null);
@@ -135,7 +135,7 @@ export function PrioritiesView() {
     void commit(next, z === "never" ? `${id} moved to Never` : `${id} moved to position ${pos} of ${next[KEY[z]].length} in ${z === "fav" ? "favourite channels" : "Priority"}`);
   }
 
-  const info = gameInfo(state);
+  const info = gameInfo(state, sugg.known_games ?? []);
   const chan = new Map(sugg.channels.map((c) => [c.login, c]));
   const pool = sugg.games.filter((g) => !lists.priority.includes(g) && !lists.never.includes(g));
   const knownCh = sugg.channels.filter((c) => !lists.favourites.includes(c.login));
@@ -202,9 +202,19 @@ function Bucket({ title, count, help, children }: { title: string; count: number
 type Info = Map<string, { text: string; warn?: boolean; art?: string }>;
 
 /** What each game is doing right now, for the row subtitles (as in the mockup). */
-function gameInfo(state: State | null): Info {
+function gameInfo(state: State | null, known: Suggestions["known_games"] = []): Info {
   const m: Info = new Map();
-  if (!state) return m;
+  const remembered = () => {
+    // no campaign now: what Dropwatch remembers of the game's last one (2026-10-18)
+    const now = Date.now();
+    for (const k of known ?? []) {
+      if (m.has(k.game)) continue;
+      const ended = new Date(k.last_ends_at).getTime() <= now;
+      m.set(k.game, { text: ended ? `No campaign right now · last one ended ${day(k.last_ends_at)}` : "No campaign right now",
+        art: k.box_art_url ? boxArt(k.box_art_url) : undefined });
+    }
+  };
+  if (!state) { remembered(); return m; }
   const put = (c: Campaign, text: string, warn = false) => { if (!m.has(c.game)) m.set(c.game, { text, warn, art: boxArt(c.box_art_url) }); };
   if (state.current) put(state.current.campaign, `Mining now · ${dur(state.current.campaign.minutes_needed)} to go · ends ${day(state.current.campaign.ends_at)}`);
   for (const c of state.needs_you) put(c, `${c.maybe_unlinked ? "May need account link" : "Needs account link"} · ends ${day(c.ends_at)}`, true);
@@ -214,6 +224,8 @@ function gameInfo(state: State | null): Info {
     put(c, `All ${n} ${n === 1 ? "reward" : "rewards"} claimed`);
   }
   for (const c of state.never ?? []) put(c, `Campaign running · ends ${day(c.ends_at)}`);
+  for (const c of state.upcoming ?? []) put(c, `Announced · starts ${c.starts_at ? day(c.starts_at) : "soon"} · ends ${day(c.ends_at)}`);
+  remembered();
   return m;
 }
 

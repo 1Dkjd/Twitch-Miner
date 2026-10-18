@@ -196,6 +196,23 @@
       "title": "Pinned",
       "type": "boolean"
      },
+     "priority": {
+      "default": false,
+      "title": "Priority",
+      "type": "boolean"
+     },
+     "starts_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Starts At"
+     },
      "verdict": {
       "anyOf": [
        {
@@ -584,6 +601,30 @@
      "ids"
     ],
     "title": "IgnoredOut",
+    "type": "object"
+   },
+   "KnownGame": {
+    "properties": {
+     "box_art_url": {
+      "title": "Box Art Url",
+      "type": "string"
+     },
+     "game": {
+      "title": "Game",
+      "type": "string"
+     },
+     "last_ends_at": {
+      "format": "date-time",
+      "title": "Last Ends At",
+      "type": "string"
+     }
+    },
+    "required": [
+     "game",
+     "box_art_url",
+     "last_ends_at"
+    ],
+    "title": "KnownGame",
     "type": "object"
    },
    "ListsIn": {
@@ -1687,6 +1728,14 @@
       },
       "title": "Up Next",
       "type": "array"
+     },
+     "upcoming": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/CampaignOut"
+      },
+      "title": "Upcoming",
+      "type": "array"
      }
     },
     "required": [
@@ -1736,6 +1785,14 @@
        "type": "string"
       },
       "title": "Games",
+      "type": "array"
+     },
+     "known_games": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/KnownGame"
+      },
+      "title": "Known Games",
       "type": "array"
      }
     },

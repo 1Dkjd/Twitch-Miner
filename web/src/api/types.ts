@@ -674,6 +674,13 @@ export interface components {
              * @default false
              */
             pinned: boolean;
+            /**
+             * Priority
+             * @default false
+             */
+            priority: boolean;
+            /** Starts At */
+            starts_at?: string | null;
             /** Verdict */
             verdict: string | null;
         };
@@ -804,6 +811,18 @@ export interface components {
         IgnoredOut: {
             /** Ids */
             ids: string[];
+        };
+        /** KnownGame */
+        KnownGame: {
+            /** Box Art Url */
+            box_art_url: string;
+            /** Game */
+            game: string;
+            /**
+             * Last Ends At
+             * Format: date-time
+             */
+            last_ends_at: string;
         };
         /** ListsIn */
         ListsIn: {
@@ -1157,6 +1176,11 @@ export interface components {
             streak_visit?: components["schemas"]["StreakVisitOut"] | null;
             /** Up Next */
             up_next: components["schemas"]["CampaignOut"][];
+            /**
+             * Upcoming
+             * @default []
+             */
+            upcoming: components["schemas"]["CampaignOut"][];
         };
         /** StreakVisitOut */
         StreakVisitOut: {
@@ -1174,6 +1198,11 @@ export interface components {
             channels: components["schemas"]["ChannelSuggestion"][];
             /** Games */
             games: string[];
+            /**
+             * Known Games
+             * @default []
+             */
+            known_games: components["schemas"]["KnownGame"][];
         };
         /** SwitchOut */
         SwitchOut: {

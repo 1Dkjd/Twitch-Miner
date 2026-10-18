@@ -17,7 +17,8 @@ function setup(lists: { priority: string[]; never: string[]; favourites: string[
     "GET /api/suggestions": { games: ["Palia", "Phasmophobia", "007 First Light", "AION 2"], channels: [
       { login: "example_streamer", live: true, game: "Palia", last_seen: "2026-10-10T10:00:00Z" },
       { login: "dnd", live: false, game: "Dungeons & Dragons", last_seen: "2026-10-08T20:00:00Z" },
-      { login: "never_seen", live: false, game: null, last_seen: null }] },
+      { login: "never_seen", live: false, game: null, last_seen: null }],
+      known_games: [{ game: "WARDOGS", box_art_url: "https://static-cdn.jtvnw.net/ttv-boxart/w-144x192.jpg", last_ends_at: "2026-09-30T17:59:00Z" }] },
     "PUT /api/lists": put ?? ((b: unknown) => b),
   });
   render(<AppProvider initialMe={ME}><PrioritiesView /><Said /></AppProvider>);
@@ -94,4 +95,19 @@ test("Never games keep their box art and say their campaign is running", async (
   expect(row.querySelector(".g-s")).toHaveTextContent(/^Campaign running · ends Tue 3 Nov$/);
   const none = (await screen.findByText("Rise Online")).closest(".g") as HTMLElement;
   expect(none.querySelector(".g-s")).toHaveTextContent("No campaign right now");
+});
+
+test("a game with no campaign shows its remembered art and when its last campaign ended", async () => {
+  setup({ priority: ["WARDOGS"], never: [], favourites: [] });
+  const t = await screen.findByText(/last one ended/);
+  expect(t).toHaveTextContent("No campaign right now · last one ended");
+  const row = t.closest("[data-name]")!;
+  expect(row.querySelector("img.box")?.getAttribute("src")).toBe("https://static-cdn.jtvnw.net/ttv-boxart/w-144x192.jpg");
+});
+
+test("an announced campaign shows as Announced in Priority", async () => {
+  const { inDays } = await import("../test/fixtures");
+  setup({ priority: ["WARDOGS"], never: [], favourites: [] }, undefined,
+    state({ upcoming: [campaign({ id: "w", game: "WARDOGS", starts_at: inDays(5), linked: null, priority: true })] }));
+  expect(await screen.findByText(/^Announced · starts/)).toBeInTheDocument();
 });
