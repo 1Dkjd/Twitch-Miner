@@ -50,3 +50,18 @@ test("Still to earn hides claimed history; the filter box narrows by game", asyn
   expect(screen.queryByRole("heading", { name: "WARDOGS" })).toBeNull();
   expect(screen.getByRole("heading", { name: "Palia" })).toBeInTheDocument();
 });
+
+test("Never games are hidden until asked for; zero-minute rewards say so", async () => {
+  const never = { game: "Airport Baggage Simulator", box_art_url: "", priority: null, never: true, claimed_earlier: [],
+    campaigns: [{ ...campaign({ id: "n", game: "Airport Baggage Simulator", drops: [drop("z", 0, 0, false, "Statue")] }), status: "never" }] };
+  const free = { game: "Ace", box_art_url: "", priority: null, never: false, claimed_earlier: [],
+    campaigns: [{ ...campaign({ id: "f", game: "Ace", drops: [drop("q", 0, 0, false, "Nugget")] }), status: "active" }] };
+  mockApi({ "GET /api/state": state(), "GET /api/inventory": { total_rewards: 2, claimed_rewards: 0, games: [never, free] } });
+  render(<AppProvider initialMe={ME}><InventoryView /></AppProvider>);
+  const u = userEvent.setup();
+  expect(await screen.findByRole("heading", { name: "Ace" })).toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "Airport Baggage Simulator" })).toBeNull();
+  expect(screen.getByText("Nugget").closest("figure")).toHaveTextContent("No watch time");
+  await u.click(screen.getByRole("button", { name: "Show Never games (1)" }));
+  expect(screen.getByRole("heading", { name: "Airport Baggage Simulator" })).toBeInTheDocument();
+});

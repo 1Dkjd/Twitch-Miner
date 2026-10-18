@@ -33,6 +33,7 @@ export function InventoryView() {
   const [data, setData] = useState<Inventory | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [needle, setNeedle] = useState("");
+  const [showNever, setShowNever] = useState(false);
   useEffect(() => {
     let live = true;
     api.get<Inventory>("/inventory").then((d) => { if (live) setData(d); }).catch(() => undefined);
@@ -40,10 +41,18 @@ export function InventoryView() {
   }, [state?.last_refresh]);
 
   const q = needle.trim().toLowerCase();
+  const counted = (data?.games ?? []).filter((g) => showNever || !g.never);
+  const rewardsIn = (g: InvGame, claimedOnly: boolean) =>
+    g.campaigns.reduce((n, c) => n + c.drops.filter((d) => !claimedOnly || d.claimed).reduce((k, d) => k + d.rewards.length, 0), 0);
+  const sum = { total: counted.reduce((n, g) => n + rewardsIn(g, false), 0), claimed: counted.reduce((n, g) => n + rewardsIn(g, true), 0),
+    games: counted.filter((g) => g.campaigns.length).length };
+  const neverCount = (data?.games ?? []).filter((g) => g.never).length;
   const games = (data?.games ?? [])
+    .filter((g) => showNever || !g.never)
     .filter((g) => !q || g.game.toLowerCase().includes(q) || g.campaigns.some((c) => c.name.toLowerCase().includes(q)))
     .map((g) => ({ ...g, campaigns: g.campaigns.filter((c) => keep(c, filter)), claimed_earlier: filter === "open" ? [] : g.claimed_earlier }))
-    .filter((g) => g.campaigns.length || g.claimed_earlier.length);
+    .filter((g) => g.campaigns.length || g.claimed_earlier.length)
+    .sort((a, b) => gameRank(a) - gameRank(b) || (a.priority ?? 0) - (b.priority ?? 0) || a.game.localeCompare(b.game));
   return (
     <section className="view" id="v-inventory" aria-labelledby="h-inventory">
       <div className="view-h">
@@ -56,13 +65,30 @@ export function InventoryView() {
         <label className="filter"><input type="search" aria-label="Filter Inventory" placeholder="Filter by game or campaign"
           value={needle} onChange={(e) => setNeedle(e.target.value)} /></label>
       </div>
-      {data && data.total_rewards > 0 && (
-        <p className="inv-sum"><b>{data.claimed_rewards}</b> of {data.total_rewards} rewards claimed across {data.games.filter((g) => g.campaigns.length).length} games</p>
+      {sum.total > 0 && (
+        <p className="inv-sum"><b>{sum.claimed}</b> of {sum.total} rewards claimed across {sum.games} {sum.games === 1 ? "game" : "games"}</p>
       )}
       {data && !games.length && <div className="list"><p className="empty">{data.games.length ? "Nothing matches." : "No campaigns yet. They show here once Dropwatch has checked Twitch."}</p></div>}
       {games.map((g) => <GameCard key={g.game} g={g} />)}
+      {neverCount > 0 && (
+        <button className="btn quiet inv-never" type="button" aria-pressed={showNever} onClick={() => setShowNever(!showNever)}>
+          {showNever ? "Hide Never games" : `Show Never games (${neverCount})`}
+        </button>
+      )}
     </section>
   );
+}
+
+/** Priority games first, then what needs attention or is earning: the long tail of untouched games last. */
+function gameRank(g: InvGame): number {
+  if (g.priority) return 0;
+  if (g.never) return 6;
+  const st = new Set(g.campaigns.map((c) => c.status));
+  if (st.has("mining")) return 1;
+  if (st.has("needs_link")) return 2;
+  if (g.campaigns.some((c) => c.status === "active" && c.drops.some((d) => d.current_minutes > 0 && !d.claimed))) return 3;
+  if (st.has("active") || st.has("upcoming")) return 4;
+  return 5;
 }
 
 function keep(c: InvCampaign, f: Filter): boolean {
@@ -139,10 +165,11 @@ function CampaignBlock({ c }: { c: InvCampaign }) {
               <figcaption>
                 <span className="inv-n">{r.name}</span>
                 <span className="inv-m">
-                  {st === "claimed" ? "Claimed" : st === "locked" ? `${dur(d.required_minutes)} watch` : st === "missed" ? "Missed"
+                  {st === "claimed" ? "Claimed" : st === "missed" ? "Missed" : d.required_minutes <= 0 ? "No watch time"
+                    : st === "locked" ? `${dur(d.required_minutes)} watch`
                     : `${dur(d.current_minutes)}${NB}/${NB}${dur(d.required_minutes)}`}
                 </span>
-                {st === "progress" && <span className="inv-bar" role="progressbar" aria-label={`${r.name} progress`} aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${pct}%` }} /></span>}
+                {st === "progress" && d.required_minutes > 0 && <span className="inv-bar" role="progressbar" aria-label={`${r.name} progress`} aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${pct}%` }} /></span>}
               </figcaption>
             </figure>
           );

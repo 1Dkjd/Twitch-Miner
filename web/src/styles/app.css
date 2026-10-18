@@ -447,3 +447,4 @@ svg.i { width: 16px; height: 16px; flex: none; }
 .inv-item.missed .inv-m { color: var(--alert-text); }
 #v-inventory { display: grid; gap: 22px; }
 @media (max-width: 520px) { .inv-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); } }
+.inv-never { justify-self: center; }
