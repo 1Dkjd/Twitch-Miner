@@ -160,9 +160,12 @@ async def serve(store: Store, host: str, port: int) -> int:
         t = AiohttpTransport()
         return t, t.close
 
-    signin = SignInManager(store, bus, provider, on_signed_in, transport)
+    signin = SignInManager(store, bus, provider, on_signed_in)
+    from .api.browser_signin import BrowserSignInManager
+    browser = BrowserSignInManager(store, bus, transport, on_signed_in)
     images = ImageCache(store.path.parent / "images")
-    app = create_app(AppContext(store=store, bus=bus, service=service, signin=signin, images=images),
+    app = create_app(AppContext(store=store, bus=bus, service=service, signin=signin, images=images,
+                                browser=browser),
                      web_dir=web_dir(), hosts=os.environ.get("DROPWATCH_HOSTS", "").split(","))
     # notifications listen to the same events as the page; started before the miner so none are missed
     notifier = Notifier(store)

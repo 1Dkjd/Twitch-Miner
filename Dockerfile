@@ -10,17 +10,22 @@ COPY web/ ./
 RUN npm run build
 
 FROM python:3.12.7-slim-bookworm
-# tzdata: TZ sets the server's local time (the weekly summary's default zone); util-linux for setpriv
+# tzdata: TZ sets the server's local time (the weekly summary's default zone); util-linux for setpriv.
+# chromium + xvfb + x11vnc: the in-page Twitch sign-in (2026-10-18). Twitch only issues the token that lists
+# campaigns and account links on its real login page, so Settings opens it in this Chromium on a virtual
+# screen the page shows live. They run only during a sign-in.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends tzdata util-linux \
- && rm -rf /var/lib/apt/lists/*
+      chromium xvfb x11vnc fonts-liberation fonts-noto-color-emoji \
+ && rm -rf /var/lib/apt/lists/* \
+ && mkdir -p -m 1777 /tmp/.X11-unix
 COPY --from=ghcr.io/astral-sh/uv:0.11.28 /uv /usr/local/bin/uv
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
-RUN uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-dev --extra browser --no-install-project
 COPY src ./src
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --extra browser
 COPY --from=web /web/dist ./web/dist
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod 0755 /entrypoint.sh
@@ -33,7 +38,8 @@ ENV DROPWATCH_COMMIT=$DROPWATCH_COMMIT \
     DROPWATCH_WEB=/app/web/dist \
     PATH=/app/.venv/bin:$PATH \
     PUID=99 PGID=100 TZ=UTC \
-    DROPWATCH_EXIT_WHEN_STUCK=1
+    DROPWATCH_EXIT_WHEN_STUCK=1 \
+    DROPWATCH_BROWSER=/usr/bin/chromium
 # Unraid's user 99 (nobody) and group 100 (users) by default, so the host can read /data without sudo
 
 EXPOSE 5800

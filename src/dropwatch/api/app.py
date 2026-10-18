@@ -2,29 +2,31 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import ipaddress
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Annotated
+from urllib.parse import urlsplit
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi import Path as PathParam
-from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from ..backup import BadBackup, make_backup, restore_backup
 from ..notify import CHANNELS, configured, send_all, summary
 from ..runner import State
 from ..store import EVENT_RETENTION
-from ..twitch.auth_browser import SignInError
 from ..version import VERSION, build_info, server_tz
 from .auth import COOKIE, LoginLimiter, private_auth, public, require_session
 from .models import (
     AboutOut,
     ActivityEvent,
     ActivityOut,
+    BrowserSignInOut,
     ChannelIn,
     ChannelSuggestion,
     HistoryOut,
@@ -45,8 +47,6 @@ from .models import (
     Pins,
     PointsOut,
     RestoreOut,
-    SessionImportIn,
-    SessionImportOut,
     SessionOut,
     SessionsOut,
     SettingsIn,
@@ -70,6 +70,7 @@ class AppContext:
     clock: Callable[[], datetime] = lambda: datetime.now(UTC)
     post: object = None  # notify's HTTP post; None = a real aiohttp session per send (tests inject a fake)
     images: object = None  # images.ImageCache: History's kept copies (None: Twitch's links only)
+    browser: object = None  # api.browser_signin.BrowserSignInManager (None: no in-page sign-in)
     started_at: datetime | None = None  # set by create_app
 
 
@@ -480,24 +481,27 @@ async def signin_cancel(request: Request) -> None:
     _c(request).signin.cancel()
 
 
-@api.post("/twitch/session", response_model=SessionImportOut)
-async def import_session(body: SessionImportIn, request: Request) -> SessionImportOut:
-    """A PC sign-in: an Android-app token from the helper. Checked with Twitch first; on failure nothing
-    changes and the miner keeps its current sign-in."""
-    try:
-        login = await _c(request).signin.import_android(body.access_token)
-    except SignInError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from None
-    return SessionImportOut(login=login)
+@api.post("/twitch/browser", response_model=BrowserSignInOut)
+async def browser_start(request: Request) -> BrowserSignInOut:
+    """Open Twitch's real login page in the container's browser; the page shows it over the VNC socket."""
+    b = _c(request).browser
+    if b is None:
+        raise HTTPException(status_code=404, detail="The sign-in browser isn't part of this install.")
+    return BrowserSignInOut(**await b.start())
 
 
-@api.get("/twitch/signin-helper", response_class=Response)
-async def signin_helper() -> Response:
-    """The PC sign-in helper, as a download (see twitch/pc_signin_helper.py)."""
-    from ..twitch import pc_signin_helper
-    data = await asyncio.to_thread(Path(pc_signin_helper.__file__).read_bytes)
-    return Response(data, media_type="text/x-python", headers={
-        "Content-Disposition": 'attachment; filename="dropwatch-signin.py"', "Cache-Control": "no-store"})
+@api.get("/twitch/browser", response_model=BrowserSignInOut)
+async def browser_status(request: Request) -> BrowserSignInOut:
+    b = _c(request).browser
+    if b is None:
+        return BrowserSignInOut(status="idle", message="", available=False)
+    return BrowserSignInOut(**b.status())
+
+
+@api.delete("/twitch/browser", status_code=204)
+async def browser_cancel(request: Request) -> None:
+    if (b := _c(request).browser) is not None:
+        b.cancel()
 
 
 @api.post("/twitch/signout", status_code=204)
@@ -574,9 +578,59 @@ def create_app(ctx: AppContext, web_dir: Path | None = None, hosts: Iterable[str
     app.include_router(public)
     app.include_router(private_auth)
     app.include_router(api)
+    app.add_api_websocket_route("/api/twitch/browser/vnc", browser_vnc)
     if web_dir is not None and (web_dir / "index.html").is_file():
         _serve_web(app, web_dir)
     return app
+
+
+async def browser_vnc(ws: WebSocket) -> None:
+    """The sign-in browser's screen for the page (noVNC), bridged to x11vnc on localhost. Same rules as the
+    API: the page login cookie, and the page's own origin (another site can't open it)."""
+    ctx = ws.app.state.ctx
+    if ctx.store is None or not ctx.store.valid_web_session(ws.cookies.get(COOKIE), ctx.clock()):
+        await ws.close(code=4401)
+        return
+    origin, host = ws.headers.get("origin"), ws.headers.get("host", "")
+    if origin and urlsplit(origin).netloc.lower() != host.lower():
+        await ws.close(code=4403)
+        return
+    desktop = getattr(ctx.browser, "desktop", None)
+    if desktop is None:
+        await ws.close(code=4404)
+        return
+    try:
+        reader, writer = await asyncio.open_connection("127.0.0.1", desktop.port)
+    except OSError:
+        await ws.close(code=4404)
+        return
+    await ws.accept(subprotocol="binary" if "binary" in ws.scope.get("subprotocols", []) else None)
+
+    async def to_vnc() -> None:
+        while True:
+            msg = await ws.receive()
+            if msg["type"] == "websocket.disconnect":
+                return
+            data = msg.get("bytes") or (msg.get("text") or "").encode()
+            writer.write(data)
+            await writer.drain()
+
+    async def to_page() -> None:
+        while chunk := await reader.read(65536):
+            await ws.send_bytes(chunk)
+
+    tasks = [asyncio.create_task(to_vnc()), asyncio.create_task(to_page())]
+    try:
+        await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+    except WebSocketDisconnect:
+        pass
+    finally:
+        for t in tasks:
+            t.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        writer.close()
+        with contextlib.suppress(Exception):
+            await ws.close()
 
 
 SEEN_SUGGESTIONS = 300  # offline channels offered in the favourites add box (most recent first)

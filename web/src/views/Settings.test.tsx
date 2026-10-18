@@ -184,23 +184,3 @@ test("every section already has its summary line before the data arrives", () =>
   for (const l of links) expect(l.querySelector("small")).not.toBeNull();
 });
 
-test("a PC sign-in file is imported and the sign-in kind is shown", async () => {
-  const calls = setup("account", { "POST /api/twitch/session": { login: "dk" } });
-  const u = userEvent.setup();
-  expect(await screen.findByText("TV code sign-in")).toBeInTheDocument();
-  await u.click(screen.getByRole("button", { name: "How to" }));
-  expect(screen.getByRole("link", { name: "dropwatch-signin.py" })).toHaveAttribute("href", "/api/twitch/signin-helper");
-  const file = new File([JSON.stringify({ format: "dropwatch-session", access_token: "abc123", login: "dk" })], "dropwatch-session.json", { type: "application/json" });
-  await u.upload(screen.getByLabelText("Import a PC sign-in"), file);
-  await waitFor(() => expect(calls.find((c) => c.path === "/api/twitch/session")?.body).toEqual({ access_token: "abc123" }));
-  expect(await screen.findByRole("status")).toHaveTextContent("Signed in as dk");
-});
-
-test("a file without a token is refused before anything is sent", async () => {
-  const calls = setup("account");
-  const u = userEvent.setup();
-  await screen.findByText("TV code sign-in");
-  await u.upload(screen.getByLabelText("Import a PC sign-in"), new File(["{}"], "x.json", { type: "application/json" }));
-  expect(await screen.findByRole("status")).toHaveTextContent("isn't a dropwatch-session.json");
-  expect(calls.some((c) => c.path === "/api/twitch/session")).toBe(false);
-});

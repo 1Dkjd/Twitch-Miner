@@ -44,3 +44,12 @@ Unraid shows the status; the restart itself comes from the watchdog plus the res
 
 On start, a new build copies `drops.db` to `drops.db.before-<build>` before touching it (the two newest
 copies are kept). To roll back: stop the container, copy the file back over `drops.db`, run the old image.
+
+## Signing in on Twitch's login page
+
+Settings › Account & security › **Sign in on Twitch's page** opens Twitch's real login page inside Dropwatch's
+page. The image ships Chromium for this: during the sign-in it runs on a virtual screen (Xvfb) and the page shows
+it live through Dropwatch's own WebSocket (behind the page password; the VNC server listens only inside the
+container). Twitch then issues an Android-app token, which lists every campaign and whether each game account is
+linked, before it starts. The code sign-in can't: Twitch hides both from it. The browser, screen and VNC server
+stop as soon as the sign-in ends, so they use nothing the rest of the time.

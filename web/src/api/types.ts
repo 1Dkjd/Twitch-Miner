@@ -569,22 +569,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/twitch/session": {
+    "/api/twitch/browser": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Browser Status */
+        get: operations["browser_status_api_twitch_browser_get"];
         put?: never;
         /**
-         * Import Session
-         * @description A PC sign-in: an Android-app token from the helper. Checked with Twitch first; on failure nothing
-         *     changes and the miner keeps its current sign-in.
+         * Browser Start
+         * @description Open Twitch's real login page in the container's browser; the page shows it over the VNC socket.
          */
-        post: operations["import_session_api_twitch_session_post"];
-        delete?: never;
+        post: operations["browser_start_api_twitch_browser_post"];
+        /** Browser Cancel */
+        delete: operations["browser_cancel_api_twitch_browser_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -604,26 +605,6 @@ export interface paths {
         post: operations["signin_start_api_twitch_signin_post"];
         /** Signin Cancel */
         delete: operations["signin_cancel_api_twitch_signin_delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/twitch/signin-helper": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Signin Helper
-         * @description The PC sign-in helper, as a download (see twitch/pc_signin_helper.py).
-         */
-        get: operations["signin_helper_api_twitch_signin_helper_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -686,6 +667,18 @@ export interface components {
             events: components["schemas"]["ActivityEvent"][];
             /** Kept Days */
             kept_days: number;
+        };
+        /**
+         * BrowserSignInOut
+         * @description The in-page sign-in browser: idle | starting | open (showing Twitch's login) | done | failed.
+         */
+        BrowserSignInOut: {
+            /** Available */
+            available: boolean;
+            /** Message */
+            message: string;
+            /** Status */
+            status: string;
         };
         /** CampaignOut */
         CampaignOut: {
@@ -1175,16 +1168,6 @@ export interface components {
             image_url: string;
             /** Name */
             name: string;
-        };
-        /** SessionImportIn */
-        SessionImportIn: {
-            /** Access Token */
-            access_token: string;
-        };
-        /** SessionImportOut */
-        SessionImportOut: {
-            /** Login */
-            login: string;
         };
         /** SessionOut */
         SessionOut: {
@@ -2307,18 +2290,14 @@ export interface operations {
             };
         };
     };
-    import_session_api_twitch_session_post: {
+    browser_status_api_twitch_browser_get: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SessionImportIn"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -2326,17 +2305,46 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SessionImportOut"];
+                    "application/json": components["schemas"]["BrowserSignInOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+        };
+    };
+    browser_start_api_twitch_browser_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["BrowserSignInOut"];
                 };
+            };
+        };
+    };
+    browser_cancel_api_twitch_browser_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2391,24 +2399,6 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    signin_helper_api_twitch_signin_helper_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -120,6 +120,30 @@
     "title": "ActivityOut",
     "type": "object"
    },
+   "BrowserSignInOut": {
+    "description": "The in-page sign-in browser: idle | starting | open (showing Twitch's login) | done | failed.",
+    "properties": {
+     "available": {
+      "title": "Available",
+      "type": "boolean"
+     },
+     "message": {
+      "title": "Message",
+      "type": "string"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "status",
+     "message",
+     "available"
+    ],
+    "title": "BrowserSignInOut",
+    "type": "object"
+   },
    "CampaignOut": {
     "properties": {
      "allowed_channels": {
@@ -1347,32 +1371,6 @@
      "image_url"
     ],
     "title": "RewardOut",
-    "type": "object"
-   },
-   "SessionImportIn": {
-    "properties": {
-     "access_token": {
-      "title": "Access Token",
-      "type": "string"
-     }
-    },
-    "required": [
-     "access_token"
-    ],
-    "title": "SessionImportIn",
-    "type": "object"
-   },
-   "SessionImportOut": {
-    "properties": {
-     "login": {
-      "title": "Login",
-      "type": "string"
-     }
-    },
-    "required": [
-     "login"
-    ],
-    "title": "SessionImportOut",
     "type": "object"
    },
    "SessionOut": {
@@ -3038,43 +3036,48 @@
     "summary": "Get Suggestions"
    }
   },
-  "/api/twitch/session": {
-   "post": {
-    "description": "A PC sign-in: an Android-app token from the helper. Checked with Twitch first; on failure nothing\nchanges and the miner keeps its current sign-in.",
-    "operationId": "import_session_api_twitch_session_post",
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/SessionImportIn"
-       }
-      }
-     },
-     "required": true
+  "/api/twitch/browser": {
+   "delete": {
+    "operationId": "browser_cancel_api_twitch_browser_delete",
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     }
     },
+    "summary": "Browser Cancel"
+   },
+   "get": {
+    "operationId": "browser_status_api_twitch_browser_get",
     "responses": {
      "200": {
       "content": {
        "application/json": {
         "schema": {
-         "$ref": "#/components/schemas/SessionImportOut"
+         "$ref": "#/components/schemas/BrowserSignInOut"
         }
        }
       },
       "description": "Successful Response"
-     },
-     "422": {
+     }
+    },
+    "summary": "Browser Status"
+   },
+   "post": {
+    "description": "Open Twitch's real login page in the container's browser; the page shows it over the VNC socket.",
+    "operationId": "browser_start_api_twitch_browser_post",
+    "responses": {
+     "200": {
       "content": {
        "application/json": {
         "schema": {
-         "$ref": "#/components/schemas/HTTPValidationError"
+         "$ref": "#/components/schemas/BrowserSignInOut"
         }
        }
       },
-      "description": "Validation Error"
+      "description": "Successful Response"
      }
     },
-    "summary": "Import Session"
+    "summary": "Browser Start"
    }
   },
   "/api/twitch/signin": {
@@ -3118,18 +3121,6 @@
      }
     },
     "summary": "Signin Start"
-   }
-  },
-  "/api/twitch/signin-helper": {
-   "get": {
-    "description": "The PC sign-in helper, as a download (see twitch/pc_signin_helper.py).",
-    "operationId": "signin_helper_api_twitch_signin_helper_get",
-    "responses": {
-     "200": {
-      "description": "Successful Response"
-     }
-    },
-    "summary": "Signin Helper"
    }
   },
   "/api/twitch/signout": {

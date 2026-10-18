@@ -6,7 +6,7 @@ PRIVATE = [
     ("GET", "/api/suggestions"), ("GET", "/api/inventory"), ("GET", "/api/history"),
     ("GET", "/api/settings"), ("PUT", "/api/settings"),
     ("POST", "/api/twitch/signin"), ("DELETE", "/api/twitch/signin"), ("GET", "/api/twitch/signin"),
-    ("POST", "/api/twitch/session"), ("GET", "/api/twitch/signin-helper"),
+    ("POST", "/api/twitch/browser"), ("GET", "/api/twitch/browser"), ("DELETE", "/api/twitch/browser"),
     ("POST", "/api/twitch/signout"), ("POST", "/api/logout"), ("POST", "/api/refresh"),
     ("GET", "/api/notify/channels"), ("PUT", "/api/notify/channels/{kind}"),
     ("DELETE", "/api/notify/channels/{kind}"), ("POST", "/api/notify/test"),

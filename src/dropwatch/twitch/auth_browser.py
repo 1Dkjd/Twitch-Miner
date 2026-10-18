@@ -98,8 +98,14 @@ class BrowserSignIn:
         display: str | None = None,
         executable: str | None = None,
         report: Callable[[str], None] = print,
+        sandbox: bool = True,
+        window: tuple[int, int] = (1280, 900),
+        kiosk: bool = False,
     ):
         self._t, self._display, self._exe, self._report = transport, display, executable, report
+        # in the container (2026-10-18): Chromium's sandbox needs privileges Docker doesn't give a non-root
+        # user, and the window fills the virtual screen the page shows
+        self._sandbox, self._window, self._kiosk = sandbox, window, kiosk
 
     async def sign_in(self, cancel: asyncio.Event) -> TwitchSession:
         token = await self._browser_token(cancel)
@@ -127,12 +133,17 @@ class BrowserSignIn:
         async def login_in_browser() -> str:
             nonlocal browser
             report("Starting a browser for Twitch sign-in...")
-            args = ["--window-size=1280,900"]
+            args = [f"--window-size={self._window[0]},{self._window[1]}", "--window-position=0,0",
+                    "--no-first-run", "--no-default-browser-check", "--disable-features=Translate"]
+            if self._kiosk:
+                # shown inside Dropwatch's page: only Twitch's page, no tabs, address bar or warning banners
+                args += ["--kiosk", "--test-type", "--disable-infobars"]
             if self._display:
                 args += [f"--display={self._display}", "--ozone-platform=x11"]
             config = zd.Config(
                 browser_executable_path=_find_browser(self._exe),
                 headless=False,
+                sandbox=self._sandbox,
                 browser_connection_timeout=0.25,
                 browser_connection_max_tries=60,
                 browser_args=args,

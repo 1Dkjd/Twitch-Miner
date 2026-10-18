@@ -364,12 +364,11 @@ class KnownGame(BaseModel):
     last_ends_at: datetime  # when its latest campaign ends (or ended)
 
 
-class SessionImportIn(BaseModel):
-    access_token: str  # from dropwatch-session.json, written by the PC sign-in helper
-
-
-class SessionImportOut(BaseModel):
-    login: str
+class BrowserSignInOut(BaseModel):
+    """The in-page sign-in browser: idle | starting | open (showing Twitch's login) | done | failed."""
+    status: str
+    message: str
+    available: bool  # this install has Chromium and the screen tools
 
 
 class SuggestionsOut(BaseModel):

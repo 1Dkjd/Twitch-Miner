@@ -499,8 +499,17 @@ svg.i { width: 16px; height: 16px; flex: none; }
 .bucket-toggle .chev { margin-left: auto; align-self: center; transition: transform .15s; }
 .bucket-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .bucket.folded .bucket-toggle { border-bottom: 0; }
-.pc-signin .steps { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
-.pc-signin .steps code { background: var(--surface-2); padding: 1px 6px; border-radius: 5px; font-size: 12px; overflow-wrap: anywhere; color: var(--fg); }
-.pc-signin .steps a { color: var(--accent-text); }
-.linkish { background: none; border: 0; padding: 0; margin-top: 6px; color: var(--accent-text); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
 .btn.disabled { opacity: .6; pointer-events: none; }
+/* Twitch login page sign-in (2026-10-18): the container's browser, shown live */
+.tl-back { position: fixed; inset: 0; z-index: 60; background: rgb(0 0 0 / .6); display: grid; place-items: center; padding: 12px; }
+.tl { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; width: min(1320px, 100%); max-height: calc(100dvh - 24px); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
+.tl-top { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.tl-top h2 { font-size: 16px; margin: 0 0 2px; }
+.tl-screen { position: relative; background: #0e0e10; aspect-ratio: 1280 / 860; max-height: calc(100dvh - 190px); width: 100%; margin: 0 auto; }
+.tl-screen > div { width: 100% !important; height: 100% !important; }
+.tl-wait { position: absolute; inset: 0; display: grid; place-items: center; color: #adadb8; font-size: 14px; padding: 16px; text-align: center; }
+.tl-type { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 16px; border-top: 1px solid var(--line); font-size: 13px; }
+.tl-type label { color: var(--muted); }
+.tl-type input { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; color: var(--fg); font: inherit; min-width: 220px; flex: 1; max-width: 340px; }
+.tl-type .d { color: var(--muted); flex-basis: 100%; }
+.d.bad { color: var(--alert-text); }
