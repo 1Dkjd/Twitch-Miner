@@ -241,10 +241,10 @@ class Runner:
                 "rewards": [{"name": r.name, "image_url": r.image_url, "claimed": d.claimed}
                             for d in c.drops for r in d.rewards],
                 "impossible": campaign_minutes_needed(c, now) > left,
-                "never": c.game.name in prefs.never, "priority": c.game.name in prefs.priority,
+                "never": prefs.in_never(c.game.name), "priority": prefs.in_priority(c.game.name),
                 "pinned": c.id in prefs.pins, "live": any(qualifies(c, ch) for ch in self.live),
                 "watched": max((d.current_minutes for d in c.drops), default=0),
-                "outside": prefs.priority_only and c.game.name not in prefs.priority,
+                "outside": prefs.priority_only and not prefs.in_priority(c.game.name),
             })
         log(now, rows)
 

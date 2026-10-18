@@ -268,6 +268,10 @@ class Store:
             self._db.execute("DELETE FROM campaign_log WHERE ends_at < ?",
                              ((now - CAMPAIGN_LOG_KEEP).astimezone(UTC).isoformat(),))
 
+    def logged_games(self) -> list[str]:
+        """Every game a campaign was ever seen for, ended ones included (for name suggestions)."""
+        return [r[0] for r in self._db.execute("SELECT DISTINCT game FROM campaign_log")]
+
     def first_seen(self) -> tuple[datetime | None, dict[str, datetime]]:
         """(when the log began, {campaign: when Dropwatch first saw it}) for Up next's "New"."""
         rows = self._db.execute("SELECT id, first_seen FROM campaign_log").fetchall()

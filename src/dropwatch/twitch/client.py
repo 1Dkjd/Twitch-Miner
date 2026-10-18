@@ -59,7 +59,7 @@ class TwitchClient:
         # Only campaigns the planner could actually pick: active, not Never, account-eligible,
         # with a drop earnable now.
         minable = [c for c in campaigns
-                   if campaign_active(c, now) and c.game.name not in prefs.never
+                   if campaign_active(c, now) and not prefs.in_never(c.game.name)
                    and account_eligible(c, prefs)
                    and any(drop_earnable_now(c, d, now) for d in c.drops)]
         seen: dict[str, LiveChannel] = {}

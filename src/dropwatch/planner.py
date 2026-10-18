@@ -69,10 +69,10 @@ def plan(
     override_channel: str | None = None,
     current_campaign: str | None = None,
 ) -> Plan:
-    considered = [c for c in campaigns if campaign_active(c, now) and c.game.name not in prefs.never]
+    considered = [c for c in campaigns if campaign_active(c, now) and not prefs.in_never(c.game.name)]
     # Priority only: just these games are mined or asked about (Needs you, and so its alert and the weekly
     # summary); the rest only show as "outside" on the page
-    in_scope = (lambda c: c.game.name in prefs.priority) if prefs.priority_only else (lambda c: True)
+    in_scope = (lambda c: prefs.in_priority(c.game.name)) if prefs.priority_only else (lambda c: True)
     asks = [
         c.id for c in sorted((c for c in considered if in_scope(c)), key=lambda c: (c.ends_at, c.id))
         if c.linked is False and not c.has_badge_or_emote and campaign_minutes_needed(c, now) > 0
@@ -111,8 +111,8 @@ def plan(
         return 0 if c.linked is True or c.has_badge_or_emote or c.game.id in linked_games else 1
 
     def order(c: Campaign) -> tuple:
-        if c.game.name in prefs.priority:
-            return (0, prefs.priority.index(c.game.name), 0, 0.0, c.ends_at, c.id)
+        if (rank := prefs.priority_rank(c.game.name)) is not None:
+            return (0, rank, 0, 0.0, c.ends_at, c.id)
         if c.id in prefs.pins:  # "Arrange myself": pins next, in the order Nick set
             return (1, prefs.pins.index(c.id), 0, 0.0, c.ends_at, c.id)
         return (2, 0, link_rank(c), campaign_ratio(c, now), c.ends_at, c.id)
@@ -129,8 +129,8 @@ def plan(
         chosen = _hold_current(chosen, eligible, current_campaign, prefs, now, link_rank)
     if chosen.id == override_campaign:
         reason = "you picked it"
-    elif chosen.game.name in prefs.priority:
-        reason = f"priority {prefs.priority.index(chosen.game.name) + 1}"
+    elif prefs.in_priority(chosen.game.name):
+        reason = f"priority {prefs.priority_rank(chosen.game.name) + 1}"
     elif chosen.id in prefs.pins:
         reason = "you pinned it"
     else:
@@ -178,7 +178,7 @@ def _hold_current(
     cur = next((c for c in eligible if c.id == current), None)
     if cur is None or cur.id == chosen.id:
         return chosen
-    if cur.game.name in prefs.priority or chosen.game.name in prefs.priority:
+    if prefs.in_priority(cur.game.name) or prefs.in_priority(chosen.game.name):
         return chosen
     if cur.id in prefs.pins or chosen.id in prefs.pins:
         return chosen  # pins are an explicit order, like Priority: no hysteresis

@@ -108,7 +108,8 @@ async def put_lists(body: ListsIn, request: Request) -> ListsOut:
 async def get_suggestions(request: Request) -> SuggestionsOut:
     ctx = _c(request)
     r = ctx.service.runner
-    games = sorted({c.game.name for c in r.campaigns}) if r else []
+    running = {c.game.name for c in r.campaigns} if r else set()
+    games = sorted(running | set(ctx.store.logged_games()), key=str.casefold)  # ended ones too
     live = {ch.login: ch.game_name or None for ch in r.live} if r else {}
     seen = {row["login"]: row for row in ctx.store.seen_channels(ctx.clock())}
     out = [ChannelSuggestion(login=lg, live=True, game=g, last_seen=seen.get(lg, {}).get("last_seen"))
@@ -398,7 +399,7 @@ async def mine_now(body: MineNowIn, request: Request) -> None:
     if camp is None:
         raise HTTPException(status_code=404, detail="No such campaign.")
     prefs = ctx.store.get_prefs()
-    if prefs.priority_only and camp.game.name not in prefs.priority:
+    if prefs.priority_only and not prefs.in_priority(camp.game.name):
         raise HTTPException(status_code=409, detail=f"Priority only is on: add {camp.game.name} to Priority "
                             "to mine it.")
     r.mine_now(body.campaign_id)

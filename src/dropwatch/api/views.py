@@ -94,8 +94,8 @@ def state_view(runner, store, now: datetime) -> StateOut:
         if o.id not in alongside:
             t += timedelta(minutes=o.minutes_needed)
         up_next.append(o.model_copy(update={"pinned": o.id in pins, "ends_before_turn": t > o.ends_at}))
-    never_games = store.get_prefs().never
-    never = sorted((c for c in runner.campaigns if c.game.name in never_games and campaign_active(c, now)),
+    prefs = store.get_prefs()
+    never = sorted((c for c in runner.campaigns if prefs.in_never(c.game.name) and campaign_active(c, now)),
                    key=lambda c: (c.ends_at, c.id))
     return StateOut(
         state=str(runner.state), signed_in=session is not None, login=session.login if session else None,

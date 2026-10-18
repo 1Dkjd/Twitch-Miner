@@ -101,6 +101,19 @@ class Prefs:
     ignored: frozenset[str] = frozenset()  # Needs you > Ignore: campaign ids not asked about until they end
     priority_only: bool = False  # Settings > Mining: mine only games in Priority (approved 2026-10-12)
 
+    # Game names typed by hand ("Add anyway") may differ in case from Twitch's category name,
+    # so list membership ignores case.
+    def priority_rank(self, game: str) -> int | None:
+        g = game.casefold()
+        return next((i for i, n in enumerate(self.priority) if n.casefold() == g), None)
+
+    def in_priority(self, game: str) -> bool:
+        return self.priority_rank(game) is not None
+
+    def in_never(self, game: str) -> bool:
+        g = game.casefold()
+        return any(n.casefold() == g for n in self.never)
+
 
 def preconditions_met(c: Campaign, d: Drop) -> bool:
     for pid in d.preconditions:
