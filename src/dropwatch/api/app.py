@@ -28,6 +28,7 @@ from .models import (
     ChannelSuggestion,
     HistoryOut,
     IgnoredOut,
+    InventoryOut,
     KnownGame,
     ListsIn,
     ListsOut,
@@ -52,7 +53,7 @@ from .models import (
     SuggestionsOut,
 )
 from .sse import sse_stream
-from .views import history_view, state_view
+from .views import history_view, inventory_view, state_view
 
 api = APIRouter(prefix="/api", dependencies=[Depends(require_session)])
 
@@ -362,6 +363,14 @@ async def kept_image(name: str, request: Request):
 
     return FileResponse(f, media_type=TYPES[f.suffix],
                         headers={"Cache-Control": "private, max-age=31536000, immutable"})
+
+
+@api.get("/inventory", response_model=InventoryOut)
+async def get_inventory(request: Request) -> InventoryOut:
+    ctx = _c(request)
+    now = ctx.clock()
+    claims = ctx.store.claims_since(now - timedelta(days=365))
+    return inventory_view(ctx.service.runner, ctx.store, now, claims, ctx.images)
 
 
 @api.get("/history", response_model=HistoryOut)

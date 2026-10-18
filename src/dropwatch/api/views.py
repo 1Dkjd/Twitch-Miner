@@ -13,6 +13,9 @@ from .models import (
     CurrentOut,
     DropOut,
     HistoryOut,
+    InventoryCampaign,
+    InventoryGame,
+    InventoryOut,
     MissedOut,
     RewardOut,
     StateOut,
@@ -151,3 +154,55 @@ def _kept(row: dict, images) -> dict:
     art = row.get("box_art_url") or ""
     rewards = [{**r, "image_url": images.local_url(r["image_url"]) or r["image_url"]} for r in row["rewards"]]
     return {**row, "rewards": rewards, "box_art_url": images.local_url(box_art_144(art)) or art}
+
+
+STATUS_ORDER = ("mining", "needs_link", "active", "upcoming", "done", "never", "ended")
+
+
+def campaign_status(c: Campaign, now: datetime, prefs, current_id: str | None) -> str:
+    if c.id == current_id:
+        return "mining"
+    if c.ends_at <= now:
+        return "ended"
+    if c.starts_at > now:
+        return "upcoming"
+    if c.drops and all(d.claimed for d in c.drops):
+        return "done"
+    if prefs.in_never(c.game.name):
+        return "never"
+    if c.linked is False and not c.has_badge_or_emote:
+        return "needs_link"
+    return "active"
+
+
+def inventory_view(runner, store, now: datetime, claims: list[dict], images=None) -> InventoryOut:
+    """Listed campaigns grouped by game: Priority games in their order, then the rest by name. Claims from
+    campaigns Twitch no longer lists are attached to their game so the page can show them too."""
+    prefs = store.get_prefs()
+    camps = list(runner.campaigns) if runner else []
+    plan = runner.plan if runner else None
+    current_id = plan.current.campaign_id if plan and plan.current else None
+    by_game: dict[str, list[InventoryCampaign]] = {}
+    art: dict[str, str] = {}
+    for c in camps:
+        o = campaign_out(c, now, None)
+        by_game.setdefault(c.game.name, []).append(
+            InventoryCampaign(**o.model_dump(), status=campaign_status(c, now, prefs, current_id)))
+        art[c.game.name] = art.get(c.game.name) or c.game.box_art_url
+    listed = {c.id for c in camps}
+    earlier = [cl for cl in history_view(claims, (), images).claims if cl.campaign_id not in listed]
+    for cl in earlier:
+        by_game.setdefault(cl.game, [])
+        art[cl.game] = art.get(cl.game) or cl.box_art_url or ""
+    games = []
+    for g, cs in by_game.items():
+        cs.sort(key=lambda c: (STATUS_ORDER.index(c.status), c.starts_at or c.ends_at, c.ends_at, c.id))
+        rank = prefs.priority_rank(g)
+        games.append(InventoryGame(game=g, box_art_url=art.get(g, ""),
+                                   priority=None if rank is None else rank + 1,
+                                   never=prefs.in_never(g), campaigns=cs,
+                                   claimed_earlier=[cl for cl in earlier if cl.game == g]))
+    games.sort(key=lambda g: (g.priority is None, g.priority or 0, not g.campaigns, g.game.casefold()))
+    rewards = [(d.claimed, len(d.rewards)) for c in camps for d in c.drops]
+    return InventoryOut(games=games, total_rewards=sum(n for _, n in rewards),
+                        claimed_rewards=sum(n for done, n in rewards if done))

@@ -3,7 +3,7 @@ from apihelpers import client, logged_in, make_app
 PRIVATE = [
     ("GET", "/api/state"), ("GET", "/api/events"), ("POST", "/api/pause"), ("POST", "/api/resume"),
     ("POST", "/api/mine-now"), ("POST", "/api/channel"), ("GET", "/api/lists"), ("PUT", "/api/lists"),
-    ("GET", "/api/suggestions"), ("GET", "/api/history"), ("GET", "/api/settings"), ("PUT", "/api/settings"),
+    ("GET", "/api/suggestions"), ("GET", "/api/inventory"), ("GET", "/api/history"), ("GET", "/api/settings"), ("PUT", "/api/settings"),
     ("POST", "/api/twitch/signin"), ("DELETE", "/api/twitch/signin"), ("GET", "/api/twitch/signin"),
     ("POST", "/api/twitch/signout"), ("POST", "/api/logout"), ("POST", "/api/refresh"),
     ("GET", "/api/notify/channels"), ("PUT", "/api/notify/channels/{kind}"),

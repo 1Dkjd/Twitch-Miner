@@ -603,6 +603,210 @@
     "title": "IgnoredOut",
     "type": "object"
    },
+   "InventoryCampaign": {
+    "properties": {
+     "allowed_channels": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Allowed Channels",
+      "type": "array"
+     },
+     "box_art_url": {
+      "title": "Box Art Url",
+      "type": "string"
+     },
+     "drops": {
+      "items": {
+       "$ref": "#/components/schemas/DropOut"
+      },
+      "title": "Drops",
+      "type": "array"
+     },
+     "ends_at": {
+      "format": "date-time",
+      "title": "Ends At",
+      "type": "string"
+     },
+     "ends_before_turn": {
+      "default": false,
+      "title": "Ends Before Turn",
+      "type": "boolean"
+     },
+     "game": {
+      "title": "Game",
+      "type": "string"
+     },
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "link_url": {
+      "title": "Link Url",
+      "type": "string"
+     },
+     "linked": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Linked"
+     },
+     "maybe_unlinked": {
+      "default": false,
+      "title": "Maybe Unlinked",
+      "type": "boolean"
+     },
+     "minutes_needed": {
+      "title": "Minutes Needed",
+      "type": "integer"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "new": {
+      "default": false,
+      "title": "New",
+      "type": "boolean"
+     },
+     "pinned": {
+      "default": false,
+      "title": "Pinned",
+      "type": "boolean"
+     },
+     "priority": {
+      "default": false,
+      "title": "Priority",
+      "type": "boolean"
+     },
+     "starts_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Starts At"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     },
+     "verdict": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Verdict"
+     }
+    },
+    "required": [
+     "id",
+     "name",
+     "game",
+     "box_art_url",
+     "ends_at",
+     "linked",
+     "link_url",
+     "allowed_channels",
+     "minutes_needed",
+     "verdict",
+     "drops",
+     "status"
+    ],
+    "title": "InventoryCampaign",
+    "type": "object"
+   },
+   "InventoryGame": {
+    "properties": {
+     "box_art_url": {
+      "title": "Box Art Url",
+      "type": "string"
+     },
+     "campaigns": {
+      "items": {
+       "$ref": "#/components/schemas/InventoryCampaign"
+      },
+      "title": "Campaigns",
+      "type": "array"
+     },
+     "claimed_earlier": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/ClaimOut"
+      },
+      "title": "Claimed Earlier",
+      "type": "array"
+     },
+     "game": {
+      "title": "Game",
+      "type": "string"
+     },
+     "never": {
+      "title": "Never",
+      "type": "boolean"
+     },
+     "priority": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Priority"
+     }
+    },
+    "required": [
+     "game",
+     "box_art_url",
+     "priority",
+     "never",
+     "campaigns"
+    ],
+    "title": "InventoryGame",
+    "type": "object"
+   },
+   "InventoryOut": {
+    "description": "Inventory (2026-10-18): every listed campaign by game, with each reward's state.",
+    "properties": {
+     "claimed_rewards": {
+      "title": "Claimed Rewards",
+      "type": "integer"
+     },
+     "games": {
+      "items": {
+       "$ref": "#/components/schemas/InventoryGame"
+      },
+      "title": "Games",
+      "type": "array"
+     },
+     "total_rewards": {
+      "title": "Total Rewards",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "games",
+     "total_rewards",
+     "claimed_rewards"
+    ],
+    "title": "InventoryOut",
+    "type": "object"
+   },
    "KnownGame": {
     "properties": {
      "box_art_url": {
@@ -2078,6 +2282,24 @@
      }
     },
     "summary": "Get History"
+   }
+  },
+  "/api/inventory": {
+   "get": {
+    "operationId": "get_inventory_api_inventory_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InventoryOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Inventory"
    }
   },
   "/api/lists": {

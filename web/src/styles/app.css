@@ -419,3 +419,31 @@ svg.i { width: 16px; height: 16px; flex: none; }
   .chev, .sw::after { transition: none; }
 }
 
+
+/* Inventory (2026-10-18): games as cards, each campaign a grid of reward tiles */
+.inv-sum { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
+.inv-sum b { color: var(--fg); }
+.inv-game { display: grid; gap: 10px; }
+.inv-head { display: flex; gap: 12px; align-items: center; }
+.inv-head .box { width: 44px; }
+.inv-head h2 { font-size: 17px; margin: 0 0 2px; }
+.inv-camp { padding: 14px 16px; display: grid; gap: 12px; }
+.inv-camp + .inv-camp { border-top: 1px solid var(--line); }
+.inv-camp-h { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+.inv-acts { display: flex; gap: 8px; align-items: center; }
+.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; }
+.inv-item { margin: 0; display: grid; gap: 6px; align-content: start; }
+.inv-img { position: relative; display: block; aspect-ratio: 1; border-radius: 10px; background: var(--art); box-shadow: 0 0 0 1px var(--art-ring); overflow: hidden; }
+.inv-img img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.inv-item figcaption { display: grid; gap: 3px; min-width: 0; }
+.inv-n { font-size: 12.5px; font-weight: 600; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.inv-m { font-family: var(--num); font-stretch: var(--num-stretch); font-variant-numeric: tabular-nums; font-size: 11.5px; color: var(--muted); }
+.inv-bar { position: relative; height: 4px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.inv-bar > span { position: absolute; inset: 0 auto 0 0; background: var(--fill); border-radius: 99px; }
+.inv-item.claimed .inv-img::after { content: ""; position: absolute; right: 6px; bottom: 6px; width: 18px; height: 18px; border-radius: 50%; background: var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 6.2l2 2 4-4.4' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat; border: 2px solid var(--surface); }
+.inv-item.claimed .inv-m { color: var(--ok-text); }
+.inv-item.locked .inv-img img { filter: grayscale(1); opacity: .5; }
+.inv-item.missed .inv-img img { filter: grayscale(1); opacity: .35; }
+.inv-item.missed .inv-m { color: var(--alert-text); }
+#v-inventory { display: grid; gap: 22px; }
+@media (max-width: 520px) { .inv-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); } }

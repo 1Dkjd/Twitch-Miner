@@ -147,6 +147,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Inventory */
+        get: operations["get_inventory_api_inventory_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/lists": {
         parameters: {
             query?: never;
@@ -812,6 +829,93 @@ export interface components {
             /** Ids */
             ids: string[];
         };
+        /** InventoryCampaign */
+        InventoryCampaign: {
+            /** Allowed Channels */
+            allowed_channels: string[];
+            /** Box Art Url */
+            box_art_url: string;
+            /** Drops */
+            drops: components["schemas"]["DropOut"][];
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /**
+             * Ends Before Turn
+             * @default false
+             */
+            ends_before_turn: boolean;
+            /** Game */
+            game: string;
+            /** Id */
+            id: string;
+            /** Link Url */
+            link_url: string;
+            /** Linked */
+            linked: boolean | null;
+            /**
+             * Maybe Unlinked
+             * @default false
+             */
+            maybe_unlinked: boolean;
+            /** Minutes Needed */
+            minutes_needed: number;
+            /** Name */
+            name: string;
+            /**
+             * New
+             * @default false
+             */
+            new: boolean;
+            /**
+             * Pinned
+             * @default false
+             */
+            pinned: boolean;
+            /**
+             * Priority
+             * @default false
+             */
+            priority: boolean;
+            /** Starts At */
+            starts_at?: string | null;
+            /** Status */
+            status: string;
+            /** Verdict */
+            verdict: string | null;
+        };
+        /** InventoryGame */
+        InventoryGame: {
+            /** Box Art Url */
+            box_art_url: string;
+            /** Campaigns */
+            campaigns: components["schemas"]["InventoryCampaign"][];
+            /**
+             * Claimed Earlier
+             * @default []
+             */
+            claimed_earlier: components["schemas"]["ClaimOut"][];
+            /** Game */
+            game: string;
+            /** Never */
+            never: boolean;
+            /** Priority */
+            priority: number | null;
+        };
+        /**
+         * InventoryOut
+         * @description Inventory (2026-10-18): every listed campaign by game, with each reward's state.
+         */
+        InventoryOut: {
+            /** Claimed Rewards */
+            claimed_rewards: number;
+            /** Games */
+            games: components["schemas"]["InventoryGame"][];
+            /** Total Rewards */
+            total_rewards: number;
+        };
         /** KnownGame */
         KnownGame: {
             /** Box Art Url */
@@ -1431,6 +1535,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_inventory_api_inventory_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryOut"];
                 };
             };
         };

@@ -366,3 +366,24 @@ class SuggestionsOut(BaseModel):
     # every game Dropwatch has seen a campaign for, ended ones included (Priorities' art and dates)
     known_games: list[KnownGame] = []
     channels: list[ChannelSuggestion]  # live first, then most recently seen, then never-seen favourites
+
+
+class InventoryCampaign(CampaignOut):
+    # mining | upcoming | needs_link | active | done | never | ended (listed but past its end)
+    status: str
+
+
+class InventoryGame(BaseModel):
+    game: str
+    box_art_url: str
+    priority: int | None  # 1-based Priority position
+    never: bool
+    campaigns: list[InventoryCampaign]
+    claimed_earlier: list[ClaimOut] = []  # this game's claims from campaigns no longer listed (last year)
+
+
+class InventoryOut(BaseModel):
+    """Inventory (2026-10-18): every listed campaign by game, with each reward's state."""
+    games: list[InventoryGame]
+    total_rewards: int  # rewards in the listed campaigns
+    claimed_rewards: int  # ...of which claimed
