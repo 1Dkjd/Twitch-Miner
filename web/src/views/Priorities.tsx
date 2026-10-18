@@ -30,6 +30,11 @@ export function PrioritiesView() {
   const [draft, setDraft] = useState<Lists | null>(null);
   const [active, setActive] = useState<string | null>(null);
   const campaignGames = useCampaignGames();
+  const [neverOpen, setNeverOpen] = useState(savedNeverOpen);
+  const toggleNever = () => setNeverOpen((o) => {
+    try { localStorage.setItem(NEVER_OPEN_KEY, o ? "0" : "1"); } catch { /* storage blocked */ }
+    return !o;
+  });
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }), // buttons in the row still click
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }), // a press, so phones can scroll
@@ -176,7 +181,7 @@ export function PrioritiesView() {
         <AddForm to="fav" list="known-channels" placeholder="Add a channel" known={sugg.channels.map((c) => c.login)} label="Add a favourite channel"
           onAdd={(name) => commit(moved(name.toLowerCase(), "fav"), `${name} added to favourite channels`)} />
       </Bucket>
-      <Bucket title="Never" count={shown.never.length} help="Never mined, even when nothing else is live.">
+      <Bucket title="Never" count={shown.never.length} help="Never mined, even when nothing else is live." open={neverOpen} onToggle={toggleNever}>
         {zone("never")}
         <AddForm to="never" list="campaign-games" placeholder="Add a game" known={sugg.games} label="Add a game to Never"
           onAdd={(name) => commit(moved(name, "never"), `${name} added to Never`)} />
@@ -194,13 +199,32 @@ export function PrioritiesView() {
   );
 }
 
-function Bucket({ title, count, help, children }: { title: string; count: number; help: string; children: React.ReactNode }) {
+function Bucket({ title, count, help, children, open, onToggle }: {
+  title: string; count: number; help: string; children: React.ReactNode; open?: boolean; onToggle?: () => void;
+}) {
+  if (!onToggle) {
+    return (
+      <div className="bucket">
+        <div className="bucket-h"><h2>{title}</h2><span className="count">{count}</span><p>{help}</p></div>
+        {children}
+      </div>
+    );
+  }
+  // collapsible (2026-10-18): a long Never list folds away so the page doesn't scroll past it
+  const id = `bucket-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
-    <div className="bucket">
-      <div className="bucket-h"><h2>{title}</h2><span className="count">{count}</span><p>{help}</p></div>
-      {children}
+    <div className={`bucket${open ? "" : " folded"}`}>
+      <button className="bucket-h bucket-toggle" type="button" aria-expanded={open} aria-controls={id} onClick={onToggle}>
+        <h2>{title}</h2><span className="count">{count}</span><Icon name="down" className="chev" /><p>{help}</p>
+      </button>
+      <div id={id} hidden={!open}>{children}</div>
     </div>
   );
+}
+
+const NEVER_OPEN_KEY = "dropwatch.priorities.neverOpen";
+function savedNeverOpen(): boolean {
+  try { return localStorage.getItem(NEVER_OPEN_KEY) === "1"; } catch { return false; }
 }
 
 type Info = Map<string, { text: string; warn?: boolean; art?: string }>;

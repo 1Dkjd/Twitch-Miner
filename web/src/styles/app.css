@@ -494,3 +494,8 @@ svg.i { width: 16px; height: 16px; flex: none; }
 .bulk-box.ph { background: var(--surface-2); }
 .bulk-n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
 .bulk-f { display: flex; gap: 8px; }
+.bucket-toggle { width: 100%; background: none; border: 0; border-bottom: 1px solid var(--line); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.bucket-toggle:hover { background: var(--surface-2); }
+.bucket-toggle .chev { margin-left: auto; align-self: center; transition: transform .15s; }
+.bucket-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.bucket.folded .bucket-toggle { border-bottom: 0; }

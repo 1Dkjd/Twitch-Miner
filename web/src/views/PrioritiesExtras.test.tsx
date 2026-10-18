@@ -6,6 +6,7 @@ import { campaign, state } from "../test/fixtures";
 import { PrioritiesView } from "./Priorities";
 
 const ME = { authenticated: true, setup_required: false };
+beforeEach(() => localStorage.removeItem("dropwatch.priorities.neverOpen"));
 const game = (name: string, over: Record<string, unknown> = {}, camp: Record<string, unknown> = {}) => ({
   game: name, box_art_url: "", priority: null, never: false, claimed_earlier: [],
   campaigns: [{ ...campaign({ id: name, game: name }), status: "active", will_mine: true, badge: false, ...camp }], ...over });
@@ -23,6 +24,7 @@ function setup(games: unknown[], lists = { priority: [] as string[], never: [] a
 test("bulk Never ticks badge/emote-only games and moves the ticked games at once", async () => {
   const calls = setup([game("Enshrouded", {}, { badge: true }), game("ELDEN RING", {}, { badge: true }), game("Rust")]);
   const u = userEvent.setup();
+  await u.click(await screen.findByRole("button", { name: /^Never/ }));
   await u.click(await screen.findByRole("button", { name: "Add several games…" }));
   const box = screen.getByRole("group", { name: "Add several games to Never" });
   await u.click(within(box).getByRole("button", { name: "Tick badge/emote-only games (2)" }));

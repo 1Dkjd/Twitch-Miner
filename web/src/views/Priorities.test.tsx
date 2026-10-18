@@ -10,6 +10,7 @@ function Said() {
   return <div data-testid="said">{useApp().announcement}</div>;
 }
 afterEach(() => vi.unstubAllGlobals());
+beforeEach(() => localStorage.removeItem("dropwatch.priorities.neverOpen"));
 
 function setup(lists: { priority: string[]; never: string[]; favourites: string[] }, put?: (b: unknown) => unknown, s = state()) {
   const calls = mockApi({
@@ -49,6 +50,7 @@ test("adding an unknown game asks first; Add anyway adds it", async () => {
 test("a known game is matched case-insensitively and added straight away", async () => {
   const calls = setup({ priority: [], never: [], favourites: [] });
   const u = userEvent.setup();
+  await u.click(await screen.findByRole("button", { name: /^Never/ }));
   await u.type(await screen.findByRole("combobox", { name: "Add a game to Never" }), "aion 2");
   await u.click(screen.getAllByRole("button", { name: "Add" })[2]!);
   await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toMatchObject({ never: ["AION 2"] }));
@@ -110,4 +112,16 @@ test("an announced campaign shows as Announced in Priority", async () => {
   setup({ priority: ["WARDOGS"], never: [], favourites: [] }, undefined,
     state({ upcoming: [campaign({ id: "w", game: "WARDOGS", starts_at: inDays(5), linked: null, priority: true })] }));
   expect(await screen.findByText(/^Announced · starts/)).toBeInTheDocument();
+});
+
+test("the Never section starts folded and remembers being opened", async () => {
+  localStorage.removeItem("dropwatch.priorities.neverOpen");
+  setup({ priority: [], never: ["Rust"], favourites: [] });
+  const u = userEvent.setup();
+  const toggle = await screen.findByRole("button", { name: /^Never/ });
+  expect(toggle).toHaveAttribute("aria-expanded", "false");
+  expect(screen.queryByText("Rust")).not.toBeVisible();
+  await u.click(toggle);
+  expect(toggle).toHaveAttribute("aria-expanded", "true");
+  expect(localStorage.getItem("dropwatch.priorities.neverOpen")).toBe("1");
 });
