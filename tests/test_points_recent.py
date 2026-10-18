@@ -4,6 +4,7 @@ waiting since Oct 9)."""
 import json
 from datetime import UTC, datetime, timedelta
 
+from test_runner import NOW as CAMP_NOW
 from test_runner import FakeClient, FakePubSub, FakeWatcher, camp, chan
 
 from dropwatch.runner import RECENT_CHEST_CHANNELS, Runner
@@ -34,10 +35,19 @@ def watched_before(st, login, days_ago):
     st._db.commit()
 
 
+def current_camp():
+    """camp() shifted so it is running at the real NOW (it is built around test_runner's fixed date)."""
+    from dataclasses import replace
+    c, shift = camp(), NOW - CAMP_NOW
+    return replace(c, starts_at=c.starts_at + shift, ends_at=c.ends_at + shift,
+                   drops=tuple(replace(d, starts_at=d.starts_at + shift, ends_at=d.ends_at + shift)
+                               for d in c.drops))
+
+
 def make(tmp_path, chests, on=True):
     st = Store(tmp_path / "d.db")
     st.put_settings({"claim_points": on})
-    c = ChestClient([camp()], [chan("a", 7)], chests=chests)
+    c = ChestClient([current_camp()], [chan("a", 7)], chests=chests)
     return Runner(c, FakeWatcher(), FakePubSub(), st, user_id=42, clock=lambda: NOW), c, st
 
 

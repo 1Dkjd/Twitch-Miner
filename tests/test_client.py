@@ -6,6 +6,8 @@ from dropwatch.models import Prefs
 from dropwatch.twitch.client import TwitchClient
 
 FX = Path(__file__).parent / "fixtures"
+# the recorded fixtures were captured on 2026-10-09; their campaigns have since ended
+FIXTURES_AT = datetime(2026, 10, 9, 6, tzinfo=UTC)
 
 
 def load(name):
@@ -57,7 +59,7 @@ async def test_live_channels_skips_never_games():
     c = TwitchClient(g, 42)
     camps = await c.campaigns()
     never = frozenset(x.game.name for x in camps)
-    await c.live_channels(camps, Prefs(never=never), datetime.now(UTC))
+    await c.live_channels(camps, Prefs(never=never), FIXTURES_AT)
     assert "DirectoryPage_Game" not in g.ops
 
 
@@ -68,7 +70,7 @@ async def test_live_channels_asks_for_every_game_in_batches_not_one_by_one():
     camps = await c.campaigns()
     g.ops.clear()
     g.batches = []
-    live = await c.live_channels(camps, Prefs(), datetime.now(UTC))
+    live = await c.live_channels(camps, Prefs(), FIXTURES_AT)
     assert live
     assert any("DirectoryPage_Game" in b for b in g.batches)
     direct = [o for o in g.ops if o == "DirectoryPage_Game"]

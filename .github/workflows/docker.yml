@@ -1,9 +1,11 @@
-# Publishes the image on a version tag (v0.2.0 -> ghcr.io/kernelpanic-studios/dropwatch:0.2.0 and :latest).
+# 1Dkjd/Twitch-Miner: every push to main publishes ghcr.io/1dkjd/twitch-miner:latest (and :sha-<commit>), so
+# Unraid's Docker tab offers the update. A version tag (v0.3.0) also publishes :0.3.0.
 # Tests run first; nothing is published if they fail.
 name: docker
 
 on:
   push:
+    branches: [main]
     tags: ["v*"]
   workflow_dispatch:
 
@@ -40,6 +42,7 @@ jobs:
         run: |
           echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
           echo "commit=${GITHUB_REF_NAME}@${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
         with:
@@ -53,9 +56,10 @@ jobs:
           push: true
           build-args: DROPWATCH_COMMIT=${{ steps.meta.outputs.commit }}
           labels: |
-            org.opencontainers.image.source=https://github.com/KernelPanic-Studios/dropwatch
+            org.opencontainers.image.source=https://github.com/1Dkjd/Twitch-Miner
             org.opencontainers.image.description=Earns Twitch Drops and channel points for one account, with a web dashboard.
             org.opencontainers.image.licenses=MIT
           tags: |
-            ghcr.io/kernelpanic-studios/dropwatch:${{ steps.meta.outputs.version }}
-            ghcr.io/kernelpanic-studios/dropwatch:latest
+            ghcr.io/1dkjd/twitch-miner:latest
+            ghcr.io/1dkjd/twitch-miner:sha-${{ steps.meta.outputs.sha }}
+            ${{ startsWith(github.ref, 'refs/tags/v') && format('ghcr.io/1dkjd/twitch-miner:{0}', steps.meta.outputs.version) || '' }}
