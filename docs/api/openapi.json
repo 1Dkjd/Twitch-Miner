@@ -512,6 +512,11 @@
       "title": "Required Minutes",
       "type": "integer"
      },
+     "required_subs": {
+      "default": 0,
+      "title": "Required Subs",
+      "type": "integer"
+     },
      "rewards": {
       "items": {
        "$ref": "#/components/schemas/RewardOut"
@@ -611,6 +616,11 @@
       },
       "title": "Allowed Channels",
       "type": "array"
+     },
+     "badge": {
+      "default": false,
+      "title": "Badge",
+      "type": "boolean"
      },
      "box_art_url": {
       "title": "Box Art Url",
@@ -798,6 +808,11 @@
       },
       "title": "Games",
       "type": "array"
+     },
+     "mine_badges": {
+      "default": false,
+      "title": "Mine Badges",
+      "type": "boolean"
      },
      "total_rewards": {
       "title": "Total Rewards",

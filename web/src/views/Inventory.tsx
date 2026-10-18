@@ -17,7 +17,7 @@ const STATUS: Record<string, [string, string]> = {
 
 const FILTERS = [["all", "All"], ["open", "Still to earn"], ["claimed", "Claimed"]] as const;
 const FILTER_HINT: Record<string, string> = {
-  open: "Only what Dropwatch will mine: not Never games, badge and emote campaigns only if that's on in Settings, and with Priority only on, just Priority games.",
+  open: "Only what Dropwatch will mine: not Never games, not rewards that need a sub, and with Priority only on, just Priority games.",
 };
 type Filter = (typeof FILTERS)[number][0];
 
@@ -37,6 +37,7 @@ export function InventoryView() {
   const [filter, setFilter] = useState<Filter>("all");
   const [needle, setNeedle] = useState("");
   const [showNever, setShowNever] = useState(false);
+  const [showBadges, setShowBadges] = useState(false);
   useEffect(() => {
     let live = true;
     api.get<Inventory>("/inventory").then((d) => { if (live) setData(d); }).catch(() => undefined);
@@ -44,13 +45,19 @@ export function InventoryView() {
   }, [state?.last_refresh]);
 
   const q = needle.trim().toLowerCase();
-  const counted = (data?.games ?? []).filter((g) => showNever || !g.never);
+  // badge and emote campaigns aren't mined unless that setting is on, so they're hidden to match (2026-10-18)
+  const badgesHidden = !!data && !data.mine_badges && !showBadges;
+  const visible = (data?.games ?? [])
+    .map((g) => (badgesHidden ? { ...g, campaigns: g.campaigns.filter((c) => !c.badge) } : g))
+    .filter((g) => g.campaigns.length || g.claimed_earlier.length);
+  const badgeCount = (data?.games ?? []).reduce((n, g) => n + g.campaigns.filter((c) => c.badge).length, 0);
+  const counted = visible.filter((g) => showNever || !g.never);
   const rewardsIn = (g: InvGame, claimedOnly: boolean) =>
     g.campaigns.reduce((n, c) => n + c.drops.filter((d) => !claimedOnly || d.claimed).reduce((k, d) => k + d.rewards.length, 0), 0);
   const sum = { total: counted.reduce((n, g) => n + rewardsIn(g, false), 0), claimed: counted.reduce((n, g) => n + rewardsIn(g, true), 0),
     games: counted.filter((g) => g.campaigns.length).length };
   const neverCount = (data?.games ?? []).filter((g) => g.never).length;
-  const games = (data?.games ?? [])
+  const games = visible
     .filter((g) => showNever || !g.never)
     .filter((g) => !q || g.game.toLowerCase().includes(q) || g.campaigns.some((c) => c.name.toLowerCase().includes(q)))
     .map((g) => ({ ...g, campaigns: g.campaigns.filter((c) => keep(c, filter)), claimed_earlier: filter === "open" ? [] : g.claimed_earlier }))
@@ -74,6 +81,11 @@ export function InventoryView() {
       )}
       {data && !games.length && <div className="list"><p className="empty">{data.games.length ? "Nothing matches." : "No campaigns yet. They show here once Dropwatch has checked Twitch."}</p></div>}
       {games.map((g) => <GameCard key={g.game} g={g} />)}
+      {data && !data.mine_badges && badgeCount > 0 && (
+        <button className="btn quiet inv-never" type="button" aria-pressed={showBadges} onClick={() => setShowBadges(!showBadges)}>
+          {showBadges ? "Hide badge and emote campaigns" : `Show badge and emote campaigns (${badgeCount})`}
+        </button>
+      )}
       {neverCount > 0 && (
         <button className="btn quiet inv-never" type="button" aria-pressed={showNever} onClick={() => setShowNever(!showNever)}>
           {showNever ? "Hide Never games" : `Show Never games (${neverCount})`}
@@ -99,7 +111,7 @@ function keep(c: InvCampaign, f: Filter): boolean {
   if (f === "all") return true;
   const claimed = c.drops.some((d) => d.claimed);
   // Still to earn: only what the miner will actually mine (or will once linked or started)
-  return f === "claimed" ? claimed : !!c.will_mine && c.drops.some((d) => !d.claimed);
+  return f === "claimed" ? claimed : !!c.will_mine && c.drops.some((d) => !d.claimed && !(d.required_subs ?? 0));
 }
 
 function GameCard({ g }: { g: InvGame }) {
@@ -170,11 +182,13 @@ function CampaignBlock({ c }: { c: InvCampaign }) {
               <figcaption>
                 <span className="inv-n">{r.name}</span>
                 <span className="inv-m">
-                  {st === "claimed" ? "Claimed" : st === "missed" ? "Missed" : d.required_minutes <= 0 ? "No watch time"
+                  {st === "claimed" ? "Claimed" : st === "missed" ? "Missed"
+                    : (d.required_subs ?? 0) > 0 ? `Needs ${d.required_subs === 1 ? "a sub" : `${d.required_subs} subs`}`
+                    : d.required_minutes <= 0 ? "No watch time"
                     : st === "locked" ? `${dur(d.required_minutes)} watch`
                     : `${dur(d.current_minutes)}${NB}/${NB}${dur(d.required_minutes)}`}
                 </span>
-                {st === "progress" && d.required_minutes > 0 && <span className="inv-bar" role="progressbar" aria-label={`${r.name} progress`} aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${pct}%` }} /></span>}
+                {st === "progress" && d.required_minutes > 0 && !(d.required_subs ?? 0) && <span className="inv-bar" role="progressbar" aria-label={`${r.name} progress`} aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${pct}%` }} /></span>}
               </figcaption>
             </figure>
           );

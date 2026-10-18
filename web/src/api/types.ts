@@ -792,6 +792,11 @@ export interface components {
             name: string;
             /** Required Minutes */
             required_minutes: number;
+            /**
+             * Required Subs
+             * @default 0
+             */
+            required_subs: number;
             /** Rewards */
             rewards: components["schemas"]["RewardOut"][];
             /**
@@ -833,6 +838,11 @@ export interface components {
         InventoryCampaign: {
             /** Allowed Channels */
             allowed_channels: string[];
+            /**
+             * Badge
+             * @default false
+             */
+            badge: boolean;
             /** Box Art Url */
             box_art_url: string;
             /** Drops */
@@ -918,6 +928,11 @@ export interface components {
             claimed_rewards: number;
             /** Games */
             games: components["schemas"]["InventoryGame"][];
+            /**
+             * Mine Badges
+             * @default false
+             */
+            mine_badges: boolean;
             /** Total Rewards */
             total_rewards: number;
         };

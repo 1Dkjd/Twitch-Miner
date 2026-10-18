@@ -55,6 +55,7 @@ class Drop:
     claimed: bool
     claim_id: str | None
     preconditions: tuple[str, ...] = ()
+    required_subs: int = 0  # subs to gift or buy (2026-10-18); watching alone never earns these
 
 
 @dataclass(frozen=True)
@@ -127,6 +128,7 @@ def _earn_conditions(c: Campaign, d: Drop) -> bool:
     return (
         not d.claimed
         and d.required_minutes > 0
+        and d.required_subs == 0
         and (bool(d.rewards) or c.in_chain(d.id))
     )
 

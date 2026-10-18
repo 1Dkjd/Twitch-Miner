@@ -20,6 +20,7 @@ class DropOut(BaseModel):
     required_minutes: int
     current_minutes: int
     claimed: bool
+    required_subs: int = 0  # needs a gifted or bought sub, not watch time
     starts_at: datetime
     ends_at: datetime
     rewards: list[RewardOut]
@@ -374,6 +375,7 @@ class InventoryCampaign(CampaignOut):
     # the miner's own rules: not Never, badge/emote campaigns only with that setting on, and with Priority
     # only on, just Priority games. Needs-a-link and not-started campaigns count (they will be, once ready)
     will_mine: bool = False
+    badge: bool = False  # has a badge or emote reward: mined only with Settings > Mine badges and emotes on
 
 
 class InventoryGame(BaseModel):
@@ -390,3 +392,4 @@ class InventoryOut(BaseModel):
     games: list[InventoryGame]
     total_rewards: int  # rewards in the listed campaigns
     claimed_rewards: int  # ...of which claimed
+    mine_badges: bool = False  # the setting, so the page can hide badge and emote campaigns to match

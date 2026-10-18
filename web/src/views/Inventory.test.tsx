@@ -6,8 +6,8 @@ import { campaign, inDays, state } from "../test/fixtures";
 import { InventoryView } from "./Inventory";
 
 const ME = { authenticated: true, setup_required: false };
-const drop = (id: string, req: number, cur: number, claimed: boolean, name: string, start = -1) =>
-  ({ id, name: id, required_minutes: req, current_minutes: cur, claimed, starts_at: inDays(start), ends_at: inDays(3),
+const drop = (id: string, req: number, cur: number, claimed: boolean, name: string, start = -1, subs = 0) =>
+  ({ id, name: id, required_minutes: req, current_minutes: cur, claimed, required_subs: subs, starts_at: inDays(start), ends_at: inDays(3),
      rewards: [{ name, image_url: "" }] });
 
 function setup() {
@@ -76,4 +76,18 @@ test("Still to earn leaves out campaigns the miner won't mine", async () => {
   await u.click(screen.getByRole("button", { name: "Still to earn" }));
   expect(screen.queryByRole("heading", { name: "Badge only" })).toBeNull();
   expect(screen.getByRole("heading", { name: "Wanted" })).toBeInTheDocument();
+});
+
+test("badge and emote campaigns are hidden unless badge mining is on; sub drops say so", async () => {
+  const g = (id: string, game: string, badge: boolean, d = drop(id, 60, 0, false, `${game} reward`)) => ({ game, box_art_url: "", priority: null, never: false, claimed_earlier: [],
+    campaigns: [{ ...campaign({ id, game, drops: [d] }), status: "active", will_mine: !badge, badge }] });
+  mockApi({ "GET /api/state": state(), "GET /api/inventory": { total_rewards: 3, claimed_rewards: 0, mine_badges: false, games: [
+    g("a", "Enshrouded", true), g("b", "Item game", false), g("c", "Sub game", false, drop("c", 0, 0, false, "FrekiFriend", -1, 1))] } });
+  render(<AppProvider initialMe={ME}><InventoryView /></AppProvider>);
+  const u = userEvent.setup();
+  expect(await screen.findByRole("heading", { name: "Item game" })).toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "Enshrouded" })).toBeNull();
+  expect(screen.getByText("FrekiFriend").closest("figure")).toHaveTextContent("Needs a sub");
+  await u.click(screen.getByRole("button", { name: "Show badge and emote campaigns (1)" }));
+  expect(screen.getByRole("heading", { name: "Enshrouded" })).toBeInTheDocument();
 });

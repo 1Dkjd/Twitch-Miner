@@ -44,3 +44,16 @@ def test_will_mine_follows_the_miners_rules():
     assert will_mine(c, Prefs(priority=("palia",), priority_only=True), "needs_link")
     assert not will_mine(badge, Prefs(), "active") and will_mine(badge, Prefs(mine_badges=True), "active")
     assert not will_mine(c, Prefs(), "done")
+
+
+def test_sub_drops_are_never_earnable_and_reported():
+    from dropwatch.models import drop_earnable_now
+    from dropwatch.twitch.parse import _drop
+    raw = {"id": "d", "name": "FrekiFriend",
+           "startAt": "2026-10-01T00:00:00Z", "endAt": "2026-10-30T00:00:00Z",
+           "requiredMinutesWatched": 60, "requiredSubs": 1,
+           "benefitEdges": [{"benefit": {"id": "b", "name": "FrekiFriend", "distributionType": "BADGE"}}]}
+    d = _drop(raw, {})
+    assert d.required_subs == 1
+    c = replace(camp(), drops=(d,))
+    assert not drop_earnable_now(c, d, NOW)

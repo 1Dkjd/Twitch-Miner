@@ -39,7 +39,8 @@ def campaign_out(c: Campaign, now: datetime, verdict: str | None,
         allowed_channels=list(c.allowed_logins),
         minutes_needed=campaign_minutes_needed(c, now), verdict=verdict,
         drops=[DropOut(id=d.id, name=d.name, required_minutes=d.required_minutes,
-                       current_minutes=d.current_minutes, claimed=d.claimed, starts_at=d.starts_at,
+                       current_minutes=d.current_minutes, claimed=d.claimed, required_subs=d.required_subs,
+                       starts_at=d.starts_at,
                        ends_at=d.ends_at, rewards=[RewardOut(name=r.name, image_url=r.image_url)
                                                    for r in d.rewards])
                for d in c.drops],
@@ -196,7 +197,8 @@ def inventory_view(runner, store, now: datetime, claims: list[dict], images=None
         o = campaign_out(c, now, None)
         st = campaign_status(c, now, prefs, current_id)
         by_game.setdefault(c.game.name, []).append(
-            InventoryCampaign(**o.model_dump(), status=st, will_mine=will_mine(c, prefs, st)))
+            InventoryCampaign(**o.model_dump(), status=st, will_mine=will_mine(c, prefs, st),
+                              badge=c.has_badge_or_emote))
         art[c.game.name] = art.get(c.game.name) or c.game.box_art_url
     listed = {c.id for c in camps}
     earlier = [cl for cl in history_view(claims, (), images).claims if cl.campaign_id not in listed]
@@ -214,4 +216,4 @@ def inventory_view(runner, store, now: datetime, claims: list[dict], images=None
     games.sort(key=lambda g: (g.priority is None, g.priority or 0, not g.campaigns, g.game.casefold()))
     rewards = [(d.claimed, len(d.rewards)) for c in camps for d in c.drops]
     return InventoryOut(games=games, total_rewards=sum(n for _, n in rewards),
-                        claimed_rewards=sum(n for done, n in rewards if done))
+                        claimed_rewards=sum(n for done, n in rewards if done), mine_badges=prefs.mine_badges)

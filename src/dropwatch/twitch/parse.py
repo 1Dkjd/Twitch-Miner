@@ -70,7 +70,7 @@ def _drop(d: dict, claimed: dict[str, datetime]) -> Drop:
     if is_claimed:
         current = required
     return Drop(d["id"], _name(d["name"]), rewards, start, end, required, current, is_claimed, claim_id,
-                tuple(p["id"] for p in (d.get("preconditionDrops") or [])))
+                tuple(p["id"] for p in (d.get("preconditionDrops") or [])), int(d.get("requiredSubs") or 0))
 
 
 def to_campaign(raw: dict, claimed: dict[str, datetime]) -> Campaign | None:
