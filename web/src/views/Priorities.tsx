@@ -8,7 +8,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api, type Campaign, type ChannelSuggestion, type Lists, type State, type Suggestions } from "../api/client";
 import { useLists } from "../lists";
 import { useApp } from "../store";
-import { boxArt, day, dur } from "../ui/format";
+import { boxArt, boxArtByName, day, dur } from "../ui/format";
 import { Icon } from "../ui/Icons";
 
 type Zone = "priority" | "fav" | "never";
@@ -269,7 +269,7 @@ function RowBody({ name, zone, i, n, info, ch, onAct, rootRef, rootProps, placeh
   return (
     <div {...common}>
       <span className="rank">{zone === "priority" ? i + 1 : ""}</span><span className="handle" aria-hidden="true"><Icon name="grip" /></span>
-      {inf?.art ? <img className="box" src={inf.art} alt="" /> : <span className="box ph" style={{ width: 36 }} aria-hidden="true" />}
+      <BoxArt src={inf?.art || boxArtByName(name)} />
       <div style={{ minWidth: 0 }}><div className="g-t">{name}</div>
         <div className={`g-s${inf?.warn ? " warn" : ""}`}>{inf?.text ?? "No campaign right now"}</div></div>
       <div className="g-act">
@@ -323,4 +323,10 @@ function AddForm({ to, list, placeholder, known, label, onAdd }: {
       )}
     </form>
   );
+}
+
+function BoxArt({ src }: { src: string }) {
+  const [failed, setFailed] = useState<string | null>(null);
+  if (failed === src) return <span className="box ph" style={{ width: 36 }} aria-hidden="true" />;
+  return <img className="box" src={src} alt="" onError={() => setFailed(src)} />;
 }

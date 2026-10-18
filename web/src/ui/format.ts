@@ -39,6 +39,11 @@ export function span(min: number): string {
 }
 
 /** Twitch box art at the size the page draws (the API strips the size; both forms are served). */
+/** Twitch box art by category name, for games with no campaign to take it from (case matters to Twitch). */
+export function boxArtByName(game: string): string {
+  return `https://static-cdn.jtvnw.net/ttv-boxart/${encodeURIComponent(game)}-144x192.jpg`;
+}
+
 export function boxArt(url: string): string {
   if (!url) return "";
   if (url.startsWith("/api/img/")) return url; // a kept copy (images.py), already 144x192
