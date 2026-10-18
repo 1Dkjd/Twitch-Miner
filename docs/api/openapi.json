@@ -517,6 +517,14 @@
       "title": "Required Subs",
       "type": "integer"
      },
+     "requires": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "Requires",
+      "type": "array"
+     },
      "rewards": {
       "items": {
        "$ref": "#/components/schemas/RewardOut"

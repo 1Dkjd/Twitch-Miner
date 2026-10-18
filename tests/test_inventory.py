@@ -57,3 +57,19 @@ def test_sub_drops_are_never_earnable_and_reported():
     assert d.required_subs == 1
     c = replace(camp(), drops=(d,))
     assert not drop_earnable_now(c, d, NOW)
+
+
+def test_inventory_carries_verdicts_and_prerequisites():
+    from dropwatch.models import Drop
+    c = camp()
+    first = c.drops[0]
+    second = Drop("d2", "Second", first.rewards, first.starts_at, first.ends_at, 600, 0, False, None, ("d1",))
+    c = replace(c, drops=(first, second))
+    store = PrefStore(Prefs())
+
+    class R:
+        campaigns, plan = [c], None
+    inv = inventory_view(R(), store, NOW, [])
+    (camp_out,) = inv.games[0].campaigns
+    assert camp_out.verdict in ("plenty", "tight", "wont_finish")
+    assert [d.requires for d in camp_out.drops] == [[], ["Glasses"]]

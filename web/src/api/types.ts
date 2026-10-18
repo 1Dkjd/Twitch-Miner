@@ -797,6 +797,11 @@ export interface components {
              * @default 0
              */
             required_subs: number;
+            /**
+             * Requires
+             * @default []
+             */
+            requires: string[];
             /** Rewards */
             rewards: components["schemas"]["RewardOut"][];
             /**

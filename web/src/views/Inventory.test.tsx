@@ -7,7 +7,7 @@ import { InventoryView } from "./Inventory";
 
 const ME = { authenticated: true, setup_required: false };
 const drop = (id: string, req: number, cur: number, claimed: boolean, name: string, start = -1, subs = 0) =>
-  ({ id, name: id, required_minutes: req, current_minutes: cur, claimed, required_subs: subs, starts_at: inDays(start), ends_at: inDays(3),
+  ({ id, name: id, required_minutes: req, current_minutes: cur, claimed, required_subs: subs, requires: [] as string[], starts_at: inDays(start), ends_at: inDays(3),
      rewards: [{ name, image_url: "" }] });
 
 function setup() {
@@ -29,14 +29,16 @@ function setup() {
 test("rewards show claimed, progress and locked states per game", async () => {
   setup();
   const palia = (await screen.findByRole("heading", { name: "Palia" })).closest("section")!;
-  expect(within(palia).getByText("Glasses").closest("figure")).toHaveClass("claimed");
+  expect(within(palia).getByText("Glasses").closest(".inv-item")).toHaveClass("claimed");
   expect(within(palia).getByRole("progressbar", { name: "Hat progress" })).toHaveAttribute("aria-valuenow", "25");
   expect(within(palia).getByText("Mining now")).toHaveClass("chip");
   const wd = screen.getByRole("heading", { name: "WARDOGS" }).closest("section")!;
   expect(within(wd).getByText("Priority 1")).toBeInTheDocument();
-  expect(within(wd).getByText("Dog tag").closest("figure")).toHaveClass("locked");
+  expect(within(wd).getByText("Dog tag").closest(".inv-item")).toHaveClass("locked");
   expect(within(wd).getByRole("link", { name: /Link your WARDOGS account/ })).toBeInTheDocument();
-  expect(within(wd).getByText("Old badge").closest("figure")).toHaveClass("claimed");
+  expect(within(wd).queryByText("Old badge")).toBeNull(); // "Claimed earlier" starts folded
+  await userEvent.setup().click(within(wd).getByRole("button", { name: /Claimed earlier/ }));
+  expect(within(wd).getByText("Old badge").closest(".inv-item")).toHaveClass("claimed");
   expect(screen.getByText(/of 3 rewards claimed/)).toBeInTheDocument();
 });
 
@@ -61,7 +63,7 @@ test("Never games are hidden until asked for; zero-minute rewards say so", async
   const u = userEvent.setup();
   expect(await screen.findByRole("heading", { name: "Ace" })).toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: "Airport Baggage Simulator" })).toBeNull();
-  expect(screen.getByText("Nugget").closest("figure")).toHaveTextContent("No watch time");
+  expect(screen.getByText("Nugget").closest(".inv-item")).toHaveTextContent("No watch time");
   await u.click(screen.getByRole("button", { name: "Show Never games (1)" }));
   expect(screen.getByRole("heading", { name: "Airport Baggage Simulator" })).toBeInTheDocument();
 });
@@ -87,7 +89,7 @@ test("badge and emote campaigns are hidden unless badge mining is on; sub drops 
   const u = userEvent.setup();
   expect(await screen.findByRole("heading", { name: "Item game" })).toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: "Enshrouded" })).toBeNull();
-  expect(screen.getByText("FrekiFriend").closest("figure")).toHaveTextContent("Needs a sub");
+  expect(screen.getByText("FrekiFriend").closest(".inv-item")).toHaveTextContent("Needs a sub");
   await u.click(screen.getByRole("button", { name: "Show badge and emote campaigns (1)" }));
   expect(screen.getByRole("heading", { name: "Enshrouded" })).toBeInTheDocument();
 });
@@ -99,4 +101,69 @@ test("the size slider resizes reward tiles and is remembered", async () => {
   fireEvent.change(slider, { target: { value: "160" } });
   expect(document.getElementById("v-inventory")!.style.getPropertyValue("--inv-tile")).toBe("160px");
   expect(localStorage.getItem("dropwatch.inventory.tile")).toBe("160");
+});
+
+function one(c: ReturnType<typeof campaign>, extra: Record<string, unknown> = {}, over: Record<string, unknown> = {}) {
+  return { game: c.game, box_art_url: "", priority: null, never: false, claimed_earlier: [], campaigns: [{ ...c, status: "active", will_mine: true, ...extra }], ...over };
+}
+
+test("game actions: Prioritise and Never save the lists; Mine now starts a campaign", async () => {
+  const c = campaign({ id: "p", game: "Palia", drops: [drop("a", 120, 10, false, "Hat")] });
+  const calls = mockApi({
+    "GET /api/state": state(), "GET /api/lists": { priority: [], never: [], favourites: [] },
+    "GET /api/inventory": { total_rewards: 1, claimed_rewards: 0, games: [one(c)] },
+    "PUT /api/lists": (b: unknown) => b, "POST /api/mine-now": null,
+  });
+  render(<AppProvider initialMe={ME}><InventoryView /></AppProvider>);
+  const u = userEvent.setup();
+  await u.click(await screen.findByRole("button", { name: "Move Palia to Priority" }));
+  expect(calls.find((x) => x.method === "PUT")?.body).toEqual({ priority: ["Palia"], never: [], favourites: [] });
+  await u.click(screen.getByRole("button", { name: "Mine Frights & Delights now" }));
+  expect(calls.find((x) => x.method === "POST" && x.path.endsWith("/mine-now"))?.body).toEqual({ campaign_id: "p" });
+});
+
+test("fully claimed campaigns fold to one line until opened", async () => {
+  const c = campaign({ id: "d", game: "Halo", name: "Season Done", drops: [drop("a", 60, 60, true, "Helmet"), drop("b", 60, 60, true, "Visor")] });
+  mockApi({ "GET /api/state": state(), "GET /api/lists": { priority: [], never: [], favourites: [] },
+    "GET /api/inventory": { total_rewards: 2, claimed_rewards: 2, games: [one(c, { status: "done" })] } });
+  render(<AppProvider initialMe={ME}><InventoryView /></AppProvider>);
+  const fold = await screen.findByRole("button", { name: "Show Season Done, all 2 claimed" });
+  expect(screen.queryByText("Helmet")).toBeNull();
+  await userEvent.setup().click(fold);
+  expect(screen.getByText("Helmet")).toBeInTheDocument();
+});
+
+test("a reward that can't be finished in time says so; clicking a reward shows its details", async () => {
+  const late = { ...drop("x", 600, 30, false, "Late hat"), ends_at: new Date(Date.now() + 60 * 60_000).toISOString() };
+  const after = { ...drop("y", 900, 0, false, "Second hat"), requires: ["Late hat"] };
+  const c = campaign({ id: "l", game: "Rust", name: "Rust S9", allowed_channels: ["streamer_one"], drops: [late, after], linked: false });
+  mockApi({ "GET /api/state": state(), "GET /api/lists": { priority: [], never: [], favourites: [] },
+    "GET /api/inventory": { total_rewards: 2, claimed_rewards: 0, games: [one(c, { verdict: "wont_finish" })] } });
+  render(<AppProvider initialMe={ME}><InventoryView /></AppProvider>);
+  const u = userEvent.setup();
+  const tile = (await screen.findByText("Late hat")).closest(".inv-item")!;
+  expect(tile).toHaveClass("late");
+  expect(tile).toHaveTextContent("Won't finish in time");
+  expect(screen.getAllByText("Won't finish in time")[0]).toHaveClass("chip");
+  await u.click(screen.getByRole("button", { name: "Second hat: details" }));
+  const dlg = screen.getByRole("dialog");
+  expect(dlg).toHaveTextContent("Earn first");
+  expect(dlg).toHaveTextContent("Late hat");
+  expect(dlg).toHaveTextContent("streamer_one");
+  expect(dlg).toHaveTextContent("Not linked");
+  await u.keyboard("{Escape}");
+  expect(screen.queryByRole("dialog")).toBeNull();
+});
+
+test("Ending soonest lists campaigns by end time across games", async () => {
+  const a = campaign({ id: "a", game: "Later game", name: "Later", ends_at: inDays(9) });
+  const b = campaign({ id: "b", game: "Sooner game", name: "Sooner", ends_at: inDays(1) });
+  mockApi({ "GET /api/state": state(), "GET /api/lists": { priority: [], never: [], favourites: [] },
+    "GET /api/inventory": { total_rewards: 6, claimed_rewards: 0, games: [one(a), one(b)] } });
+  render(<AppProvider initialMe={ME}><InventoryView /></AppProvider>);
+  await screen.findByRole("heading", { name: "Later game" });
+  await userEvent.setup().click(screen.getByRole("button", { name: "Ending soonest" }));
+  const names = [...document.querySelectorAll(".inv-camp .row-t")].map((n) => n.textContent);
+  expect(names[0]).toContain("Sooner");
+  expect(names[1]).toContain("Later");
 });

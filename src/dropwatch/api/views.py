@@ -40,6 +40,7 @@ def campaign_out(c: Campaign, now: datetime, verdict: str | None,
         minutes_needed=campaign_minutes_needed(c, now), verdict=verdict,
         drops=[DropOut(id=d.id, name=d.name, required_minutes=d.required_minutes,
                        current_minutes=d.current_minutes, claimed=d.claimed, required_subs=d.required_subs,
+                       requires=[p.name for pid in d.preconditions if (p := c.drop(pid)) is not None],
                        starts_at=d.starts_at,
                        ends_at=d.ends_at, rewards=[RewardOut(name=r.name, image_url=r.image_url)
                                                    for r in d.rewards])
@@ -194,7 +195,8 @@ def inventory_view(runner, store, now: datetime, claims: list[dict], images=None
     by_game: dict[str, list[InventoryCampaign]] = {}
     art: dict[str, str] = {}
     for c in camps:
-        o = campaign_out(c, now, None)
+        open_ = campaign_minutes_needed(c, now) > 0 and c.ends_at > now
+        o = campaign_out(c, now, deadline_verdict(campaign_ratio(c, now)) if open_ else None)
         st = campaign_status(c, now, prefs, current_id)
         by_game.setdefault(c.game.name, []).append(
             InventoryCampaign(**o.model_dump(), status=st, will_mine=will_mine(c, prefs, st),

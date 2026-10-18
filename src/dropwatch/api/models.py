@@ -21,6 +21,7 @@ class DropOut(BaseModel):
     current_minutes: int
     claimed: bool
     required_subs: int = 0  # needs a gifted or bought sub, not watch time
+    requires: list[str] = []  # names of the drops that must be earned first (Inventory's reward details)
     starts_at: datetime
     ends_at: datetime
     rewards: list[RewardOut]

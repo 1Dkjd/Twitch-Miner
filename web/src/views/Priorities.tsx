@@ -6,6 +6,7 @@ import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, v
 import { CSS as DndCSS } from "@dnd-kit/utilities";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api, type Campaign, type ChannelSuggestion, type Lists, type State, type Suggestions } from "../api/client";
+import { BulkNever, LinkedAccounts, useCampaignGames } from "./PrioritiesExtras";
 import { useLists } from "../lists";
 import { useApp } from "../store";
 import { boxArt, boxArtByName, day, dur } from "../ui/format";
@@ -28,6 +29,7 @@ export function PrioritiesView() {
   const [focus, setFocus] = useState<[string, string] | null>(null);
   const [draft, setDraft] = useState<Lists | null>(null);
   const [active, setActive] = useState<string | null>(null);
+  const campaignGames = useCampaignGames();
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }), // buttons in the row still click
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }), // a press, so phones can scroll
@@ -178,6 +180,7 @@ export function PrioritiesView() {
         {zone("never")}
         <AddForm to="never" list="campaign-games" placeholder="Add a game" known={sugg.games} label="Add a game to Never"
           onAdd={(name) => commit(moved(name, "never"), `${name} added to Never`)} />
+        <BulkNever lists={lists} games={campaignGames} onCommit={(next, msg) => commit(next, msg)} />
       </Bucket>
       <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(.2,.8,.2,1)" }}>
         {active && activeZone ? (
@@ -186,6 +189,7 @@ export function PrioritiesView() {
         ) : null}
       </DragOverlay>
       </DndContext>
+      <LinkedAccounts games={campaignGames} never={lists.never} />
     </section>
   );
 }
