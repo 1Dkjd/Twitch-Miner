@@ -72,6 +72,7 @@ SETTINGS: dict[str, type] = {
     "campaigns_every_minutes": int,  # how often the campaign list (and link status) is re-read from Twitch
     "points_watch_streak": bool,  # watch a favourite's new stream a few minutes first, for its watch streak
     "priority_only": bool,  # mine only games in Priority; everything else waits (2026-10-12)
+    "skip_too_late": bool,  # skip campaigns where no reward left can finish in time (2026-10-18)
 }
 SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "notify_signin": True, "notify_unreachable": True, "notify_not_earning": True,
@@ -79,7 +80,8 @@ SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "notify_unreachable_minutes": 15, "notify_not_earning_minutes": 30,
                     "arrange_up_next": False, "notify_claimed": False, "notify_weekly": False,
                     "notify_weekly_day": 6, "notify_weekly_hour": 18, "notify_weekly_tz": "",
-                    "campaigns_every_minutes": 60, "points_watch_streak": True, "priority_only": False}
+                    "campaigns_every_minutes": 60, "points_watch_streak": True, "priority_only": False,
+                    "skip_too_late": True}
 _ph = PasswordHasher()
 
 
@@ -138,7 +140,7 @@ class Store:
         )
         s = self.get_settings()
         return Prefs(pr, nv, fv, s["mine_badges"], tuple(self.get_pins()) if s["arrange_up_next"] else (),
-                     frozenset(self.get_ignored()), s["priority_only"])
+                     frozenset(self.get_ignored()), s["priority_only"], s["skip_too_late"])
 
     # --- Up next pins (campaign ids, in order); kept while "Arrange myself" is off
     def get_pins(self) -> list[str]:

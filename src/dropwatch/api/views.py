@@ -126,6 +126,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
                   for c in upcoming],
         first_in_line=[o.name for o in keep(plan.waiting[:2])] if plan and not plan.current else [],
         signin_kind=signin_kind(session),
+        too_late=keep(getattr(plan, "too_late", ()) if plan else ()),
         streak_visit=(StreakVisitOut(channel=v[0], until=v[1])
                       if (v := getattr(runner, "streak_visit", None)) else None),
     )

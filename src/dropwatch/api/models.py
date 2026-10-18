@@ -102,7 +102,9 @@ class StateOut(BaseModel):
     build: str = ""  # version+commit running; the page offers a reload when it changes
     # announced campaigns not started yet (not Never games), Priority games first, then soonest
     upcoming: list[CampaignOut] = []
-    signin_kind: str | None = None  # "android" (full campaign list) | "tv" (code sign-in) | None
+    signin_kind: str | None = None
+    # skipped: no reward left can finish before its window closes (Settings > Mining)
+    too_late: list[CampaignOut] = []  # "android" (full campaign list) | "tv" (code sign-in) | None
 
 
 class StrictIn(BaseModel):
@@ -167,6 +169,7 @@ class SettingsIn(BaseModel):
     campaigns_every_minutes: Literal[15, 30, 60, 120, 240] | None = None  # the choices Settings offers
     points_watch_streak: StrictBool | None = None
     priority_only: StrictBool | None = None
+    skip_too_late: StrictBool | None = None
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -190,6 +193,7 @@ class SettingsOut(BaseModel):
     campaigns_every_minutes: int
     points_watch_streak: bool
     priority_only: bool
+    skip_too_late: bool = True
 
 
 class ActivityEvent(BaseModel):

@@ -92,6 +92,12 @@ export function SettingsView() {
                   onChange={(e) => void put({ mine_badges: e.target.checked })} />
               </div>
               <div className="opt">
+                <div><label htmlFor="m-late">Skip campaigns that can't finish in time</label>
+                  <div className="d">When no reward left could be earned before its campaign ends, even watching non-stop from now, Dropwatch spends the time elsewhere. A campaign with even one reward still in reach is mined for it. Mine now still works on a skipped one.</div></div>
+                <input type="checkbox" className="sw" id="m-late" disabled={!settings} checked={settings?.skip_too_late ?? true}
+                  onChange={(e) => void put({ skip_too_late: e.target.checked })} />
+              </div>
+              <div className="opt">
                 <div><label htmlFor="m-every">Check Twitch for campaign changes</label>
                   <div className="d">How often Dropwatch re-reads the campaign list, so new campaigns and accounts you've just linked can take this long (plus a few minutes) to show up. Check Twitch at the top checks now.</div></div>
                 <select id="m-every" className="inline-sel" disabled={!settings} value={settings?.campaigns_every_minutes ?? 60}

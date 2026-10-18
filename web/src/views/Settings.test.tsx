@@ -184,3 +184,12 @@ test("every section already has its summary line before the data arrives", () =>
   for (const l of links) expect(l.querySelector("small")).not.toBeNull();
 });
 
+
+test("the skip-too-late switch is on by default and saves", async () => {
+  const calls = setup("mining", { "PUT /api/settings": { ...SETTINGS, skip_too_late: false } });
+  const sw = await screen.findByRole("checkbox", { name: "Skip campaigns that can't finish in time" });
+  await waitFor(() => expect(sw).toBeEnabled());
+  expect(sw).toBeChecked();
+  await userEvent.click(sw);
+  await waitFor(() => expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ skip_too_late: false }));
+});

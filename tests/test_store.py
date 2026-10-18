@@ -25,7 +25,7 @@ def test_session_repr_hides_token():
 
 def test_lists_round_trip_and_order(tmp_path):
     st = Store(tmp_path / "drops.db")
-    assert st.get_prefs() == Prefs()
+    assert st.get_prefs() == Prefs(skip_too_late=True)  # on by default in a fresh install
     st.set_lists(["Palia", "Phasmophobia"], {"AION 2"}, ["fav_b", "fav_a"])
     p = st.get_prefs()
     assert p.priority == ("Palia", "Phasmophobia")

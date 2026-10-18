@@ -191,3 +191,16 @@ test("Coming up is hidden when nothing is announced", async () => {
   await screen.findByRole("article");
   expect(screen.queryByRole("heading", { name: "Coming up" })).toBeNull();
 });
+
+test("campaigns skipped for lack of time fold into one line under Up next, with Mine now", async () => {
+  setPhone(false);
+  const { campaign } = await import("../test/fixtures");
+  const calls = setup(state({ too_late: [campaign({ id: "z", name: "Last Call", game: "Rust", minutes_needed: 300 })] }),
+    { "POST /api/mine-now": null });
+  const u = userEvent.setup();
+  const fold = await screen.findByRole("button", { name: /Skipped: 1 campaign can't finish in time/ });
+  expect(screen.queryByText("Last Call")).toBeNull();
+  await u.click(fold);
+  await u.click(screen.getByRole("button", { name: "Mine Last Call now" }));
+  expect(calls.find((c) => c.path === "/api/mine-now")?.body).toEqual({ campaign_id: "z" });
+});

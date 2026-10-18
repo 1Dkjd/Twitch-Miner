@@ -1227,6 +1227,8 @@ export interface components {
             points_watch_streak?: boolean | null;
             /** Priority Only */
             priority_only?: boolean | null;
+            /** Skip Too Late */
+            skip_too_late?: boolean | null;
         };
         /** SettingsOut */
         SettingsOut: {
@@ -1268,6 +1270,11 @@ export interface components {
             points_watch_streak: boolean;
             /** Priority Only */
             priority_only: boolean;
+            /**
+             * Skip Too Late
+             * @default true
+             */
+            skip_too_late: boolean;
         };
         /** SignInStatus */
         SignInStatus: {
@@ -1339,6 +1346,11 @@ export interface components {
             /** State */
             state: string;
             streak_visit?: components["schemas"]["StreakVisitOut"] | null;
+            /**
+             * Too Late
+             * @default []
+             */
+            too_late: components["schemas"]["CampaignOut"][];
             /** Up Next */
             up_next: components["schemas"]["CampaignOut"][];
             /**

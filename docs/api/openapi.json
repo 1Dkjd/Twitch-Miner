@@ -1665,6 +1665,17 @@
        }
       ],
       "title": "Priority Only"
+     },
+     "skip_too_late": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Skip Too Late"
      }
     },
     "title": "SettingsIn",
@@ -1746,6 +1757,11 @@
      },
      "priority_only": {
       "title": "Priority Only",
+      "type": "boolean"
+     },
+     "skip_too_late": {
+      "default": true,
+      "title": "Skip Too Late",
       "type": "boolean"
      }
     },
@@ -1988,6 +2004,14 @@
         "type": "null"
        }
       ]
+     },
+     "too_late": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/CampaignOut"
+      },
+      "title": "Too Late",
+      "type": "array"
      },
      "up_next": {
       "items": {

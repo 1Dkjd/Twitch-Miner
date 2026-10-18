@@ -11,6 +11,7 @@ from .models import (
     Prefs,
     account_eligible,
     campaign_active,
+    campaign_finishable,
     campaign_minutes_needed,
     campaign_ratio,
     deadline_verdict,
@@ -37,6 +38,7 @@ class Plan:
     waiting: tuple[str, ...] = ()  # could be mined but nobody qualifying is live, in queue order
     needs_ignored: tuple[str, ...] = ()  # would be in Needs you, but Ignore was pressed on them
     outside: tuple[str, ...] = ()  # Priority only: live and earnable, but the game isn't in Priority
+    too_late: tuple[str, ...] = ()  # skipped: no reward left can be earned before its window closes
 
 
 def qualifies(c: Campaign, ch: LiveChannel) -> bool:
@@ -91,10 +93,16 @@ def plan(
 
     qualifying: dict[str, list[LiveChannel]] = {}
     offline: list[Campaign] = []
+    too_late: list[Campaign] = []
     for c in considered:
         if not account_eligible(c, prefs):
             continue
         if not any(drop_earnable_now(c, d, now) for d in c.drops):
+            continue
+        # Settings > Mining (2026-10-18): watching can't finish anything here in time, so the minutes go
+        # elsewhere. Mine now still overrides it (the owner may know better, e.g. a deadline extension).
+        if prefs.skip_too_late and c.id != override_campaign and not campaign_finishable(c, now):
+            too_late.append(c)
             continue
         chans = [ch for ch in live if qualifies(c, ch)]
         if chans:
@@ -121,8 +129,9 @@ def plan(
     outside = tuple(c.id for c in eligible if not in_scope(c))
     eligible = [c for c in eligible if in_scope(c)]
     waiting = tuple(c.id for c in sorted(offline, key=order) if in_scope(c))
+    late = tuple(c.id for c in sorted(too_late, key=lambda c: (c.ends_at, c.id)) if in_scope(c))
     if not eligible:
-        return Plan(None, (), needs_you, done, verdicts, (), waiting, needs_ignored, outside)
+        return Plan(None, (), needs_you, done, verdicts, (), waiting, needs_ignored, outside, late)
 
     chosen = next((c for c in eligible if c.id == override_campaign), eligible[0])
     if chosen.id != override_campaign:
@@ -153,7 +162,7 @@ def plan(
     queue = tuple(c.id for c in eligible if c.id != chosen.id)
     return Plan(
         Choice(chosen.id, channel.login, reason, channel_reason),
-        queue, needs_you, done, verdicts, also, waiting, needs_ignored, outside,
+        queue, needs_you, done, verdicts, also, waiting, needs_ignored, outside, late,
     )
 
 

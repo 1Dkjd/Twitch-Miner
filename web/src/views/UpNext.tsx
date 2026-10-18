@@ -23,6 +23,9 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   const [arrange, setArrange] = useState<boolean | null>(null);
   const [pins, setPins] = useState<string[]>([]);
   const [showOutside, setShowOutside] = useState(false);
+  const [showLate, setShowLate] = useState(false);
+  // Settings > Mining (2026-10-18): campaigns skipped because nothing left can finish in time
+  const late = state.too_late ?? [];
   // Priority only (approved 2026-10-12): just Priority games are mined; the rest fold into one line
   const po = !!state.priority_only;
   const outside = state.outside ?? [];
@@ -39,7 +42,7 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   useEffect(() => {
     api.get<{ pins: string[] }>("/pins").then((p) => setPins(p.pins)).catch(() => undefined);
   }, [state.last_refresh]);
-  if (!state.up_next.length && !(po && outside.length)) return null;
+  if (!state.up_next.length && !(po && outside.length) && !late.length) return null;
 
   async function savePins(next: string[], said: string) {
     try { setPins((await api.put<{ pins: string[] }>("/pins", { pins: next })).pins); say(said); }
@@ -126,6 +129,28 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
             Not mined: {outside.length} {outside.length === 1 ? "campaign" : "campaigns"} outside Priority
             <span className="sep">·</span><u>{showOutside ? "Hide" : "Show"}</u>
           </button>
+        )}
+        {late.length > 0 && (
+          <button className="ign-foot" type="button" aria-expanded={showLate} aria-controls="late-list"
+            aria-label={`Skipped: ${late.length} ${late.length === 1 ? "campaign" : "campaigns"} can't finish in time · ${showLate ? "Hide" : "Show"}`}
+            onClick={() => setShowLate(!showLate)}>
+            Skipped: {late.length} {late.length === 1 ? "campaign" : "campaigns"} can't finish in time
+            <span className="sep">·</span><u>{showLate ? "Hide" : "Show"}</u>
+          </button>
+        )}
+        {showLate && (
+          <div id="late-list">
+            {late.map((c) => (
+              <UpNextRow key={c.id} c={c} pr={null} arrange={false} pinned={false} pinIndex={-1} pinCount={0}
+                onMineNow={async () => {
+                  try { await api.post("/mine-now", { campaign_id: c.id }); say(`Trying ${c.name} anyway`); }
+                  catch (e) { sayError(e, "Couldn't start it"); }
+                  void refreshState();
+                }}
+                onNever={() => onNever(c.game)} onPriority={() => onPriority(c.game)}
+                onPin={() => undefined} onUnpin={() => undefined} onMove={() => undefined} />
+            ))}
+          </div>
         )}
         {po && showOutside && (
           <div id="outside-list">

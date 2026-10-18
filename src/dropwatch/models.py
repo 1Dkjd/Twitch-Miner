@@ -101,6 +101,7 @@ class Prefs:
     pins: tuple[str, ...] = ()  # Up next "Arrange myself": campaign ids mined first after Priority
     ignored: frozenset[str] = frozenset()  # Needs you > Ignore: campaign ids not asked about until they end
     priority_only: bool = False  # Settings > Mining: mine only games in Priority (approved 2026-10-12)
+    skip_too_late: bool = False  # Settings > Mining: skip campaigns no reward of can finish (2026-10-18)
 
     # Game names typed by hand ("Add anyway") may differ in case from Twitch's category name,
     # so list membership ignores case.
@@ -161,6 +162,21 @@ def total_remaining(c: Campaign, d: Drop) -> int:
 
 def campaign_active(c: Campaign, now: datetime) -> bool:
     return c.starts_at <= now < c.ends_at
+
+
+def drop_finishable(c: Campaign, d: Drop, now: datetime) -> bool:
+    """Watched non-stop from now, this reward (and whatever must be earned before it) fits in its window."""
+    if not drop_open(c, d, now):
+        return False
+    left = (min(d.ends_at, c.ends_at) - max(now, d.starts_at)).total_seconds() / 60
+    return total_remaining(c, d) <= left
+
+
+def campaign_finishable(c: Campaign, now: datetime) -> bool:
+    """Some reward still to earn can be earned in time. A campaign with nothing left to earn counts as
+    finishable (it isn't mined for other reasons)."""
+    open_ = [d for d in c.drops if drop_open(c, d, now)]
+    return not open_ or any(drop_finishable(c, d, now) for d in open_)
 
 
 def campaign_minutes_needed(c: Campaign, now: datetime) -> int:
