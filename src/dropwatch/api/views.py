@@ -175,6 +175,14 @@ def campaign_status(c: Campaign, now: datetime, prefs, current_id: str | None) -
     return "active"
 
 
+def will_mine(c: Campaign, prefs, status: str) -> bool:
+    if status not in ("mining", "active", "needs_link", "upcoming"):
+        return False
+    if prefs.in_never(c.game.name) or (prefs.priority_only and not prefs.in_priority(c.game.name)):
+        return False
+    return prefs.mine_badges if c.has_badge_or_emote else True
+
+
 def inventory_view(runner, store, now: datetime, claims: list[dict], images=None) -> InventoryOut:
     """Listed campaigns grouped by game: Priority games in their order, then the rest by name. Claims from
     campaigns Twitch no longer lists are attached to their game so the page can show them too."""
@@ -186,8 +194,9 @@ def inventory_view(runner, store, now: datetime, claims: list[dict], images=None
     art: dict[str, str] = {}
     for c in camps:
         o = campaign_out(c, now, None)
+        st = campaign_status(c, now, prefs, current_id)
         by_game.setdefault(c.game.name, []).append(
-            InventoryCampaign(**o.model_dump(), status=campaign_status(c, now, prefs, current_id)))
+            InventoryCampaign(**o.model_dump(), status=st, will_mine=will_mine(c, prefs, st)))
         art[c.game.name] = art.get(c.game.name) or c.game.box_art_url
     listed = {c.id for c in camps}
     earlier = [cl for cl in history_view(claims, (), images).claims if cl.campaign_id not in listed]

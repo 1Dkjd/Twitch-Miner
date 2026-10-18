@@ -16,6 +16,9 @@ const STATUS: Record<string, [string, string]> = {
 };
 
 const FILTERS = [["all", "All"], ["open", "Still to earn"], ["claimed", "Claimed"]] as const;
+const FILTER_HINT: Record<string, string> = {
+  open: "Only what Dropwatch will mine: not Never games, badge and emote campaigns only if that's on in Settings, and with Priority only on, just Priority games.",
+};
 type Filter = (typeof FILTERS)[number][0];
 
 /** One reward's state, as on Twitch's inventory page. */
@@ -65,6 +68,7 @@ export function InventoryView() {
         <label className="filter"><input type="search" aria-label="Filter Inventory" placeholder="Filter by game or campaign"
           value={needle} onChange={(e) => setNeedle(e.target.value)} /></label>
       </div>
+      {FILTER_HINT[filter] && <p className="inv-sum">{FILTER_HINT[filter]}</p>}
       {sum.total > 0 && (
         <p className="inv-sum"><b>{sum.claimed}</b> of {sum.total} rewards claimed across {sum.games} {sum.games === 1 ? "game" : "games"}</p>
       )}
@@ -94,7 +98,8 @@ function gameRank(g: InvGame): number {
 function keep(c: InvCampaign, f: Filter): boolean {
   if (f === "all") return true;
   const claimed = c.drops.some((d) => d.claimed);
-  return f === "claimed" ? claimed : c.status !== "done" && c.status !== "ended" && c.drops.some((d) => !d.claimed);
+  // Still to earn: only what the miner will actually mine (or will once linked or started)
+  return f === "claimed" ? claimed : !!c.will_mine && c.drops.some((d) => !d.claimed);
 }
 
 function GameCard({ g }: { g: InvGame }) {

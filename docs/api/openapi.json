@@ -710,6 +710,11 @@
        }
       ],
       "title": "Verdict"
+     },
+     "will_mine": {
+      "default": false,
+      "title": "Will Mine",
+      "type": "boolean"
      }
     },
     "required": [

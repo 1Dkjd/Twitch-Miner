@@ -11,9 +11,9 @@ const drop = (id: string, req: number, cur: number, claimed: boolean, name: stri
      rewards: [{ name, image_url: "" }] });
 
 function setup() {
-  const palia = { ...campaign({ id: "c1", drops: [drop("a", 60, 60, true, "Glasses"), drop("b", 120, 30, false, "Hat")] }), status: "mining" };
+  const palia = { ...campaign({ id: "c1", drops: [drop("a", 60, 60, true, "Glasses"), drop("b", 120, 30, false, "Hat")] }), status: "mining", will_mine: true };
   const wardogs = { ...campaign({ id: "w", game: "WARDOGS", name: "Season 02", starts_at: inDays(5), linked: null,
-    link_url: "https://wardogs.example/link", drops: [drop("x", 240, 0, false, "Dog tag", 5)] }), status: "upcoming" };
+    link_url: "https://wardogs.example/link", drops: [drop("x", 240, 0, false, "Dog tag", 5)] }), status: "upcoming", will_mine: true };
   mockApi({
     "GET /api/state": state(),
     "GET /api/inventory": { total_rewards: 3, claimed_rewards: 1, games: [
@@ -64,4 +64,16 @@ test("Never games are hidden until asked for; zero-minute rewards say so", async
   expect(screen.getByText("Nugget").closest("figure")).toHaveTextContent("No watch time");
   await u.click(screen.getByRole("button", { name: "Show Never games (1)" }));
   expect(screen.getByRole("heading", { name: "Airport Baggage Simulator" })).toBeInTheDocument();
+});
+
+test("Still to earn leaves out campaigns the miner won't mine", async () => {
+  const mk = (id: string, game: string, will: boolean) => ({ game, box_art_url: "", priority: null, never: false, claimed_earlier: [],
+    campaigns: [{ ...campaign({ id, game, drops: [drop(id, 60, 0, false, `${game} reward`)] }), status: "active", will_mine: will }] });
+  mockApi({ "GET /api/state": state(), "GET /api/inventory": { total_rewards: 2, claimed_rewards: 0, games: [mk("a", "Wanted", true), mk("b", "Badge only", false)] } });
+  render(<AppProvider initialMe={ME}><InventoryView /></AppProvider>);
+  const u = userEvent.setup();
+  expect(await screen.findByRole("heading", { name: "Badge only" })).toBeInTheDocument();
+  await u.click(screen.getByRole("button", { name: "Still to earn" }));
+  expect(screen.queryByRole("heading", { name: "Badge only" })).toBeNull();
+  expect(screen.getByRole("heading", { name: "Wanted" })).toBeInTheDocument();
 });

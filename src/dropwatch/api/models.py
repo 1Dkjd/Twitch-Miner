@@ -371,6 +371,9 @@ class SuggestionsOut(BaseModel):
 class InventoryCampaign(CampaignOut):
     # mining | upcoming | needs_link | active | done | never | ended (listed but past its end)
     status: str
+    # the miner's own rules: not Never, badge/emote campaigns only with that setting on, and with Priority
+    # only on, just Priority games. Needs-a-link and not-started campaigns count (they will be, once ready)
+    will_mine: bool = False
 
 
 class InventoryGame(BaseModel):

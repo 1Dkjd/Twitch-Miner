@@ -885,6 +885,11 @@ export interface components {
             status: string;
             /** Verdict */
             verdict: string | null;
+            /**
+             * Will Mine
+             * @default false
+             */
+            will_mine: boolean;
         };
         /** InventoryGame */
         InventoryGame: {

@@ -31,3 +31,16 @@ async def test_inventory_groups_by_game_with_status_priority_first():
 def test_inventory_signed_out_is_empty():
     inv = inventory_view(None, PrefStore(Prefs()), NOW, [])
     assert inv.games == [] and inv.total_rewards == 0
+
+
+def test_will_mine_follows_the_miners_rules():
+    from dropwatch.api.views import will_mine
+    from dropwatch.models import Reward
+    c = camp()
+    badge = replace(c, drops=(replace(c.drops[0], rewards=(Reward("b", "Badge", "", "BADGE"),)),))
+    assert will_mine(c, Prefs(), "active")
+    assert not will_mine(c, Prefs(never=frozenset({"Palia"})), "active")
+    assert not will_mine(c, Prefs(priority_only=True), "active")
+    assert will_mine(c, Prefs(priority=("palia",), priority_only=True), "needs_link")
+    assert not will_mine(badge, Prefs(), "active") and will_mine(badge, Prefs(mine_badges=True), "active")
+    assert not will_mine(c, Prefs(), "done")
