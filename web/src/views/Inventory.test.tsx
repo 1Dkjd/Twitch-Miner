@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AppProvider } from "../store";
 import { mockApi } from "../test/fetch";
@@ -90,4 +90,13 @@ test("badge and emote campaigns are hidden unless badge mining is on; sub drops 
   expect(screen.getByText("FrekiFriend").closest("figure")).toHaveTextContent("Needs a sub");
   await u.click(screen.getByRole("button", { name: "Show badge and emote campaigns (1)" }));
   expect(screen.getByRole("heading", { name: "Enshrouded" })).toBeInTheDocument();
+});
+
+test("the size slider resizes reward tiles and is remembered", async () => {
+  localStorage.removeItem("dropwatch.inventory.tile");
+  setup();
+  const slider = await screen.findByRole("slider", { name: "Reward size" });
+  fireEvent.change(slider, { target: { value: "160" } });
+  expect(document.getElementById("v-inventory")!.style.getPropertyValue("--inv-tile")).toBe("160px");
+  expect(localStorage.getItem("dropwatch.inventory.tile")).toBe("160");
 });

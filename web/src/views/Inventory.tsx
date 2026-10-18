@@ -15,6 +15,15 @@ const STATUS: Record<string, [string, string]> = {
   upcoming: ["Coming up", ""], done: ["All claimed", "green"], never: ["Never mined", ""], ended: ["Ended", ""],
 };
 
+// tile size slider (2026-10-18): this browser's choice, kept in localStorage; a blocked storage just forgets
+const SIZE_KEY = "dropwatch.inventory.tile", SIZE_MIN = 72, SIZE_MAX = 200, SIZE_DEFAULT = 112;
+function savedSize(): number {
+  try {
+    const n = Number(localStorage.getItem(SIZE_KEY));
+    return n >= SIZE_MIN && n <= SIZE_MAX ? n : SIZE_DEFAULT;
+  } catch { return SIZE_DEFAULT; }
+}
+
 const FILTERS = [["all", "All"], ["open", "Still to earn"], ["claimed", "Claimed"]] as const;
 const FILTER_HINT: Record<string, string> = {
   open: "Only what Dropwatch will mine: not Never games, not rewards that need a sub, and with Priority only on, just Priority games.",
@@ -38,6 +47,8 @@ export function InventoryView() {
   const [needle, setNeedle] = useState("");
   const [showNever, setShowNever] = useState(false);
   const [showBadges, setShowBadges] = useState(false);
+  const [size, setSize] = useState(savedSize);
+  const resize = (n: number) => { setSize(n); try { localStorage.setItem(SIZE_KEY, String(n)); } catch { /* storage blocked */ } };
   useEffect(() => {
     let live = true;
     api.get<Inventory>("/inventory").then((d) => { if (live) setData(d); }).catch(() => undefined);
@@ -64,7 +75,7 @@ export function InventoryView() {
     .filter((g) => g.campaigns.length || g.claimed_earlier.length)
     .sort((a, b) => gameRank(a) - gameRank(b) || (a.priority ?? 0) - (b.priority ?? 0) || a.game.localeCompare(b.game));
   return (
-    <section className="view" id="v-inventory" aria-labelledby="h-inventory">
+    <section className="view" id="v-inventory" aria-labelledby="h-inventory" style={{ "--inv-tile": `${size}px` } as React.CSSProperties}>
       <div className="view-h">
         <h1 id="h-inventory" className="disp" tabIndex={-1}>Inventory</h1>
         <div className="seg" role="group" aria-label="Show">
@@ -72,6 +83,12 @@ export function InventoryView() {
             <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}>{label}</button>
           ))}
         </div>
+        <label className="inv-size" title="Reward size">
+          <span aria-hidden="true" className="inv-size-s">▪</span>
+          <input type="range" min={SIZE_MIN} max={SIZE_MAX} step={4} value={size} aria-label="Reward size"
+            onChange={(e) => resize(Number(e.target.value))} />
+          <span aria-hidden="true" className="inv-size-l">■</span>
+        </label>
         <label className="filter"><input type="search" aria-label="Filter Inventory" placeholder="Filter by game or campaign"
           value={needle} onChange={(e) => setNeedle(e.target.value)} /></label>
       </div>
