@@ -5,7 +5,7 @@ import { WidgetSettings } from "./WidgetSettings";
 import { go, useSub } from "../router";
 import { useApp } from "../store";
 import { clock, day } from "../ui/format";
-import { applyTheme, savedTheme, type Theme } from "../ui/theme";
+import { THEMES, applyTheme, savedTheme, swatch, themeName, type Theme } from "../ui/theme";
 import { DAYS, Notifications, TOGGLES } from "./Notifications";
 
 /** Settings, reorganised 2026-10-11 (docs/design/settings-mockup.html, package 2): a list of sections on the
@@ -61,7 +61,7 @@ export function SettingsView() {
     notifications: notifySummary(settings, chans, about?.server_tz),
     account: [state ? (state.signed_in ? state.login : "Not signed in") : "",
       sessions ? `${sessions.length} ${sessions.length === 1 ? "browser" : "browsers"}` : ""].filter(Boolean).join(" · "),
-    appearance: theme.charAt(0).toUpperCase() + theme.slice(1),
+    appearance: themeName(theme),
     backup: "Save or restore",
     widget: "Dashboard summary",
     about: about?.version ?? "",
@@ -168,13 +168,21 @@ export function SettingsView() {
           )}
           {open === "appearance" && (
             <Set title="Appearance">
-              <div className="opt"><div>Theme</div>
-                <div className="seg" role="group" aria-label="Theme">
-                  {(["system", "light", "dark"] as Theme[]).map((t) => (
-                    <button key={t} type="button" aria-pressed={theme === t} onClick={() => { setTheme(t); applyTheme(t); }}>
-                      {t.charAt(0).toUpperCase() + t.slice(1)}</button>
-                  ))}
-                </div></div>
+              <div className="opt theme-opt"><div><div>Theme</div>
+                <div className="d">Remembered in this browser. System follows your device's light or dark setting.</div></div></div>
+              <div className="theme-grid" role="radiogroup" aria-label="Theme">
+                {THEMES.map((t) => {
+                  const [a, b, c] = swatch(t);
+                  return (
+                    <button key={t} type="button" role="radio" aria-checked={theme === t} className="theme-card"
+                      onClick={() => { setTheme(t); applyTheme(t); }}>
+                      <span className="theme-sw" aria-hidden="true" style={{ background: t === "system" ? `linear-gradient(135deg, ${a} 50%, ${b} 50%)` : a }}>
+                        <span style={{ background: t === "system" ? "transparent" : b }} /><span style={{ background: c }} /></span>
+                      <span className="theme-n">{themeName(t)}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </Set>
           )}
           {open === "backup" && (
