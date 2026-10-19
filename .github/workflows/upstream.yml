@@ -1,0 +1,140 @@
+# Upstream watcher (2026-10-18): once a day, look for new commits on KernelPanic-Studios/dropwatch. When there
+# are some, merge them into the upstream-sync branch on top of this fork, run every test, and open (or update) a
+# pull request saying how the tests went. If upstream's changes clash with this fork's, open an issue instead,
+# listing what came in, so it can be merged by hand. Merging the pull request publishes the image as usual.
+#
+# GitHub only lets this workflow open pull requests when Settings > Actions > General > Workflow permissions >
+# "Allow GitHub Actions to create and approve pull requests" is ticked. Without it, an issue says so instead.
+name: upstream
+
+on:
+  schedule:
+    - cron: "17 9 * * *"  # 09:17 UTC daily (early morning in the US)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency: upstream
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      UPSTREAM: https://github.com/KernelPanic-Studios/dropwatch
+      BRANCH: upstream-sync
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Look for new upstream commits
+        id: look
+        run: |
+          git remote add upstream "$UPSTREAM"
+          git fetch --quiet upstream main
+          new=$(git rev-list --count HEAD..upstream/main)
+          echo "new=$new" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse --short upstream/main)" >> "$GITHUB_OUTPUT"
+          git log --format='- %h %s (%an, %ad)' --date=short HEAD..upstream/main > "$RUNNER_TEMP/commits.md"
+          # keep the upstream reference branch current either way
+          git push --quiet --force origin upstream/main:refs/heads/upstream
+          echo "$new new upstream commit(s)"
+
+      - name: Merge them onto this fork
+        id: merge
+        if: steps.look.outputs.new != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --quiet -C "$BRANCH"
+          if git merge --no-edit upstream/main; then
+            echo "clean=true" >> "$GITHUB_OUTPUT"
+          else
+            git diff --name-only --diff-filter=U > "$RUNNER_TEMP/conflicts.txt"
+            git merge --abort
+            echo "clean=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@v10.3.0
+        if: steps.merge.outputs.clean == 'true'
+        with:
+          version: "0.11.28"
+      - uses: actions/setup-node@v7
+        if: steps.merge.outputs.clean == 'true'
+        with:
+          node-version: "24.16.0"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Run every test on the merged code
+        id: tests
+        if: steps.merge.outputs.clean == 'true'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          { uv sync --frozen && uv run pytest -q -p no:warnings 2>&1 | tail -15; } > "$RUNNER_TEMP/py.txt" 2>&1 \
+            && py=pass || py=fail
+          { cd web && npm ci --no-audit --no-fund && npx tsc --noEmit && npm test 2>&1 | tail -15; } \
+            > "$RUNNER_TEMP/web.txt" 2>&1 && web=pass || web=fail
+          echo "py=$py" >> "$GITHUB_OUTPUT"
+          echo "web=$web" >> "$GITHUB_OUTPUT"
+          [ "$py" = pass ] && [ "$web" = pass ]
+
+      - name: Open or update the pull request
+        if: steps.merge.outputs.clean == 'true'
+        run: |
+          git push --quiet --force origin "$BRANCH"
+          verdict="✅ All tests pass on the merged code."
+          [ "${{ steps.tests.outcome }}" = success ] || verdict="❌ Tests fail on the merged code: look before merging."
+          {
+            echo "KernelPanic released ${{ steps.look.outputs.new }} new commit(s) (upstream \`${{ steps.look.outputs.sha }}\`)."
+            echo "They merged cleanly onto this fork."
+            echo
+            echo "$verdict"
+            echo
+            echo "<details><summary>Python tests (${{ steps.tests.outputs.py }})</summary>"
+            echo; echo '```'; cat "$RUNNER_TEMP/py.txt"; echo '```'; echo "</details>"
+            echo "<details><summary>Page tests (${{ steps.tests.outputs.web }})</summary>"
+            echo; echo '```'; cat "$RUNNER_TEMP/web.txt"; echo '```'; echo "</details>"
+            echo
+            echo "### What came in"
+            cat "$RUNNER_TEMP/commits.md"
+            echo
+            echo "Merging this publishes \`ghcr.io/1dkjd/twitch-miner:latest\`; Unraid then offers the update."
+          } > "$RUNNER_TEMP/body.md"
+          title="Upstream: ${{ steps.look.outputs.new }} new commit(s) from KernelPanic"
+          open=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+          if [ -n "$open" ]; then
+            gh pr edit "$open" --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          elif ! gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$RUNNER_TEMP/body.md"; then
+            {
+              echo "New upstream commits are merged onto the \`$BRANCH\` branch, but GitHub didn't let this workflow"
+              echo "open the pull request. Tick Settings > Actions > General > Workflow permissions >"
+              echo "\"Allow GitHub Actions to create and approve pull requests\", or open it by hand:"
+              echo "${{ github.server_url }}/${{ github.repository }}/compare/main...$BRANCH"
+              echo; cat "$RUNNER_TEMP/body.md"
+            } > "$RUNNER_TEMP/issue.md"
+            gh issue create --title "$title (pull request not allowed)" --body-file "$RUNNER_TEMP/issue.md"
+          fi
+
+      - name: Report a clash
+        if: steps.merge.outputs.clean == 'false'
+        run: |
+          title="Upstream: new commits clash with this fork"
+          {
+            echo "KernelPanic released ${{ steps.look.outputs.new }} new commit(s) (upstream \`${{ steps.look.outputs.sha }}\`),"
+            echo "but they change the same lines as this fork, so they need merging by hand."
+            echo
+            echo "### Files that clash"
+            sed 's/^/- /' "$RUNNER_TEMP/conflicts.txt"
+            echo
+            echo "### What came in"
+            cat "$RUNNER_TEMP/commits.md"
+          } > "$RUNNER_TEMP/clash.md"
+          open=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number')
+          if [ -n "$open" ]; then gh issue edit "$open" --body-file "$RUNNER_TEMP/clash.md"
+          else gh issue create --title "$title" --body-file "$RUNNER_TEMP/clash.md"; fi

@@ -1548,6 +1548,30 @@
       ],
       "title": "Notify Claimed"
      },
+     "notify_ending_hours": {
+      "anyOf": [
+       {
+        "maximum": 48.0,
+        "minimum": 1.0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Ending Hours"
+     },
+     "notify_ending_soon": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Ending Soon"
+     },
      "notify_needs_you": {
       "anyOf": [
        {
@@ -1739,6 +1763,16 @@
      },
      "notify_claimed": {
       "title": "Notify Claimed",
+      "type": "boolean"
+     },
+     "notify_ending_hours": {
+      "default": 6,
+      "title": "Notify Ending Hours",
+      "type": "integer"
+     },
+     "notify_ending_soon": {
+      "default": true,
+      "title": "Notify Ending Soon",
       "type": "boolean"
      },
      "notify_needs_you": {

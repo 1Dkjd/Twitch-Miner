@@ -153,7 +153,7 @@ test("each section in the list says what's set", async () => {
     "GET /api/sessions": sessions, "GET /api/about": ABOUT,
   });
   const link = (name: RegExp) => screen.getByRole("link", { name });
-  await waitFor(() => expect(link(/^Notifications/)).toHaveTextContent("5 of 6 alerts · weekly Sun 21:00 UTC · Discord"));
+  await waitFor(() => expect(link(/^Notifications/)).toHaveTextContent("5 of 7 alerts · weekly Sun 21:00 UTC · Discord"));
   expect(link(/^Mining/)).toHaveTextContent("Badges on · every hour");
   expect(link(/^Channel points/)).toHaveTextContent("Chests on · streaks off");
   await waitFor(() => expect(link(/^Account/)).toHaveTextContent("kernelpanicattack · 6 browsers"));

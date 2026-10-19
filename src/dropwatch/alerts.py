@@ -9,7 +9,9 @@ actually sent, so a switched-off alert stays silent both ways):
   progress event, not counting paused or idle time
 - A reward couldn't be claimed (runner's claim_failed), once per reward until it is claimed
 - Mining stopped on an error (the service's {"state": "idle", "error": ...} after a crash)
-Plus "a campaign needs you" (account link), off by default: one batched message for campaigns not yet
+Plus "ending soon" (2026-10-18, on by default): a reward already started whose window closes within
+notify_ending_hours, while it can still be finished, once per reward. And "a campaign needs you"
+(account link), off by default: one batched message for campaigns not yet
 reported, remembered across restarts. And two summaries, both off by default (2026-10-10): "a reward is
 claimed" (claims within a minute of the first arrive as one message) and a weekly summary at a chosen
 day and hour of the server's local time, sent once per week and up to WEEKLY_LATE after if Dropwatch was
@@ -57,6 +59,8 @@ class Snapshot:
     list_lost: bool = False  # a login-page sign-in lost Twitch's campaign list (runner.full_list_lost)
     # announced campaigns, for the weekly summary: (game, campaign, starts_at, linked: True/False/None)
     upcoming: list[tuple[str, str, datetime, bool | None]] = field(default_factory=list)
+    # started rewards that can still finish: (drop id, reward, game, minutes left, ends, image)
+    started: list[tuple[str, str, str, int, datetime, str]] = field(default_factory=list)
 
 
 class Notifier:
@@ -182,6 +186,7 @@ class Notifier:
             out += self._clear("list", "notify_signin", "Twitch is sending the full campaign list again",
                                "Account links are known again.")
         out += self._needs_you(snap.needs_you, s)
+        out += self._ending(now, snap, s)
         if self._claims and now - self._claims_since >= CLAIM_BATCH:
             out += self._claimed_alert()
         if s.get("notify_weekly"):
@@ -273,6 +278,31 @@ class Notifier:
             out.append(f"Link before they start: {', '.join(link)}.")
         return out
 
+    def _ending(self, now: datetime, snap: Snapshot, s: dict) -> list[Alert]:
+        if not s.get("notify_ending_soon"):
+            return []
+        window = timedelta(hours=s.get("notify_ending_hours") or 6)
+        due = [x for x in snap.started if now < x[4] <= now + window]
+        if not due:
+            return []
+        told = json.loads(self._store.get_setting("notify_ending_sent") or "[]")
+        new = [x for x in due if x[0] not in told]
+        if not new:
+            return []
+        self._store.set_setting("notify_ending_sent", json.dumps((told + [x[0] for x in new])[-300:]))
+        new.sort(key=lambda x: x[4])
+
+        def line(x) -> str:
+            left = _until(x[4] - now)
+            return f"{x[1]} ({x[2]}): {_dur(x[3])} to go, ends in {left}."
+        image = _picture(*(x[5] for x in new))
+        if len(new) == 1:
+            return [Alert("notify_ending_soon", f"{PREFIX}Ending soon: {new[0][1]}", line(new[0]),
+                          image=image)]
+        more = f" And {len(new) - 8} more." if len(new) > 8 else ""
+        return [Alert("notify_ending_soon", f"{PREFIX}Ending soon: {len(new)} rewards",
+                      " ".join(line(x) for x in new[:8]) + more, image=image)]
+
     def _needs_you(self, campaigns: list[tuple[str, str, str]], s: dict) -> list[Alert]:
         if not s.get("notify_needs_you"):
             return []  # nothing recorded while off, so switching it on reports what is waiting
@@ -338,6 +368,18 @@ class Notifier:
             bus.unsubscribe(q)
 
 
+def _until(left: timedelta) -> str:
+    """'3 h', '40 min', '1 day 2 h': how long until a window closes."""
+    m = max(1, int(left.total_seconds() // 60))
+    if m < 60:
+        return f"{m}\u00a0min"
+    h = round(m / 60)
+    if h < 24:
+        return f"{h}\u00a0h"
+    days = f"{h // 24}\u00a0{'day' if h // 24 == 1 else 'days'}"
+    return days + (f" {h % 24}\u00a0h" if h % 24 else "")
+
+
 def _picture(*urls) -> str:
     """The first image Twitch serves itself (its CDN); nothing else is ever put in a notification."""
     return next((u for u in urls if isinstance(u, str) and u.startswith("https://static-cdn.jtvnw.net/")), "")
@@ -385,4 +427,24 @@ def snapshot_of(runner) -> Snapshot:
                     [(c.id, c.name, c.game.name) for cid in plan.needs_you if (c := by_id.get(cid))],
                     list_lost=bool(getattr(runner, "full_list_lost", False)),
                     upcoming=[(c.game.name, c.name, c.starts_at, None if c.has_badge_or_emote else c.linked)
-                              for c in runner.campaigns if c.starts_at > now])
+                              for c in runner.campaigns if c.starts_at > now],
+                    started=_started(runner, now))
+
+
+def _started(runner, now: datetime) -> list[tuple[str, str, str, int, datetime, str]]:
+    """Rewards with minutes watched, not claimed, that can still be finished, outside Never games."""
+    from .models import drop_finishable, total_remaining
+    store = getattr(runner, "_store", None)
+    prefs = store.get_prefs() if store is not None and hasattr(store, "get_prefs") else None
+    out = []
+    for c in runner.campaigns:
+        if prefs is not None and prefs.in_never(c.game.name):
+            continue
+        for d in c.drops:
+            if d.claimed or d.current_minutes <= 0 or d.required_subs or not d.rewards:
+                continue
+            if drop_finishable(c, d, now):
+                image = next((r.image_url for r in d.rewards if r.image_url), c.game.box_art_url)
+                out.append((d.id, d.rewards[0].name, c.game.name, total_remaining(c, d),
+                            min(d.ends_at, c.ends_at), image))
+    return out

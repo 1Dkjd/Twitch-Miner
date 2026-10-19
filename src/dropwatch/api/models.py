@@ -172,6 +172,8 @@ class SettingsIn(BaseModel):
     points_watch_streak: StrictBool | None = None
     priority_only: StrictBool | None = None
     skip_too_late: StrictBool | None = None
+    notify_ending_soon: StrictBool | None = None
+    notify_ending_hours: StrictInt | None = Field(default=None, ge=1, le=48)
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -196,6 +198,8 @@ class SettingsOut(BaseModel):
     points_watch_streak: bool
     priority_only: bool
     skip_too_late: bool = True
+    notify_ending_soon: bool = True
+    notify_ending_hours: int = 6
 
 
 class ActivityEvent(BaseModel):

@@ -73,6 +73,8 @@ SETTINGS: dict[str, type] = {
     "points_watch_streak": bool,  # watch a favourite's new stream a few minutes first, for its watch streak
     "priority_only": bool,  # mine only games in Priority; everything else waits (2026-10-12)
     "skip_too_late": bool,  # skip campaigns where no reward left can finish in time (2026-10-18)
+    # a reward already started that ends within this many hours, while it can still finish (2026-10-18)
+    "notify_ending_soon": bool, "notify_ending_hours": int,
 }
 SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "notify_signin": True, "notify_unreachable": True, "notify_not_earning": True,
@@ -81,7 +83,7 @@ SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "arrange_up_next": False, "notify_claimed": False, "notify_weekly": False,
                     "notify_weekly_day": 6, "notify_weekly_hour": 18, "notify_weekly_tz": "",
                     "campaigns_every_minutes": 60, "points_watch_streak": True, "priority_only": False,
-                    "skip_too_late": True}
+                    "skip_too_late": True, "notify_ending_soon": True, "notify_ending_hours": 6}
 _ph = PasswordHasher()
 
 

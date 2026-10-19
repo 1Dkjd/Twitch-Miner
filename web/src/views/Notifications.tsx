@@ -4,7 +4,7 @@ import { useApp } from "../store";
 import { zones } from "../ui/zones";
 import { MenuButton } from "./Menu";
 
-type Toggle = { key: keyof Settings & `notify_${string}`; label: string; d: string; minutes?: { key: keyof Settings; min: number; max: number; before: string; after: string } };
+type Toggle = { key: keyof Settings & `notify_${string}`; label: string; d: string; minutes?: { key: keyof Settings; min: number; max: number; before: string; after: string; unit?: string } };
 
 /** The approved mockup (docs/design/notifications-mockup.html, 2026-10-10): failures on by default, "a campaign
  * needs you" off; each alert is sent once when the problem starts and once when it's fixed (alerts.py). */
@@ -17,6 +17,9 @@ export const TOGGLES: Toggle[] = [
   { key: "notify_claim_failed", label: "A reward couldn't be claimed", d: "Twitch turned down a finished drop." },
   { key: "notify_stopped", label: "Mining stopped on an error", d: "Something inside Dropwatch failed and mining stopped." },
   { key: "notify_needs_you", label: "A campaign needs you", d: "A campaign's game account isn't linked, so it can't be mined." },
+  { key: "notify_ending_soon", label: "A reward is ending soon", d: "",
+    minutes: { key: "notify_ending_hours", min: 1, max: 48, unit: "hours", before: "A reward you've started ends within",
+      after: "hours and can still be finished. Once per reward, with its picture." } },
 ];
 
 /** The weekly summary's day (0 = Monday, as the server counts) and hour, in the chosen zone ("" = the server's). */
@@ -123,7 +126,7 @@ function Minutes({ t, settings, put }: { t: Toggle; settings: Settings | null; p
   function commit() {
     const n = Number(draft);
     if (draft === "" || !Number.isInteger(n) || n < m.min || n > m.max) {
-      say({ title: "Not saved", detail: `Pick ${m.min} to ${m.max} minutes.`, tone: "bad" });
+      say({ title: "Not saved", detail: `Pick ${m.min} to ${m.max} ${m.unit ?? "minutes"}.`, tone: "bad" });
       if (saved != null) setDraft(String(saved));
       return;
     }

@@ -1272,6 +1272,10 @@ export interface components {
             notify_claim_failed?: boolean | null;
             /** Notify Claimed */
             notify_claimed?: boolean | null;
+            /** Notify Ending Hours */
+            notify_ending_hours?: number | null;
+            /** Notify Ending Soon */
+            notify_ending_soon?: boolean | null;
             /** Notify Needs You */
             notify_needs_you?: boolean | null;
             /** Notify Not Earning */
@@ -1315,6 +1319,16 @@ export interface components {
             notify_claim_failed: boolean;
             /** Notify Claimed */
             notify_claimed: boolean;
+            /**
+             * Notify Ending Hours
+             * @default 6
+             */
+            notify_ending_hours: number;
+            /**
+             * Notify Ending Soon
+             * @default true
+             */
+            notify_ending_soon: boolean;
             /** Notify Needs You */
             notify_needs_you: boolean;
             /** Notify Not Earning */
