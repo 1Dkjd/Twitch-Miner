@@ -170,7 +170,8 @@ async def serve(store: Store, host: str, port: int) -> int:
     # notifications listen to the same events as the page; started before the miner so none are missed
     notifier = Notifier(store)
     alerts = asyncio.create_task(notifier.run(
-        bus, lambda: snapshot_of(service.runner), lambda t, b: send_all(store.get_channels(), t, b)))
+        bus, lambda: snapshot_of(service.runner),
+        lambda t, b, **k: send_all(store.get_channels(), t, b, **k)))
     keeper = asyncio.create_task(keep_images(store, images))
     stuck_exits = os.environ.get("DROPWATCH_EXIT_WHEN_STUCK") == "1"  # the Docker image sets it
     watchdog = asyncio.create_task(watch_health(service)) if stuck_exits else None

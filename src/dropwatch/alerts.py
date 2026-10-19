@@ -46,6 +46,7 @@ class Alert:
     body: str
     # a setting to store once a channel actually delivered it (the weekly summary's sent week)
     after_sent: tuple[str, str] | None = None
+    image: str = ""  # a picture for services that show one (2026-10-18): the reward, else the game's box art
 
 
 @dataclass(frozen=True)
@@ -198,7 +199,8 @@ class Notifier:
             if c.get("channel"):
                 facts.append(f"on {c['channel']}")
             body = f"{where}, {' '.join(facts)}." if facts else f"{where}."
-            return [Alert("notify_claimed", f"{PREFIX}Claimed {c.get('reward')}", body)]
+            return [Alert("notify_claimed", f"{PREFIX}Claimed {c.get('reward')}", body,
+                          image=_picture(c.get("image"), c.get("box_art")))]
         names = _and([str(c.get("reward")) for c in claims])
         camps = {(c.get("campaign"), c.get("game")) for c in claims}
         if len(camps) == 1:
@@ -206,7 +208,8 @@ class Notifier:
             body = f"{names} from {camp} ({game})." if game else f"{names} from {camp}."
         else:
             body = _and([f"{c.get('reward')} ({c.get('campaign')})" for c in claims]) + "."
-        return [Alert("notify_claimed", f"{PREFIX}Claimed {len(claims)} rewards", body)]
+        return [Alert("notify_claimed", f"{PREFIX}Claimed {len(claims)} rewards", body,
+                      image=_picture(*(c.get("image") for c in claims), *(c.get("box_art") for c in claims)))]
 
     def _weekly(self, now: datetime, s: dict, snap: Snapshot) -> list[Alert]:
         zone = zone_or_none(s.get("notify_weekly_tz") or "") or self._tz  # chosen, else the server's
@@ -318,7 +321,7 @@ class Notifier:
                 alerts += self._safely(lambda: self.check(snapshot()))
                 for a in alerts:
                     try:
-                        results = await send(a.title, a.body)
+                        results = await send(a.title, a.body, **({"image": a.image} if a.image else {}))
                     except Exception as exc:  # noqa: BLE001 - a broken send must not end notifications
                         log.warning("Notifying %r failed: %s", a.title, type(exc).__name__)
                         continue
@@ -333,6 +336,11 @@ class Notifier:
                         self.delivered(a)
         finally:
             bus.unsubscribe(q)
+
+
+def _picture(*urls) -> str:
+    """The first image Twitch serves itself (its CDN); nothing else is ever put in a notification."""
+    return next((u for u in urls if isinstance(u, str) and u.startswith("https://static-cdn.jtvnw.net/")), "")
 
 
 def u_day(at: datetime, tz) -> str:

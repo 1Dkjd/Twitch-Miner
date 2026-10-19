@@ -471,7 +471,11 @@ class Runner:
             info = {"campaign": c.name, "reward": ", ".join(r.name for r in d.rewards) if d else drop_id}
             # game, watch time and channel only for the "a reward is claimed" push
             self._emit("claimed", {**info, "game": c.game.name, "minutes": d.required_minutes if d else None,
-                                   "channel": self._mined_on.get(c.id)})
+                                   "channel": self._mined_on.get(c.id),
+                                   # the notification's picture (2026-10-18): the reward, else the box art
+                                   "image": next((r.image_url for r in (d.rewards if d else ())
+                                                  if r.image_url), ""),
+                                   "box_art": c.game.box_art_url})
             self._store.log_event("claimed", {**info, "game": c.game.name})
             if hasattr(self._store, "add_claim"):
                 self._store.add_claim(self._clock(), c.id, c.name, c.game.name,

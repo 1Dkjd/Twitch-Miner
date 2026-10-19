@@ -91,7 +91,10 @@ def _ntfy_target(topic: str) -> tuple[str, str]:
     return f"{parts.scheme}://{parts.netloc}/" + "".join(p + "/" for p in prefix), name
 
 
-async def send(kind: str, values: dict[str, str], title: str, body: str, post: Post) -> tuple[bool, str]:
+async def send(kind: str, values: dict[str, str], title: str, body: str, post: Post,
+               image: str = "") -> tuple[bool, str]:
+    """image (2026-10-18): a Twitch CDN picture shown by services that can (Discord embed, Telegram photo,
+    ntfy icon and attachment, Slack and Gotify image, the webhook's "image"); the others get the text."""
     spec = CHANNELS.get(kind)
     if spec is None:
         return False, f"unknown channel {kind}"
@@ -101,25 +104,44 @@ async def send(kind: str, values: dict[str, str], title: str, body: str, post: P
     for k in v:
         if (kind, k) in _URL_FIELDS and not v[k].startswith(("http://", "https://")):
             return False, f"{spec.name}: the URL must start with http:// or https://"
+    image = image if image.startswith("https://static-cdn.jtvnw.net/") else ""
     if kind == "ntfy":
         server, topic = _ntfy_target(v["topic"])
-        req = (server, {"json": {"topic": topic, "title": title, "message": body, "tags": ["pick"]}})
+        msg = {"topic": topic, "title": title, "message": body, "tags": ["pick"]}
+        req = (server, {"json": {**msg, "icon": image, "attach": image} if image else msg})
     elif kind == "telegram":
-        req = (f"https://api.telegram.org/bot{v['token']}/sendMessage",
-               {"json": {"chat_id": v["chat_id"], "text": f"{title}\n{body}" if title else body}})
+        text = f"{title}\n{body}" if title else body
+        req = ((f"https://api.telegram.org/bot{v['token']}/sendPhoto",
+                {"json": {"chat_id": v["chat_id"], "photo": image, "caption": text[:1000]}}) if image else
+               (f"https://api.telegram.org/bot{v['token']}/sendMessage",
+                {"json": {"chat_id": v["chat_id"], "text": text}}))
     elif kind == "discord":
-        req = (v["webhook_url"], {"json": {"content": (f"**{title}**\n{body}" if title else body)[:1900]}})
+        if image:  # an embed: title, text and the reward's picture beside it
+            req = (v["webhook_url"], {"json": {"embeds": [{
+                "title": title[:250], "description": body[:3900], "color": 0x9146FF,
+                "thumbnail": {"url": image}}]}})
+        else:
+            text = (f"**{title}**\n{body}" if title else body)[:1900]
+            req = (v["webhook_url"], {"json": {"content": text}})
     elif kind == "slack":
-        req = (v["webhook_url"], {"json": {"text": f"*{title}*\n{body}" if title else body}})
+        text = f"*{title}*\n{body}" if title else body
+        msg = {"text": text}
+        if image:
+            msg["blocks"] = [{"type": "section", "text": {"type": "mrkdwn", "text": text},
+                              "accessory": {"type": "image", "image_url": image,
+                                            "alt_text": title or "reward"}}]
+        req = (v["webhook_url"], {"json": msg})
     elif kind == "webhook":
-        req = (v["url"], {"json": {"title": title, "body": body, "app": "Dropwatch"}})
+        msg = {"title": title, "body": body, "app": "Dropwatch"}
+        req = (v["url"], {"json": {**msg, "image": image} if image else msg})
     elif kind == "pushover":
         req = ("https://api.pushover.net/1/messages.json",
                {"data": {"token": v["token"], "user": v["user"], "title": title, "message": body}})
     else:  # gotify
-        req = (v["server"].rstrip("/") + "/message",
-               {"json": {"title": title, "message": body, "priority": 5},
-                "headers": {"X-Gotify-Key": v["token"]}})
+        msg = {"title": title, "message": body, "priority": 5}
+        if image:
+            msg["extras"] = {"client::notification": {"bigImageUrl": image}}
+        req = (v["server"].rstrip("/") + "/message", {"json": msg, "headers": {"X-Gotify-Key": v["token"]}})
     url, kw = req
     try:
         status = await post(url, **kw)
@@ -130,12 +152,13 @@ async def send(kind: str, values: dict[str, str], title: str, body: str, post: P
     return True, "sent"
 
 
-async def dispatch(channels: dict[str, dict[str, str]], title: str, body: str, post: Post) -> list[dict]:
+async def dispatch(channels: dict[str, dict[str, str]], title: str, body: str, post: Post,
+                   image: str = "") -> list[dict]:
     """Every configured channel, in the order they were added; one result per channel tried."""
     out = []
     for kind, values in channels.items():
         if kind in CHANNELS and configured(kind, values):
-            ok, msg = await send(kind, values, title, body, post)
+            ok, msg = await send(kind, values, title, body, post, image)
             out.append({"type": kind, "name": CHANNELS[kind].name, "ok": ok, "message": msg})
     return out
 
@@ -152,11 +175,11 @@ def aiohttp_post(session) -> Post:
 
 
 async def send_all(channels: dict[str, dict[str, str]], title: str, body: str,
-                   post: Post | None = None) -> list[dict]:
+                   post: Post | None = None, image: str = "") -> list[dict]:
     """dispatch() with a fresh aiohttp session unless a `post` is given (tests)."""
     if post is not None:
-        return await dispatch(channels, title, body, post)
+        return await dispatch(channels, title, body, post, image)
     import aiohttp
 
     async with aiohttp.ClientSession() as session:
-        return await dispatch(channels, title, body, aiohttp_post(session))
+        return await dispatch(channels, title, body, aiohttp_post(session), image)
