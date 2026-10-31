@@ -8,7 +8,7 @@ export default defineConfig({
   testDir: "e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  reporter: "list",
+  reporter: process.env.CI ? [["github"], ["list"]] : "list", // github: failures show as annotations on the run
   use: { baseURL: "http://127.0.0.1:4177", channel, colorScheme: "dark" },
   projects: [
     { name: "desktop", use: { viewport: { width: 1280, height: 900 } } },
