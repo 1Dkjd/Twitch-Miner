@@ -384,7 +384,8 @@ svg.i { width: 16px; height: 16px; flex: none; }
   .next-arts img { width: 40px; height: 40px; }
   .wnum { font-size: 17px; }
   .watched { text-align: left; flex-basis: 100%; }
-  .now-foot { flex-wrap: nowrap; gap: 8px; }
+  .now-foot { gap: 8px; }
+  .now-foot .btn svg { display: none; } /* text only, as in the mockup: three buttons have to fit a small phone */
   /* upwards, or the last items end up behind the tab bar; the menu stays inside the window whatever its button */
   .now-foot .menu { top: auto; bottom: calc(100% + 6px); max-width: calc(100vw - 64px); }
   .now-foot #pause-menu { right: auto; left: 0; }
@@ -398,7 +399,13 @@ svg.i { width: 16px; height: 16px; flex: none; }
   .ib { width: 44px; height: 44px; }
   .row { grid-template-columns: 40px minmax(0, 1fr); }
   .row > .mini, .row > .row-acts, .row > .when { grid-column: 2; justify-self: start; }
-  .row-acts { justify-content: flex-start; flex-wrap: nowrap; }
+  .row-acts { justify-content: flex-start; flex-wrap: wrap; }
+  .chip { white-space: normal; }
+  .seg { flex-wrap: wrap; max-width: 100%; }
+  .seg button { padding-inline: 10px; }
+  select.inline-sel { max-width: 100%; }
+  .tabs { min-width: 0; }
+  .tabs a, .tab-more, .tab-more > button { min-width: 0; }
   .row-acts .btn.quiet { padding-inline: 8px; }
   .sec-h .aside { margin-left: 0; flex-basis: 100%; }
   .deadline { flex-basis: 100%; }
@@ -407,7 +414,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
   .g .handle { display: none; }
   .g-act { grid-column: 2 / -1; flex-wrap: wrap; gap: 2px; margin-left: -8px; }
   .g-act .btn { padding-inline: 8px; }
-  .opt { grid-template-columns: 1fr; }
+  .opt { grid-template-columns: minmax(0, 1fr); }
   .split { grid-template-columns: 1fr; gap: 14px; }
   .snav { position: static; display: flex; gap: 6px; overflow-x: auto; margin-inline: -16px; padding: 0 16px 4px; scrollbar-width: none; }
   .snav a { flex: none; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; color: var(--muted); background: var(--surface); }

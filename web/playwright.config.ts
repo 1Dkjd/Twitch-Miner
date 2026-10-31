@@ -13,6 +13,7 @@ export default defineConfig({
   projects: [
     { name: "desktop", use: { viewport: { width: 1280, height: 900 } } },
     { name: "phone", use: { viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true } },
+    { name: "small-phone", use: { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true } },
   ],
   webServer: { command: "node e2e/fake-api.mjs", url: "http://127.0.0.1:4177/api/me", reuseExistingServer: !process.env.CI },
 });

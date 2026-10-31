@@ -21,21 +21,22 @@ async function open(page: Page, view: string, theme?: string) {
   return errors;
 }
 
-/** Visible elements sticking out past the window's sides, even inside a box that clips them. Rows that scroll
- * sideways on purpose don't count. */
-const outOfBounds = (page: Page) => page.evaluate(() => {
+/** Visible elements sticking out past the screen's sides, even inside a box that clips them. Rows that scroll
+ * sideways on purpose don't count. Measured against the configured size: a phone zooms out to fit a page that's too
+ * wide, and window.innerWidth grows with it. */
+const outOfBounds = (page: Page) => page.evaluate((innerWidth) => {
   const scrolls = (e: Element) => { for (let p: Element | null = e; p; p = p.parentElement) { if (/auto|scroll/.test(getComputedStyle(p).overflowX)) return true; } return false; };
   return [...document.querySelectorAll("header *, main *, nav *")].filter((e) => {
     if (e.closest(".sr, svg") || scrolls(e)) return false;
     const r = e.getBoundingClientRect();
     return r.width > 0 && r.height > 0 && (r.right > innerWidth + 1 || r.left < -1);
   }).slice(0, 5).map((e) => `${e.tagName}.${e.getAttribute("class")}: ${(e.textContent ?? "").slice(0, 40)}`);
-});
+}, page.viewportSize()!.width);
 
 for (const view of VIEWS) {
   test(`${view}: nothing overflows the window and the page logs no errors`, async ({ page }) => {
     const errors = await open(page, view);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
     expect(await outOfBounds(page)).toEqual([]);
     expect(errors).toEqual([]);
   });
@@ -87,13 +88,13 @@ test("phones get a bottom tab bar, and More opens the rest", async ({ page }) =>
   await open(page, "overview");
   const nav = page.getByRole("navigation", { name: "Views" });
   const box = (await nav.boundingBox())!;
-  expect(box.y + box.height).toBeCloseTo(812, 0);
+  expect(box.y + box.height).toBeCloseTo(page.viewportSize()!.height, 0);
   await expect(nav.getByRole("link")).toHaveCount(4);
   await nav.getByRole("button", { name: "More" }).click();
   const item = page.getByRole("menuitem", { name: "Activity" });
   const r = (await item.boundingBox())!;
   expect(r.y + r.height).toBeLessThanOrEqual(box.y); // opens upwards, above the bar
-  expect(r.x + r.width).toBeLessThanOrEqual(375);
+  expect(r.x + r.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   await item.click();
   await expect(page.getByRole("heading", { level: 1, name: "Activity" })).toBeVisible();
   await expect(nav.getByRole("button", { name: /More, Activity is open/ })).toBeVisible();
