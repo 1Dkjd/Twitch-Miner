@@ -9,6 +9,12 @@ Two differences from the reference, both deliberate:
 - we give up after a few tries and raise, so the runner can report an outage and back off;
 - a partial "server error" response is retried, not accepted with holes.
 
+Batches (run_many, 2026-10-31): one request per GQL_BATCH ops, sent one after another, and only the ops
+that failed with a transient error are sent again. An op that still fails comes back with its errors and
+no data, so callers skip it; run_many raises only when every op failed. Before this a single timed-out op
+failed its whole chunk, and one failed chunk failed the whole refresh (twitch_unreachable while mining
+was fine).
+
 Requests are rate-limited to 5 per second (reference RateLimiter(capacity=5, window=1)).
 """
 from __future__ import annotations
@@ -48,6 +54,18 @@ class TwitchUnreachable(GqlError):
     pass
 
 
+def _messages(item: Any) -> list[str]:
+    if not isinstance(item, dict):
+        return []
+    return [e.get("message", "") for e in (item.get("errors") or [])]
+
+
+def _summary(messages: list[str]) -> str:
+    """'service timeout ×180' instead of the same message 180 times."""
+    counts = collections.Counter(messages)
+    return "; ".join(m if n == 1 else f"{m} ×{n}" for m, n in counts.items())
+
+
 def _merge(base: dict, extra: dict) -> dict:
     out = copy.deepcopy(base)
     for k, v in extra.items():
@@ -82,9 +100,37 @@ class Gql:
         return await self._post(payload)
 
     async def run_many(self, payloads: list[dict]) -> list[dict]:
-        chunks = [payloads[i:i + GQL_BATCH] for i in range(0, len(payloads), GQL_BATCH)]
-        results = await asyncio.gather(*(self._post(c) for c in chunks))
-        return [item for chunk in results for item in chunk]
+        """One result per payload, in order. Ops that still fail come back with their errors (callers find
+        no data and skip them); raises only when every op failed."""
+        out: list[dict] = []
+        for i in range(0, len(payloads), GQL_BATCH):
+            out.extend(await self._post_batch(payloads[i:i + GQL_BATCH]))
+        if out and all(_messages(r) and not r.get("data") for r in out):
+            raise GqlError(_summary([m for r in out for m in _messages(r)]))
+        return out
+
+    async def _post_batch(self, ops: list[dict]) -> list[dict]:
+        results: list[dict] = [{} for _ in ops]
+        pending = list(range(len(ops)))
+        for attempt in range(TRIES):
+            data = await self._post([ops[i] for i in pending], gql_check=False)
+            items = data if isinstance(data, list) else [data]
+            retry = []
+            for k, i in enumerate(pending):
+                item = items[k] if k < len(items) else {"errors": [{"message": "service error"}]}
+                results[i] = item if isinstance(item, dict) else {}
+                if RETRYABLE.intersection(_messages(item)):
+                    retry.append(i)
+            if not retry:
+                break
+            summary = _summary([m for i in retry for m in _messages(results[i])])
+            if attempt == TRIES - 1:
+                log.warning("GQL %d/%d ops still failing: %s", len(retry), len(ops), summary)
+                break
+            log.warning("GQL %d/%d ops failed (%s), retry %d", len(retry), len(ops), summary, attempt + 1)
+            pending = retry
+            await self._sleep(5 * (attempt + 1))
+        return results
 
     async def _throttle(self) -> None:
         async with self._rate_lock:
@@ -101,7 +147,7 @@ class Gql:
         s = self._session()
         return gql_headers(s, self._client or client_for(s.client_id))  # None: the session's own client
 
-    async def _post(self, body: dict | list) -> Any:
+    async def _post(self, body: dict | list, gql_check: bool = True) -> Any:
         delay = 1.0
         failures = 0
         gql_retries = 0
@@ -139,11 +185,11 @@ class Gql:
                 raise GqlError(f"HTTP {r.status}")
             items = data if isinstance(data, list) else [data]
             messages = [e.get("message", "") for i in items for e in (i.get("errors") or [])]
-            if messages:
+            if messages and gql_check:
                 if gql_retries < TRIES - 1 and RETRYABLE.intersection(messages):
                     gql_retries += 1
-                    log.warning("GQL %s, retry %d", "; ".join(messages), gql_retries)
+                    log.warning("GQL %s, retry %d", _summary(messages), gql_retries)
                     await self._sleep(5 * gql_retries)
                     continue
-                raise GqlError("; ".join(messages))
+                raise GqlError(_summary(messages))
             return data

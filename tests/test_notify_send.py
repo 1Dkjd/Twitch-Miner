@@ -35,7 +35,9 @@ async def test_telegram_discord_slack_webhook_pushover_gotify_shapes():
     assert c["url"] == "https://api.telegram.org/bot123:abc/sendMessage"
     assert c["json"] == {"chat_id": "42", "text": "Dropwatch: Test\nIt works."}
     _, _, (c,) = await one("discord", {"webhook_url": "https://discord.com/api/webhooks/1/x"})
-    assert c["json"] == {"content": "**Dropwatch: Test**\nIt works."}
+    (e,) = c["json"]["embeds"]
+    assert c["json"]["username"] == "Dropwatch"
+    assert (e["title"], e["description"], e["footer"]) == ("🔔 Test", "It works.", {"text": "Dropwatch"})
     _, _, (c,) = await one("slack", {"webhook_url": "https://hooks.slack.com/services/x"})
     assert c["json"] == {"text": "*Dropwatch: Test*\nIt works."}
     _, _, (c,) = await one("webhook", {"url": "https://n8n.local/hook"})
@@ -52,7 +54,7 @@ async def test_telegram_discord_slack_webhook_pushover_gotify_shapes():
 async def test_discord_content_is_capped():
     post = FakePost()
     await send("discord", {"webhook_url": "https://d/x"}, "T", "x" * 5000, post)
-    assert len(post.calls[0]["json"]["content"]) <= 1900
+    assert len(post.calls[0]["json"]["embeds"][0]["description"]) <= 4000
 
 
 async def test_failures_never_leak_a_secret():
@@ -96,3 +98,17 @@ async def test_dispatch_sends_to_every_configured_channel_and_reports_each():
 def test_every_channel_has_fields_and_a_hint(kind):
     spec = CHANNELS[kind]
     assert spec.name and spec.hint and spec.fields
+
+
+async def test_discord_styles_by_alert_kind():
+    async def embed(title, body="b"):
+        post = FakePost()
+        await send("discord", {"webhook_url": "https://d/x"}, title, body, post)
+        return post.calls[0]["json"]["embeds"][0]
+    down = await embed("Dropwatch: Can't reach Twitch")
+    assert down["title"] == "⚠️ Can't reach Twitch" and down["color"] == 0xED4245
+    back = await embed("Dropwatch: Twitch is reachable again")
+    assert back["title"].startswith("✅") and back["color"] == 0x57F287
+    link = await embed("Dropwatch: 2 campaigns need your account linked", "A (G1), B (G2)")
+    assert link["title"].startswith("🔗") and link["url"] == "https://www.twitch.tv/drops/campaigns"
+    assert link["description"] == "• A (G1)\n• B (G2)"

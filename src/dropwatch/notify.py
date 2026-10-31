@@ -91,6 +91,35 @@ def _ntfy_target(topic: str) -> tuple[str, str]:
     return f"{parts.scheme}://{parts.netloc}/" + "".join(p + "/" for p in prefix), name
 
 
+# Discord (2026-10-31): every alert as an embed, styled by what it says: (words in the title, emoji, colour),
+# first match wins. The "Dropwatch: " prefix moves to the webhook's name and the footer.
+_DISCORD_STYLES = (
+    (("again", "after all"), "✅", 0x57F287),
+    (("Claimed",), "🎁", 0x9146FF),
+    (("Ending soon",), "⏳", 0xF0B232),
+    (("account linked",), "🔗", 0xF0B232),
+    (("Your week",), "📊", 0x5865F2),
+    (("Can't reach", "stopped", "isn't earning", "couldn't be claimed"), "⚠️", 0xED4245),
+)
+LINK_URL = "https://www.twitch.tv/drops/campaigns"
+
+
+def _discord(title: str, body: str, image: str) -> dict:
+    from datetime import UTC, datetime
+    name = title.removeprefix("Dropwatch: ")
+    emoji, colour = next(((e, c) for words, e, c in _DISCORD_STYLES if any(w in name for w in words)),
+                         ("🔔", 0x9146FF))
+    if "account linked" in name and name[:1].isdigit():  # "2 campaigns need…": one per line
+        body = "• " + body.replace("), ", ")\n• ")
+    embed = {"title": f"{emoji} {name}"[:256], "description": body[:4000], "color": colour,
+             "footer": {"text": "Dropwatch"}, "timestamp": datetime.now(UTC).isoformat()}
+    if "account linked" in name:
+        embed["url"] = LINK_URL  # the title opens Twitch's drops page to link accounts
+    if image:
+        embed["thumbnail"] = {"url": image}
+    return {"username": "Dropwatch", "embeds": [embed]}
+
+
 async def send(kind: str, values: dict[str, str], title: str, body: str, post: Post,
                image: str = "") -> tuple[bool, str]:
     """image (2026-10-18): a Twitch CDN picture shown by services that can (Discord embed, Telegram photo,
@@ -116,13 +145,7 @@ async def send(kind: str, values: dict[str, str], title: str, body: str, post: P
                (f"https://api.telegram.org/bot{v['token']}/sendMessage",
                 {"json": {"chat_id": v["chat_id"], "text": text}}))
     elif kind == "discord":
-        if image:  # an embed: title, text and the reward's picture beside it
-            req = (v["webhook_url"], {"json": {"embeds": [{
-                "title": title[:250], "description": body[:3900], "color": 0x9146FF,
-                "thumbnail": {"url": image}}]}})
-        else:
-            text = (f"**{title}**\n{body}" if title else body)[:1900]
-            req = (v["webhook_url"], {"json": {"content": text}})
+        req = (v["webhook_url"], {"json": _discord(title, body, image)})
     elif kind == "slack":
         text = f"*{title}*\n{body}" if title else body
         msg = {"text": text}

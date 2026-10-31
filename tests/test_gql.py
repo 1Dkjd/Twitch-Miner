@@ -88,3 +88,28 @@ async def test_network_errors_become_unreachable_after_3_tries():
 async def test_5xx_retried_then_succeeds():
     t = FakeTransport([HttpResponse(503, "busy"), ok({"data": {}})])
     assert await Gql(t, lambda: S, sleep=nosleep).run(op("Inventory")) == {"data": {}}
+
+
+TIMEOUT = {"errors": [{"message": "service timeout"}], "data": None}
+
+
+async def test_run_many_retries_only_the_ops_that_timed_out():
+    # 2026-10-31: one timed-out op used to resend (and then fail) its whole chunk
+    t = FakeTransport([ok([{"data": {"a": 1}}, TIMEOUT, {"data": {"c": 3}}]), ok([{"data": {"b": 2}}])])
+    out = await Gql(t, lambda: S, sleep=nosleep).run_many([op("Inventory")] * 3)
+    assert [o["data"] for o in out] == [{"a": 1}, {"b": 2}, {"c": 3}]
+    assert [len(c[3]) for c in t.calls] == [3, 1]
+
+
+async def test_run_many_keeps_partial_results_when_an_op_keeps_failing():
+    t = FakeTransport([ok([{"data": {"a": 1}}, TIMEOUT]), ok([TIMEOUT]), ok([TIMEOUT])])
+    out = await Gql(t, lambda: S, sleep=nosleep).run_many([op("Inventory")] * 2)
+    assert out[0]["data"] == {"a": 1} and not out[1].get("data")
+    assert len(t.calls) == 3
+
+
+async def test_run_many_raises_when_every_op_failed_with_a_short_message():
+    t = FakeTransport([ok([TIMEOUT] * 3)] * 3)
+    with pytest.raises(GqlError) as e:
+        await Gql(t, lambda: S, sleep=nosleep).run_many([op("Inventory")] * 3)
+    assert str(e.value) == "service timeout ×3"

@@ -20,10 +20,11 @@ async def sent(kind, values, image=IMG):
 async def test_discord_gets_an_embed_with_the_reward_picture():
     c = await sent("discord", {"webhook_url": "https://discord.com/api/webhooks/1/x"})
     (e,) = c["json"]["embeds"]
-    assert e["title"] == "Dropwatch: Claimed Hat" and e["description"] == "Palia, after 1 h."
-    assert e["thumbnail"] == {"url": IMG}
+    assert e["title"] == "🎁 Claimed Hat" and e["description"] == "Palia, after 1 h."
+    assert e["thumbnail"] == {"url": IMG} and e["color"] == 0x9146FF
     plain = await sent("discord", {"webhook_url": "https://discord.com/api/webhooks/1/x"}, image="")
-    assert plain["json"] == {"content": "**Dropwatch: Claimed Hat**\nPalia, after 1 h."}
+    (e,) = plain["json"]["embeds"]  # no picture: still an embed, just without the thumbnail
+    assert e["title"] == "🎁 Claimed Hat" and "thumbnail" not in e
 
 
 async def test_other_services_show_it_their_own_way():
@@ -43,7 +44,7 @@ async def test_other_services_show_it_their_own_way():
 async def test_only_twitch_pictures_are_ever_sent():
     c = await sent("discord", {"webhook_url": "https://discord.com/api/webhooks/1/x"},
                    image="https://tracker.example/pixel.png")
-    assert "embeds" not in c["json"]
+    assert "thumbnail" not in c["json"]["embeds"][0]
 
 
 def test_a_claim_alert_carries_the_reward_picture_or_the_box_art(tmp_path):
