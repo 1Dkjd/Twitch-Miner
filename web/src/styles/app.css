@@ -385,6 +385,9 @@ svg.i { width: 16px; height: 16px; flex: none; }
   .wnum { font-size: 17px; }
   .watched { text-align: left; flex-basis: 100%; }
   .now-foot { flex-wrap: nowrap; gap: 8px; }
+  /* upwards, or the last items end up behind the tab bar; the menu stays inside the window whatever its button */
+  .now-foot .menu { top: auto; bottom: calc(100% + 6px); max-width: calc(100vw - 64px); }
+  .now-foot #pause-menu { right: auto; left: 0; }
   .now-foot > *, .now-foot .now-acts .btn { flex: 1; }
   .lg { display: none; }
   .sm { display: inline; }
