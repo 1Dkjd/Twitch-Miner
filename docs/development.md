@@ -24,6 +24,8 @@ Data lives in `./data` unless `DROPWATCH_DATA` is set. Stop any other miner on t
 uv run pytest -q
 uv run ruff check src tests
 cd web && npx tsc --noEmit && npm test
+cd web && npx playwright install chromium  # once; or set PW_CHANNEL=msedge or chrome to use an installed browser
+cd web && npm run test:e2e  # layout in a real browser, desktop and phone sizes, with made-up data
 ```
 
 After changing the API: `uv run dropwatch openapi --out docs/api/openapi.json`, then `npm run gen:api` in `web/`.
