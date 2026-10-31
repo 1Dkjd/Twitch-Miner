@@ -46,7 +46,7 @@ export function MenuButton({ label, buttonContent, items, id, wrapClass = "now-a
         onClick={() => (open ? close(true) : setOpen(true))}>{buttonContent}</button>
       <div className="menu" id={id} role="menu" aria-label={label} hidden={!open}>
         <div className="lab" aria-hidden="true">{label}</div>
-        {items.map((it, i) => (
+        {open && items.map((it, i) => (
           <button key={it.key} ref={(el) => { refs.current[i] = el; }} role="menuitem" tabIndex={-1} type="button"
             onClick={() => { close(true); it.onSelect(); }}>{it.content}</button>
         ))}

@@ -117,10 +117,16 @@ export function InventoryView() {
   return (
     <section className="view" id="v-inventory" aria-labelledby="h-inventory" style={{ "--inv-tile": `${size}px` } as React.CSSProperties}>
       <div className="view-h">
-        <h1 id="h-inventory" className="disp" tabIndex={-1}>Inventory</h1>
-        <div className="seg" role="group" aria-label="Show">
+        <div className="view-t"><h1 id="h-inventory" className="disp" tabIndex={-1}>Inventory</h1>
+          <p>Every campaign Dropwatch can see, with each reward's progress.</p></div>
+        <label className="filter"><input type="search" aria-label="Filter Inventory" placeholder="Filter by game or campaign"
+          value={needle} onChange={(e) => setNeedle(e.target.value)} /></label>
+      </div>
+      <div className="view-h">
+        <div className="pills" role="group" aria-label="Show">
           {FILTERS.map(([k, label]) => (
-            <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}>{label}</button>
+            <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}>{label}
+              <span className="n" aria-hidden="true">{counted.reduce((n, g) => n + g.campaigns.filter((c) => keep(c, k)).length, 0)}</span></button>
           ))}
         </div>
         <div className="seg" role="group" aria-label="Sort">
@@ -134,8 +140,6 @@ export function InventoryView() {
             onChange={(e) => resize(Number(e.target.value))} />
           <span aria-hidden="true" className="inv-size-l">■</span>
         </label>
-        <label className="filter"><input type="search" aria-label="Filter Inventory" placeholder="Filter by game or campaign"
-          value={needle} onChange={(e) => setNeedle(e.target.value)} /></label>
       </div>
       {FILTER_HINT[filter] && <p className="inv-sum">{FILTER_HINT[filter]}</p>}
       {sum.total > 0 && (
@@ -143,7 +147,7 @@ export function InventoryView() {
       )}
       {data && !games.length && <div className="list"><p className="empty">{data.games.length ? "Nothing matches." : "No campaigns yet. They show here once Dropwatch has checked Twitch."}</p></div>}
       {sort === "game"
-        ? games.map((g) => <GameCard key={g.game} g={g} acts={acts} onDetail={setDetail} />)
+        ? games.length > 0 && <div className="inv-games">{games.map((g) => <GameCard key={g.game} g={g} acts={acts} onDetail={setDetail} />)}</div>
         : flat.length > 0 && (
           <div className="list">
             {flat.map(({ c, g }) => <CampaignBlock key={c.id} c={c} game={g} acts={acts} onDetail={setDetail} />)}

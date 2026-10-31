@@ -6,6 +6,7 @@ import { AppProvider, Toasts } from "../store";
 import { mockApi } from "../test/fetch";
 import { campaign, state } from "../test/fixtures";
 import { OverviewView } from "./Overview";
+import { PrioritiesView } from "./Priorities";
 import { SettingsView } from "./Settings";
 
 const ME = { authenticated: true, setup_required: false };
@@ -111,4 +112,13 @@ test("with nothing in Up next, the header doesn't say what it starts after", asy
   const sec = (await screen.findByRole("heading", { name: "Up next" })).closest("section") as HTMLElement;
   expect(within(sec).queryByText(/Starts when/)).not.toBeInTheDocument();
   expect(within(sec).getByText("Priority only is on")).toBeInTheDocument();
+});
+
+test("Priorities has the Priority only switch and it saves the setting", async () => {
+  const calls = mockApi({ "GET /api/state": state({ priority_only: false }), "GET /api/lists": { priority: [], never: [], favourites: [] }, "PUT /api/settings": {} });
+  render(<AppProvider initialMe={{ authenticated: true, setup_required: false }}><PrioritiesView /></AppProvider>);
+  const sw = await screen.findByRole("switch", { name: "Priority only" });
+  await waitFor(() => expect(sw).toBeEnabled());
+  await userEvent.click(sw);
+  await waitFor(() => expect(calls.some((c) => c.method === "PUT" && c.path === "/api/settings" && (c.body as { priority_only: boolean }).priority_only)).toBe(true));
 });

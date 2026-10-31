@@ -1,5 +1,5 @@
 /* First run and Twitch sign-in screens, from docs/design/signin-mockup.html and signin-options.html
-   (option A). Namespaced auth-* because the approved stylesheet already owns .head, .lab, .code,
+   (option A). Namespaced auth-* because app.css already owns .head, .lab, .code,
    .sep and .now. Uses only the approved tokens. */
 .auth-stage { padding-top: clamp(24px, 6vh, 56px); display: flex; justify-content: center; }
 .auth-col { width: 100%; max-width: 440px; display: grid; gap: 22px; }
@@ -11,7 +11,7 @@
 .auth-steps li[data-st="now"] .n { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .auth-sep { width: 28px; height: 1px; background: var(--line); }
 .auth-head { display: grid; gap: 8px; }
-.auth-head h1 { font-family: var(--display); font-stretch: var(--display-stretch); font-weight: var(--display-weight); font-size: 30px; letter-spacing: -.01em; line-height: 1.1; }
+.auth-head h1 { font-weight: 800; font-size: 30px; letter-spacing: -.02em; line-height: 1.1; }
 .auth-head h1:focus { outline: none; }
 .auth-head p { color: var(--muted); max-width: 60ch; margin: 0; }
 .auth-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 16px; margin: 0; }
@@ -68,10 +68,11 @@
 .ch-pick .menu { left: 0; right: auto; min-width: 220px; }
 .ch-pick .menu .v { margin-left: 10px; color: var(--muted); font-family: var(--num); font-variant-numeric: tabular-nums; font-size: 12px; }
 /* Mining-now facts line (Nick's pick 2026-10-10, now-reason-options.html option C) */
-.now-facts { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; color: var(--muted); }
-.now-facts b { color: var(--fg); font-weight: 500; }
-.now-facts .k { font-family: var(--display); font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
-:root[data-look="ore"] .now .now-facts { color: var(--muted-art); }
+.now-facts { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; color: var(--muted); }
+.now-facts > span { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.now-facts b { color: var(--fg); font-weight: 700; }
+.now-facts .v { font-variant-numeric: tabular-nums; }
+.now-facts .k { font-weight: 700; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
 /* drag to reorder (dnd-kit): the slot left behind, and the row that follows the pointer */
 .g { touch-action: manipulation; }
 .g.placeholder { opacity: .35; background: var(--surface-2); }
@@ -135,8 +136,8 @@ button.row.hx { width: 100%; text-align: left; background: none; border: 0; colo
 .nt-test .bad { color: var(--alert-text); }
 .opt .d .mins { width: 4.5em; margin-inline: 2px; padding: 1px 6px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; color: var(--fg); font: inherit; font-family: var(--num); font-variant-numeric: tabular-nums; }
 /* Up next: filter, "Arrange myself" pins, the before-its-turn warning (docs/design/next-features-mockup.html) */
-.filter { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.filter input { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; width: 220px; max-width: 100%; color: var(--fg); font: inherit; font-size: 13px; }
+.filter { display: flex; align-items: center; gap: 8px; }
+.filter input { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 0 12px; min-height: 40px; width: 260px; max-width: 100%; color: var(--fg); font: inherit; font-size: 13px; }
 .filter input::placeholder { color: var(--muted); }
 .filter .n { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .arr { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); cursor: pointer; }
@@ -176,12 +177,23 @@ select.inline-sel option, select.period option { background: var(--surface); col
 .mono { font-family: var(--mono); font-size: 12px; }
 
 /* History stats (approved mockup docs/design/pre-docker-mockup.html, 2026-10-10) */
-.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
-.stat { padding: 14px 16px; }
-.stat + .stat { border-left: 1px solid var(--line); }
-.stat .n { font-family: var(--display); font-stretch: 80%; font-weight: 750; font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; }
-.stat .l { color: var(--muted); font-size: 13px; margin-top: 4px; }
-.stats-list { margin-top: 10px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.stat .n { font-weight: 800; font-size: 30px; line-height: 1.15; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.stat .n.warn { color: var(--warn-text); }
+.stat .l { color: var(--muted); font-size: 13px; font-weight: 600; margin-top: 2px; }
+.stats-list { margin-top: 16px; }
+/* History: rewards per day. One series, so the title names it; the newest day carries the accent */
+.perday { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-top: 16px; display: grid; gap: 16px; }
+.perday-h { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.perday-h h3 { font-size: 18px; font-weight: 700; margin: 0; }
+.perday-h span { color: var(--muted); font-size: 13px; }
+.perday-bars { display: flex; align-items: flex-end; gap: 6px; height: 150px; }
+.perday-bars > div { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.perday-bars b { font-weight: 700; }
+.perday-bars i { display: block; width: 100%; max-width: 56px; min-height: 2px; background: var(--surface-3); border-radius: 4px 4px 0 0; }
+.perday-bars .newest i { background: var(--accent); }
+.perday-bars span { color: var(--muted); font-weight: 600; white-space: nowrap; }
 .bars { display: grid; gap: 8px; padding: 14px 16px; margin: 0; list-style: none; }
 .sbar { display: grid; grid-template-columns: minmax(0, 180px) minmax(0, 1fr) 32px; gap: 10px; align-items: center; font-size: 13px; }
 .sbar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -189,8 +201,7 @@ select.inline-sel option, select.period option { background: var(--surface); col
 .sbar .fill { display: block; height: 100%; border-radius: 99px; background: var(--fill); }
 .sbar .v { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
 @media (max-width: 720px) {
-  .stats { grid-template-columns: 1fr; }
-  .stat + .stat { border-left: 0; border-top: 1px solid var(--line); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .sbar { grid-template-columns: minmax(0, 110px) minmax(0, 1fr) 28px; }
 }
 
@@ -204,25 +215,27 @@ label.btn:has(input:focus-visible) { outline: 2px solid var(--accent); outline-o
 
 /* Activity (approved mockup docs/design/pre-docker-mockup.html, 2026-10-10) */
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.chips button { border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; }
-.chips button[aria-pressed="true"] { background: var(--surface-2); color: var(--fg); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.chips button { border: 1px solid var(--line); background: none; color: var(--muted); border-radius: 999px; min-height: 40px; padding: 0 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.chips button:hover { color: var(--fg); border-color: var(--dim); }
+.chips button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .act-list { margin-top: 12px; }
-.act { display: grid; grid-template-columns: 46px 8px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 10px 16px; }
+.act { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; gap: 14px; align-items: baseline; padding: 12px 18px; }
+.act .t { order: 3; }
 .act + .act { border-top: 1px solid var(--line); }
-.act .t { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); }
+.act .t { font-family: var(--num); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); }
 .adot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); align-self: center; }
 .adot.ok { background: var(--ok); } .adot.gold { background: var(--accent); } .adot.bad { background: var(--alert); } .adot.note { background: var(--note); }
-.act .s { font-size: 14px; overflow-wrap: anywhere; } .act .s b { font-weight: 600; } .act .d { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.act .s { font-size: 14px; overflow-wrap: anywhere; } .act .s b { font-weight: 700; } .act .d { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
 .keep { color: var(--muted); font-size: 12px; margin-top: 8px; }
 
 /* Top bar: Check Twitch (2026-10-10) */
-.check-tw { margin-left: auto; min-height: 30px; padding: 4px 10px; }
-.check-tw + .pill { margin-left: 4px; }
+.check-tw.btn.quiet { background: var(--surface-3); color: var(--fg); padding-inline: 16px; }
+.check-tw.btn.quiet:hover { background: color-mix(in srgb, var(--surface-3) 85%, var(--fg)); }
 .check-tw .i { width: 15px; height: 15px; }
 .check-tw.busy .i { animation: check-spin 1s linear infinite; }
 @keyframes check-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .check-tw.busy .i { animation: none; } }
-@media (max-width: 720px) { .check-tw-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
+@media (max-width: 720px) { .check-tw { margin-left: auto; } .check-tw.btn.quiet { padding-inline: 12px; } .check-tw-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
 
 /* Pre-Docker QoL (2026-10-11) */
 .banner[data-tone="note"] { background: var(--note-soft); border-color: color-mix(in srgb, var(--note) 40%, var(--line)); margin-bottom: 16px; }
@@ -265,3 +278,15 @@ label.btn:has(input:focus-visible) { outline: 2px solid var(--accent); outline-o
 .sessions { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .sessions li { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; }
 .sessions .chip { margin-left: 8px; }
+
+/* Inventory: games as cards, side by side when there's room; Coming up as cards */
+.inv-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr)); gap: 18px; align-items: start; }
+.inv-game { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 0 4px; }
+.inv-game > .inv-head { padding-inline: 18px; }
+.inv-game > .list { background: none; border: 0; border-radius: 0; }
+.inv-game .inv-camp:first-child { border-top: 1px solid var(--line); }
+.inv-bar > span { background: var(--accent); }
+#sec-upcoming .list { background: none; border: 0; overflow: visible; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 16px; }
+#sec-upcoming .row { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; grid-template-columns: 60px minmax(0, 1fr); }
+#sec-upcoming .row .box { width: 60px; }
+#sec-upcoming .row-acts { grid-column: 1 / -1; justify-content: flex-start; }

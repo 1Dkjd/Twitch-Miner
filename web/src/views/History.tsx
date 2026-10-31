@@ -32,7 +32,7 @@ export function groupByDay(claims: Claim[], timeZone?: string): DayGroup[] {
   return [...days.values()];
 }
 
-const PERIODS: [number, string][] = [[30, "Last 30 days"], [90, "Last 90 days"], [365, "Last year"]];
+const PERIODS: [number, string, string][] = [[1, "24 hours", "Last 24 hours"], [7, "7 days", "Last 7 days"], [30, "30 days", "Last 30 days"], [90, "90 days", "Last 90 days"], [365, "Year", "Last year"]];
 const TIME = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
 
 export function HistoryView() {
@@ -62,14 +62,15 @@ export function HistoryView() {
   return (
     <section className="view" id="v-history" aria-labelledby="h-history">
       <div className="view-h">
-        <h1 id="h-history" className="disp" tabIndex={-1}>History</h1>
-        <select className="period" aria-label="Time period" value={days} onChange={(e) => setDays(Number(e.target.value))}>
-          {PERIODS.map(([d, l]) => <option key={d} value={d}>{l}</option>)}
-        </select>
+        <div className="view-t"><h1 id="h-history" className="disp" tabIndex={-1}>History</h1>
+          <p>What Dropwatch claimed, and what it missed and why.</p></div>
+        <div className="seg" role="group" aria-label="Time period">
+          {PERIODS.map(([d, l]) => <button key={d} type="button" aria-pressed={days === d} onClick={() => setDays(d)}>{l}</button>)}
+        </div>
         <label className="filter"><input type="search" aria-label="Filter History" placeholder="Filter by game or campaign"
           value={filter} onChange={(e) => setFilter(e.target.value)} /></label>
       </div>
-      {data && (data.total_rewards > 0 || (data.points?.points ?? 0) > 0) && <Stats data={data} label={PERIODS.find(([d]) => d === days)?.[1] ?? ""} />}
+      {data && (data.total_rewards > 0 || (data.points?.points ?? 0) > 0) && <Stats data={data} label={PERIODS.find(([d]) => d === days)?.[2] ?? ""} days={days} />}
       {data && !data.total_rewards && !(data.points?.points ?? 0) && (
         <div className="hist-lead"><svg aria-hidden="true"><use href="#i-check" /></svg>
           <span>{data.total_rewards
@@ -207,7 +208,8 @@ export function watchMinutes(claims: Claim[]): { minutes: number; partial: boole
 }
 
 /** History stats for the chosen period (approved mockup docs/design/pre-docker-mockup.html, 2026-10-10). */
-function Stats({ data, label }: { data: History; label: string }) {
+function Stats({ data, label, days }: { data: History; label: string; days: number }) {
+  const notable = (data.missed ?? []).filter(isNotable).length;
   const campaigns = new Set(data.claims.map((c) => c.campaign_id)).size;
   const { minutes, partial } = watchMinutes(data.claims);
   const watched = `${minutes >= 60 ? `${Math.round(minutes / 60)}${NB}h` : `${minutes}${NB}min`}${partial ? "+" : ""}`;
@@ -241,11 +243,43 @@ function Stats({ data, label }: { data: History; label: string }) {
         <div className="stat"><div className="n">{(data.points?.points ?? 0).toLocaleString("en-US")}</div>
           <div className="l">channel points</div>
           {(data.points?.chests ?? 0) > 0 && <div className="l">{data.points!.chests} {data.points!.chests === 1 ? "chest" : "chests"} opened</div>}</div>
+        {notable > 0 && <div className="stat"><div className="n warn">{notable}</div><div className="l">missed</div></div>}
       </div>
+      {days > 1 && <RewardsPerDay claims={data.claims} days={Math.min(days, CHART_DAYS)} />}
       <div className="list stats-list">
         {bars("Rewards by game", games, () => undefined, (k) => k)}
         {reasons.length > 0 && bars("Missed, by reason", reasons, (k) => TONE[REASON[k]?.tone ?? ""],
           (k) => REASON[k]?.chip ?? k)}
+      </div>
+    </section>
+  );
+}
+
+const CHART_DAYS = 14;
+
+/** Rewards per viewer's day, oldest to newest (days with none included). The labels are visible and the whole
+ * chart reads as one sentence to a screen reader; each bar's count is printed above it. */
+export function RewardsPerDay({ claims, days }: { claims: Claim[]; days: number }) {
+  const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  const counts = new Map<string, number>();
+  for (const c of claims) { const k = dayKey(new Date(c.at)); counts.set(k, (counts.get(k) ?? 0) + c.rewards.length); }
+  const fmt = new Intl.DateTimeFormat("en-GB", { weekday: "short" });
+  const full = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  const bars = Array.from({ length: days }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (days - 1 - i));
+    return { key: dayKey(d), label: fmt.format(d), title: full.format(d).replace(",", ""), n: counts.get(dayKey(d)) ?? 0 };
+  });
+  const top = Math.max(1, ...bars.map((b) => b.n));
+  return (
+    <section className="perday" aria-labelledby="h-perday">
+      <div className="perday-h"><h3 id="h-perday">Rewards per day</h3><span>{bars[0]!.title} – {bars.at(-1)!.title}</span></div>
+      <div className="perday-bars" role="img" aria-label={`Rewards per day: ${bars.map((b) => `${b.title} ${b.n}`).join(", ")}`}>
+        {bars.map((b, i) => (
+          <div key={b.key} className={i === bars.length - 1 ? "newest" : undefined} title={`${b.title}: ${b.n}`}>
+            <b>{b.n}</b><i style={{ height: `${(b.n / top) * 100}px` }} /><span>{days > 7 ? b.title.split(" ")[1] : b.label}</span>
+          </div>
+        ))}
       </div>
     </section>
   );

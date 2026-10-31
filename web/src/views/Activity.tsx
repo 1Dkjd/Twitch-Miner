@@ -145,7 +145,8 @@ export function ActivityView() {
   return (
     <section className="view" id="v-activity" aria-labelledby="h-activity">
       <div className="view-h">
-        <h1 id="h-activity" className="disp" tabIndex={-1}>Activity</h1>
+        <div className="view-t"><h1 id="h-activity" className="disp" tabIndex={-1}>Activity</h1>
+          <p>What Dropwatch did, newest first.</p></div>
         <div className="chips" role="group" aria-label="Show">
           <button type="button" aria-pressed={shown.size === ALL.length} onClick={() => choose(new Set(ALL))}>All</button>
           {GROUPS.map(([g, label]) => (

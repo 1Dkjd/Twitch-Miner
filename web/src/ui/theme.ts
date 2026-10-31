@@ -13,8 +13,8 @@ type Palette = {
 
 export const PALETTES: Record<string, Palette> = {
   twitch: { name: "Twitch", scheme: "dark", bg: "#0e0e10", surface: "#18181b", surface2: "#1f1f23", line: "#2f2f35",
-    fg: "#efeff1", muted: "#adadb8", accent: "#9147ff", accentText: "#bf94ff", accentInk: "#ffffff",
-    ok: "#00c48c", okText: "#3fd8a6", alert: "#eb0400", alertText: "#ff6b66", warn: "#ffb31a", warnText: "#ffc85a", note: "#5c9dff", art: "#26262c" },
+    fg: "#efeff1", muted: "#adadb8", accent: "#9146ff", accentText: "#bf94ff", accentInk: "#ffffff",
+    ok: "#3ddc97", okText: "#3ddc97", alert: "#eb0400", alertText: "#ff6b66", warn: "#ffb31a", warnText: "#ffc85a", note: "#5c9dff", art: "#26262c" },
   midnight: { name: "Midnight", scheme: "dark", bg: "#000000", surface: "#0b0b0d", surface2: "#141418", line: "#22222a",
     fg: "#e8e8ec", muted: "#8b8b96", accent: "#e3a83f", accentText: "#f0be63", accentInk: "#160f02",
     ok: "#5fbf8a", okText: "#77d39f", alert: "#f0765f", alertText: "#f4907d", warn: "#f0913c", warnText: "#f5a35c", note: "#7d9be0", art: "#121218" },
@@ -46,11 +46,11 @@ const soft = (hex: string, a: number) => {
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 };
 
-/** One rule per colour theme. ":not([data-x])" lifts it above app.css's look and system-light rules. */
+/** One rule per colour theme. ":not([data-x])" lifts it above app.css's system-light rules. */
 export function themeCss(): string {
   return Object.entries(PALETTES).map(([id, p]) => `:root:not([data-x])[data-theme="${id}"] {
-  --bg: ${p.bg}; --surface: ${p.surface}; --surface-2: ${p.surface2}; --line: ${p.line};
-  --fg: ${p.fg}; --muted: ${p.muted};
+  --bg: ${p.bg}; --surface: ${p.surface}; --surface-2: ${p.surface2}; --surface-3: color-mix(in srgb, ${p.surface2} 88%, ${p.fg}); --line: ${p.line};
+  --fg: ${p.fg}; --muted: ${p.muted}; --dim: ${p.muted};
   --accent: ${p.accent}; --accent-text: ${p.accentText}; --accent-ink: ${p.accentInk}; --accent-soft: ${soft(p.accent, 0.16)};
   --ok: ${p.ok}; --ok-text: ${p.okText}; --ok-soft: ${soft(p.ok, 0.14)};
   --alert: ${p.alert}; --alert-text: ${p.alertText}; --alert-soft: ${soft(p.alert, 0.13)};
@@ -95,9 +95,9 @@ export function applyTheme(t: Theme) {
 /** The three dots a theme card shows: background, surface and accent. */
 export function swatch(t: Theme): [string, string, string] {
   if (t in PALETTES) { const p = PALETTES[t]!; return [p.bg, p.surface2, p.accent]; }
-  if (t === "light") return ["#f1f0ec", "#ffffff", "#c98a0b"];
-  if (t === "dark") return ["#13110d", "#26221b", "#f2b632"];
-  return ["#13110d", "#f1f0ec", "#f2b632"]; // system: the dark and light halves of the default
+  if (t === "light") return ["#f7f7f8", "#ffffff", "#772ce8"];
+  if (t === "dark") return ["#0e0e10", "#1f1f23", "#9146ff"];
+  return ["#0e0e10", "#f7f7f8", "#9146ff"]; // system: the dark and light halves of the default
 }
 
 export const themeName = (t: Theme) => (t in PALETTES ? PALETTES[t]!.name : t.charAt(0).toUpperCase() + t.slice(1));

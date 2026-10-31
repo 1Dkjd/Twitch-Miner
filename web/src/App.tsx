@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { type View, useView } from "./router";
+import { type View, go, useView } from "./router";
 import { ConnectScreen } from "./screens/Connect";
 import { LoginScreen, SetupScreen } from "./screens/PagePassword";
 import { AppProvider, Toasts, useApp } from "./store";
@@ -14,6 +14,8 @@ import { OverviewView } from "./views/Overview";
 import { PrioritiesView } from "./views/Priorities";
 import { SettingsView } from "./views/Settings";
 import { clock } from "./ui/format";
+import { useNarrow } from "./ui/useNarrow";
+import { MenuButton } from "./views/Menu";
 import { applyTheme, savedTheme } from "./ui/theme";
 
 export function App({ retryMs }: { retryMs?: number } = {}) {
@@ -46,15 +48,26 @@ export function pillFor(state: string | undefined, lost: boolean): [string, stri
 function TopBar({ view, tabs }: { view: View; tabs: boolean }) {
   const { state, connection } = useApp();
   const [tone, label] = pillFor(state?.state, connection === "lost");
+  const phone = useNarrow();
+  // phones (mockup): four tabs and More, which holds the rest
+  const main = phone ? TABS.slice(0, 4) : TABS;
+  const rest = phone ? TABS.slice(4) : [];
+  const inRest = rest.some(([v]) => v === view);
   return (
     <header className="bar">
       <div className="bar-in">
         <div className="brand"><Mark />Dropwatch</div>
         {tabs && (
           <nav className="tabs" aria-label="Views">
-            {TABS.map(([v, name, icon]) => (
+            {main.map(([v, name, icon]) => (
               <a key={v} href={`#${v}`} aria-current={view === v ? "page" : undefined}><Icon name={icon} />{name}</a>
             ))}
+            {phone && (
+              <MenuButton id="more-menu" label="More" wrapClass={`tab-more${inRest ? " on" : ""}`} buttonClass=""
+                buttonLabel={inRest ? `More, ${rest.find(([v]) => v === view)![1]} is open` : "More"}
+                buttonContent={<><Icon name="more" />More</>}
+                items={rest.map(([v, name]) => ({ key: v, content: name, onSelect: () => go(v) }))} />
+            )}
           </nav>
         )}
         {tabs && state?.signed_in && <CheckTwitch />}

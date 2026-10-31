@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dropwatch · History</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0e0e10}
+a{color:#bf94ff}a:hover{color:#d9c2ff}
+.dw{--bg:#0e0e10;--s1:#18181b;--s2:#1f1f23;--s3:#2a2a30;--line:#2f2f35;--fg:#efeff1;--mut:#adadb8;--dim:#8a8a99;--live:#eb0400;--okt:#3ddc97;--warn:#ffb31a;--acct:#bf94ff;font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);min-height:100vh;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.top{display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;background:var(--s1);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em;color:var(--fg);text-decoration:none}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--acc);display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;gap:2px;flex:1;flex-wrap:wrap}
+.tab{display:flex;align-items:center;height:60px;padding:0 14px;color:var(--mut);font-weight:600;text-decoration:none;box-sizing:border-box;border-bottom:2px solid transparent}
+.tab:hover{color:var(--fg)}
+.tab.on{color:var(--fg);border-bottom-color:var(--acc)}
+.pill{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:999px;background:rgba(61,220,151,.12);color:var(--okt);font-weight:700;font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:12px}
+.h2{font-size:18px;font-weight:700;margin:0}
+.art{aspect-ratio:3/4;border-radius:6px;flex-shrink:0}
+.mut{color:var(--mut)}
+.num{font-variant-numeric:tabular-nums}
+.stat{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.stat .n{font-size:30px;font-weight:800;letter-spacing:-.02em}
+.stat .l{color:var(--mut);font-size:13px;font-weight:600}
+.ev{display:flex;align-items:center;gap:14px;padding:12px 18px;border-top:1px solid var(--line)}
+.ev:first-child{border-top:0}
+.ico{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.seg{display:inline-flex;background:var(--s2);border:1px solid var(--line);border-radius:8px;padding:3px;gap:2px}
+.seg button{min-height:36px;padding:0 14px;border:0;border-radius:6px;background:transparent;color:var(--mut);font:600 13px Inter,sans-serif;cursor:pointer}
+.seg button.on{background:var(--s3);color:var(--fg)}
+</style>
+</helmet>
+<div class="dw" style="--acc: {{accent}}">
+  <header class="top">
+    <a class="brand" href="Main.dc.html"><span class="logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="M6 10l6 6 6-6"></path><path d="M5 21h14"></path></svg></span>Dropwatch</a>
+    <nav class="tabs" aria-label="Views">
+      <a class="tab" href="Main.dc.html">Overview</a>
+      <a class="tab" href="Priorities.dc.html">Priorities</a>
+      <a class="tab" href="Inventory.dc.html">Inventory</a>
+      <a class="tab on" href="History.dc.html" aria-current="page">History</a>
+      <a class="tab" href="#">Activity</a>
+      <a class="tab" href="#">Settings</a>
+    </nav>
+    <span class="pill" role="status"><span class="dot" aria-hidden="true"></span>Mining</span>
+  </header>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 28px 24px 56px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+      <div style="flex: 1; min-width: 260px">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.02em">History</h1>
+        <p class="mut" style="margin: 6px 0 0">What Dropwatch claimed, and what it missed and why.</p>
+      </div>
+      <div class="seg" role="group" aria-label="Period">
+        <button type="button" aria-pressed="false">Today</button>
+        <button type="button" class="on" aria-pressed="true">7 days</button>
+        <button type="button" aria-pressed="false">30 days</button>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px">
+      <div class="stat"><div class="n num">23</div><div class="l">Rewards claimed</div></div>
+      <div class="stat"><div class="n num">9</div><div class="l">Campaigns finished</div></div>
+      <div class="stat"><div class="n num">41.2K</div><div class="l">Channel points · 14 chests</div></div>
+      <div class="stat"><div class="n num" style="color: var(--warn)">2</div><div class="l">Missed</div></div>
+    </div>
+
+    <section class="card" aria-labelledby="h-chart" style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; align-items: baseline; gap: 12px"><h2 class="h2" id="h-chart">Rewards per day</h2><span class="mut" style="font-size: 13px">Sat 25 Oct – Fri 31 Oct</span></div>
+      <div style="display: flex; align-items: flex-end; gap: 14px; height: 150px" role="img" aria-label="Rewards per day: Sat 2, Sun 4, Mon 1, Tue 3, Wed 5, Thu 3, Fri 5">
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end">
+            <span class="num" style="font-size: 12px; font-weight: 700">{{d.n}}</span>
+            <div style="width: 100%; max-width: 56px; height: {{d.h}}; background: {{d.color}}; border-radius: 4px 4px 0 0"></div>
+            <span class="mut" style="font-size: 12px; font-weight: 600">{{d.label}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+      <section style="display: flex; flex-direction: column; gap: 10px">
+        <h2 class="h2" style="font-size: 15px; color: var(--mut)">{{g.day}}</h2>
+        <div class="card" style="overflow: hidden">
+          <sc-for list="{{g.items}}" as="e" hint-placeholder-count="3">
+            <div class="ev">
+              <span class="ico" style="background: {{e.icoBg}}; color: {{e.icoFg}}">
+                <sc-if value="{{e.ok}}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+                <sc-if value="{{e.miss}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 7v6"></path><path d="M12 17h.01"></path></svg></sc-if>
+              </span>
+              <div class="art" style="width: 30px; background: {{e.color}}" aria-hidden="true"></div>
+              <div style="flex: 1; min-width: 0">
+                <div style="font-weight: 700; font-size: 14px">{{e.title}}</div>
+                <div class="mut" style="font-size: 12px">{{e.sub}}</div>
+              </div>
+              <span class="mut num" style="font-size: 12px; white-space: nowrap">{{e.time}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#9146ff","options":["#9146ff","#772ce8","#00c8af","#ff6905"]},"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const acc = this.props.accent ?? '#9146ff';
+    const counts = [['Sat', 2], ['Sun', 4], ['Mon', 1], ['Tue', 3], ['Wed', 5], ['Thu', 3], ['Fri', 5]];
+    const ok = { ok: true, miss: false, icoBg: 'rgba(61,220,151,.14)', icoFg: '#3ddc97' };
+    const miss = { ok: false, miss: true, icoBg: 'rgba(255,179,26,.14)', icoFg: '#ffb31a' };
+    return {
+      accent: acc,
+      days: counts.map(([label, n], i) => ({ label, n, h: Math.round(n / 5 * 110) + 'px', color: i === counts.length - 1 ? acc : '#3a3a42' })),
+      groups: [
+        { day: 'Today', items: [
+          { ...ok, title: 'APEX Pack', sub: 'ALGS S2 PO D3 · Apex Legends · 15 min watched', time: '2:25 PM', color: '#6e1a1a' },
+          { ...ok, title: 'Esports Loot Box', sub: 'OWCS Stage 3 Playoffs · Overwatch 2 · on zbra', time: '9:27 AM', color: '#7a3d12' },
+          { ...ok, title: 'Grotti Turismo Omaggio', sub: 'nopixel V · GTA V · on crystalst', time: '9:07 AM', color: '#1f4d2b' },
+          { ...ok, title: 'Cold Blooded', sub: 'Open Series Cup #2 · Battlefield REDSEC · on itzmaxiq', time: '8:32 AM', color: '#1d3a52' },
+          { ...ok, title: 'Esports Loot Box', sub: 'OWCS Stage 3 Playoffs · Overwatch 2 · on ml7support', time: '8:08 AM', color: '#7a3d12' } ] },
+        { day: 'Thursday 30 Oct', items: [
+          { ...miss, title: 'Missed: Halloween 2026', sub: 'The Other Side · account not linked', time: 'Ended 11:59 PM', color: '#3b2a52' },
+          { ...ok, title: 'Hazmat Skin', sub: 'Rust Drops 41 · Rust · 2 h 30 min watched', time: '6:14 PM', color: '#5a2d14' },
+          { ...ok, title: 'Esports Loot Box', sub: 'OWCS Stage 3 Playoffs · Overwatch 2', time: '1:40 PM', color: '#7a3d12' } ] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

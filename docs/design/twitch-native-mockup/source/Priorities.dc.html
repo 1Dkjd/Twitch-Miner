@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dropwatch · Priorities</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0e0e10}
+a{color:#bf94ff}a:hover{color:#d9c2ff}
+.dw{--bg:#0e0e10;--s1:#18181b;--s2:#1f1f23;--s3:#2a2a30;--line:#2f2f35;--fg:#efeff1;--mut:#adadb8;--dim:#8a8a99;--live:#eb0400;--okt:#3ddc97;--warn:#ffb31a;--acct:#bf94ff;font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);min-height:100vh;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.top{display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;background:var(--s1);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em;color:var(--fg);text-decoration:none}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--acc);display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;gap:2px;flex:1;flex-wrap:wrap}
+.tab{display:flex;align-items:center;height:60px;padding:0 14px;color:var(--mut);font-weight:600;text-decoration:none;box-sizing:border-box;border-bottom:2px solid transparent}
+.tab:hover{color:var(--fg)}
+.tab.on{color:var(--fg);border-bottom-color:var(--acc)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border-radius:6px;border:0;background:var(--s3);color:var(--fg);font:600 13px/1 Inter,sans-serif;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{background:#38383f;color:var(--fg)}
+.btn.pri{background:var(--acc);color:#fff}
+.icon-btn{width:40px;height:40px;padding:0;border-radius:6px;border:0;background:transparent;color:var(--mut);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-btn:hover{background:var(--s3);color:var(--fg)}
+.pill{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:999px;background:rgba(61,220,151,.12);color:var(--okt);font-weight:700;font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:12px}
+.h2{font-size:18px;font-weight:700;margin:0}
+.art{aspect-ratio:3/4;border-radius:6px;flex-shrink:0}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.chip.ok{background:rgba(61,220,151,.12);color:var(--okt)}
+.chip.warn{background:rgba(255,179,26,.13);color:var(--warn)}
+.chip.mut{background:var(--s3);color:var(--mut)}
+.row{display:flex;align-items:center;gap:14px;padding:10px 14px 10px 8px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row:hover{background:var(--s2)}
+.mut{color:var(--mut)}
+.num{font-variant-numeric:tabular-nums}
+.rank{width:30px;height:30px;border-radius:6px;background:rgba(145,70,255,.18);color:var(--acct);font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.grip{color:var(--dim);cursor:grab}
+.tag{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 6px 0 12px;border-radius:6px;background:var(--s2);font-weight:600;font-size:13px}
+.x{width:26px;height:26px;border:0;border-radius:4px;background:transparent;color:var(--mut);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.x:hover{background:var(--s3);color:var(--fg)}
+.field{display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-radius:6px;background:var(--s2);border:1px solid var(--line);color:var(--mut)}
+.field input{background:transparent;border:0;outline:0;color:var(--fg);font:500 14px Inter,sans-serif;flex:1;min-width:0}
+.switch{width:44px;height:24px;border-radius:999px;background:var(--acc);position:relative;border:0;flex-shrink:0;cursor:pointer}
+.switch span{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff}
+</style>
+</helmet>
+<div class="dw" style="--acc: {{accent}}">
+  <header class="top">
+    <a class="brand" href="Main.dc.html"><span class="logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="M6 10l6 6 6-6"></path><path d="M5 21h14"></path></svg></span>Dropwatch</a>
+    <nav class="tabs" aria-label="Views">
+      <a class="tab" href="Main.dc.html">Overview</a>
+      <a class="tab on" href="Priorities.dc.html" aria-current="page">Priorities</a>
+      <a class="tab" href="Inventory.dc.html">Inventory</a>
+      <a class="tab" href="History.dc.html">History</a>
+      <a class="tab" href="#">Activity</a>
+      <a class="tab" href="#">Settings</a>
+    </nav>
+    <span class="pill" role="status"><span class="dot" aria-hidden="true"></span>Mining</span>
+  </header>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 28px 24px 56px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.02em">Priorities</h1>
+      <p class="mut" style="margin: 0">Dropwatch mines these games first, top to bottom. Everything else is mined only when nothing here has a drop to earn.</p>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+      <section class="card" aria-labelledby="h-pri" style="flex: 999 1 600px; min-width: 0; overflow: hidden">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap">
+          <h2 class="h2" id="h-pri">Priority games</h2>
+          <span class="mut" style="font-size: 13px">Drag to reorder</span>
+          <label class="field" style="margin-left: auto; width: 260px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+            <span class="sr" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Add a game</span>
+            <input type="text" placeholder="Add a game…">
+          </label>
+        </div>
+        <sc-for list="{{pri}}" as="g" hint-placeholder-count="6">
+          <div class="row">
+            <span class="grip" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></span>
+            <span class="rank num">{{g.n}}</span>
+            <div class="art" style="width: 36px; background: {{g.color}}" aria-hidden="true"></div>
+            <div style="flex: 1; min-width: 0">
+              <div style="font-weight: 700">{{g.game}}</div>
+              <div class="mut" style="font-size: 12px">{{g.info}}</div>
+            </div>
+            <span class="chip {{g.tone}}">{{g.state}}</span>
+            <button class="icon-btn" type="button" aria-label="Options for {{g.game}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg></button>
+          </div>
+        </sc-for>
+      </section>
+
+      <div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+        <section class="card" aria-labelledby="h-only" style="padding: 18px 20px; display: flex; gap: 16px; align-items: center">
+          <div style="flex: 1">
+            <h2 class="h2" id="h-only" style="font-size: 16px">Priority only</h2>
+            <p class="mut" style="margin: 4px 0 0; font-size: 13px">Mine nothing outside the list above. Off: other games fill the gaps.</p>
+          </div>
+          <button class="switch" type="button" role="switch" aria-checked="true" aria-labelledby="h-only"><span></span></button>
+        </section>
+
+        <section class="card" aria-labelledby="h-never" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: baseline; gap: 10px"><h2 class="h2" id="h-never" style="font-size: 16px">Never mine</h2><span class="mut num" style="font-size: 13px">4 games</span></div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{never}}" as="v" hint-placeholder-count="4">
+              <span class="tag">{{v}}<button class="x" type="button" aria-label="Remove {{v}} from Never"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg></button></span>
+            </sc-for>
+          </div>
+          <label class="field"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Add a game to Never</span><input type="text" placeholder="Add a game…"></label>
+        </section>
+
+        <section class="card" aria-labelledby="h-fav" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+          <div>
+            <h2 class="h2" id="h-fav" style="font-size: 16px">Favourite channels</h2>
+            <p class="mut" style="margin: 4px 0 0; font-size: 13px">Watched first when they stream a drop game. Also earns their channel points and watch streaks.</p>
+          </div>
+          <sc-for list="{{favs}}" as="f" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span style="width: 32px; height: 32px; border-radius: 50%; background: {{f.color}}; flex-shrink: 0" aria-hidden="true"></span>
+              <div style="flex: 1; min-width: 0"><div style="font-weight: 700; font-size: 13px">{{f.name}}</div><div class="mut num" style="font-size: 12px">{{f.info}}</div></div>
+              <sc-if value="{{f.live}}" hint-placeholder-val="{{ true }}"><span style="background: var(--live); color: #fff; font-weight: 800; font-size: 11px; padding: 2px 6px; border-radius: 4px; letter-spacing: .05em">LIVE</span></sc-if>
+              <button class="x" type="button" aria-label="Remove {{f.name}}" style="width: 32px; height: 32px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg></button>
+            </div>
+          </sc-for>
+          <label class="field"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Add a channel</span><input type="text" placeholder="Add a channel…"></label>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#9146ff","options":["#9146ff","#772ce8","#00c8af","#ff6905"]},"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      accent: this.props.accent ?? '#9146ff',
+      pri: [
+        { n: 1, game: 'Battlefield REDSEC', info: '2 campaigns · mining now', state: 'Mining', tone: 'ok', color: '#1d3a52' },
+        { n: 2, game: 'Overwatch 2', info: '3 campaigns · 1 starts Thu', state: 'Ready', tone: 'mut', color: '#7a3d12' },
+        { n: 3, game: 'Apex Legends', info: '1 campaign · ends Sat', state: 'Ready', tone: 'mut', color: '#6e1a1a' },
+        { n: 4, game: 'Eternal Return', info: '2 campaigns', state: 'Link account', tone: 'warn', color: '#2c2f6b' },
+        { n: 5, game: 'Marvel Rivals', info: 'Next campaign Mon 3 Nov', state: 'No drops now', tone: 'mut', color: '#5a1446' },
+        { n: 6, game: 'Grand Theft Auto V', info: '1 campaign · pinned', state: 'Ready', tone: 'mut', color: '#1f4d2b' },
+        { n: 7, game: 'WARDOGS', info: 'Season 2 ended', state: 'No drops now', tone: 'mut', color: '#3d3d24' }
+      ],
+      never: ['Fortnite', 'Dead by Daylight', 'World of Tanks', 'Raid: Shadow Legends'],
+      favs: [
+        { name: 'itzmaxiq', info: 'Battlefield REDSEC · 4.2K', live: true, color: '#3a2a5c' },
+        { name: 'zbra', info: 'Offline · streak 6', live: false, color: '#2a4a5c' },
+        { name: 'ml7support', info: 'Offline · streak 2', live: false, color: '#5c3a2a' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

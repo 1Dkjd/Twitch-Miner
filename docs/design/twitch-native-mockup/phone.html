@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en"><head><style>
+    .sc-placeholder{background:color-mix(in srgb,currentColor 8%,transparent);
+      border:1px solid color-mix(in srgb,currentColor 50%,transparent);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
+    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
+    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
+      background:color-mix(in srgb,currentColor 8%,transparent)}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:color-mix(in srgb,currentColor 70%,transparent);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:color-mix(in srgb,currentColor 50%,transparent);
+      background:color-mix(in srgb,currentColor 10%,transparent);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      figure, table { break-inside: avoid; }
+      #dc-root, #dc-root > .sc-host { height: auto; }
+      *, *::before, *::after {
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  </style>
+<meta charset="utf-8">
+<title>Dropwatch · Overview on phone</title>
+<style>x-dc{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" data-dc-tpl="1"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" data-dc-tpl="2"><style data-dc-tpl="3">
+body{margin:0;background:#0e0e10}
+a{color:#bf94ff}a:hover{color:#d9c2ff}
+.dw{--bg:#0e0e10;--s1:#18181b;--s2:#1f1f23;--s3:#2a2a30;--line:#2f2f35;--fg:#efeff1;--mut:#adadb8;--dim:#8a8a99;--live:#eb0400;--okt:#3ddc97;--warn:#ffb31a;--acct:#bf94ff;font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:12px}
+.art{aspect-ratio:3/4;border-radius:6px;flex-shrink:0}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.chip.ok{background:rgba(61,220,151,.12);color:var(--okt)}
+.chip.warn{background:rgba(255,179,26,.13);color:var(--warn)}
+.chip.acc{background:rgba(145,70,255,.18);color:var(--acct)}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.mut{color:var(--mut)}
+.num{font-variant-numeric:tabular-nums}
+.seg{flex:1;height:6px;border-radius:3px;background:var(--s3);overflow:hidden}
+.fill{height:100%;background:var(--acc)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 14px;border-radius:8px;border:0;background:var(--s3);color:var(--fg);font:600 14px/1 Inter,sans-serif;cursor:pointer;text-decoration:none;flex:1}
+.btn.pri{background:var(--acc);color:#fff}
+.nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px;color:var(--dim);font-size:11px;font-weight:600;text-decoration:none}
+.nav a.on{color:var(--acct)}
+</style></head>
+<body>
+<div id="dc-root"><div class="sc-host" data-sc-name="Phone"><div data-dc-tpl="4" class="dw" style="--acc: #9146ff; width: 390px; height: 844px; display: flex; flex-direction: column; overflow: hidden;">
+  <header data-dc-tpl="5" style="display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: var(--s1); border-bottom: 1px solid var(--line);">
+    <span data-dc-tpl="6" style="width: 28px; height: 28px; border-radius: 7px; background: var(--acc); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="7" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="8" d="M12 3v12"></path><path data-dc-tpl="9" d="M6 10l6 6 6-6"></path><path data-dc-tpl="10" d="M5 21h14"></path></svg></span>
+    <span data-dc-tpl="11" style="font-weight: 800; font-size: 16px; flex: 1 1 0%;">Dropwatch</span>
+    <span data-dc-tpl="12" role="status" style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0px 10px; border-radius: 999px; background: rgba(61, 220, 151, 0.12); color: var(--okt); font-weight: 700; font-size: 12px;"><span data-dc-tpl="13" style="width: 7px; height: 7px; border-radius: 50%; background: currentcolor;"></span>Mining</span>
+  </header>
+
+  <main data-dc-tpl="14" style="flex: 1 1 0%; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+    <a data-dc-tpl="15" href="#" class="card" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-color: rgba(255, 179, 26, 0.35); text-decoration: none; color: var(--fg);">
+      <span data-dc-tpl="16" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 179, 26, 0.14); color: var(--warn); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg data-dc-tpl="17" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="18" d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path data-dc-tpl="19" d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></span>
+      <span data-dc-tpl="20" style="flex: 1 1 0%;"><span data-dc-tpl="21" style="display: block; font-weight: 700; font-size: 13px;">2 campaigns need your account linked</span><span data-dc-tpl="22" class="mut" style="font-size: 12px;">Eternal Return, The Other Side</span></span>
+      <svg data-dc-tpl="23" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="color: var(--dim);"><path data-dc-tpl="24" d="m9 6 6 6-6 6"></path></svg>
+    </a>
+
+    <section data-dc-tpl="25" class="card" aria-labelledby="h-now-p" style="padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+      <div data-dc-tpl="26" style="display: flex; gap: 14px;">
+        <div data-dc-tpl="27" class="art" aria-hidden="true" style="width: 76px; background: rgb(29, 58, 82);"></div>
+        <div data-dc-tpl="28" style="min-width: 0px; display: flex; flex-direction: column; gap: 3px;">
+          <span data-dc-tpl="29" class="eyebrow" style="color: var(--acct);">Mining now</span>
+          <span data-dc-tpl="30" class="mut" style="font-size: 12px; font-weight: 600;">Battlefield REDSEC</span>
+          <h1 data-dc-tpl="31" id="h-now-p" style="margin: 0px; font-size: 19px; line-height: 1.2; font-weight: 800;">Open Series Cup #3</h1>
+          <span data-dc-tpl="32" style="display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 13px;"><b data-dc-tpl="33">itzmaxiq</b><span data-dc-tpl="34" style="background: var(--live); color: rgb(255, 255, 255); font-weight: 800; font-size: 10px; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.05em;">LIVE</span></span>
+        </div>
+      </div>
+      <div data-dc-tpl="35" style="background: var(--s2); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+        <div data-dc-tpl="36" style="display: flex; align-items: baseline; gap: 8px;">
+          <span data-dc-tpl="37" style="font-weight: 700; flex: 1 1 0%;">Cold Blooded</span>
+          <span data-dc-tpl="38" class="num" style="font-weight: 800;">4 h 12 <span data-dc-tpl="39" class="mut" style="font-weight: 600; font-size: 12px;">/ 6 h</span></span>
+        </div>
+        <div data-dc-tpl="40" role="img" aria-label="Drop 2 of 3, 70% done" style="display: flex; gap: 4px;">
+          <div data-dc-tpl="41" class="seg"><div data-dc-tpl="42" class="fill" style="width: 100%;"></div></div>
+          <div data-dc-tpl="43" class="seg"><div data-dc-tpl="44" class="fill" style="width: 70%;"></div></div>
+          <div data-dc-tpl="45" class="seg"><div data-dc-tpl="46" class="fill" style="width: 0%;"></div></div>
+        </div>
+        <div data-dc-tpl="47" style="display: flex; align-items: center; gap: 8px;"><span data-dc-tpl="48" class="chip ok">Plenty of time</span><span data-dc-tpl="49" class="mut" style="font-size: 12px;">ends Sun 2 Nov</span></div>
+      </div>
+      <div data-dc-tpl="50" style="display: flex; gap: 8px;">
+        <a data-dc-tpl="51" class="btn pri" href="#">Watch</a>
+        <button data-dc-tpl="52" class="btn" type="button">Pause</button>
+        <button data-dc-tpl="53" class="btn" type="button">Skip</button>
+      </div>
+    </section>
+
+    <section data-dc-tpl="54" aria-labelledby="h-next-p" style="display: flex; flex-direction: column; gap: 10px;">
+      <h2 data-dc-tpl="55" id="h-next-p" style="margin: 0px; font-size: 16px; font-weight: 700;">Up next</h2>
+      <div data-dc-tpl="56" class="card" style="overflow: hidden;">
+        
+          <div data-dc-tpl="58" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line);">
+            <div data-dc-tpl="59" class="art" aria-hidden="true" style="width: 32px; background: rgb(122, 61, 18);"></div>
+            <div data-dc-tpl="60" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="61" style="font-weight: 700; font-size: 13px;"><span class="sc-interp">OWCS Stage 3 Playoffs</span></div><div data-dc-tpl="62" class="mut" style="font-size: 12px;"><span class="sc-interp">Esports Loot Box</span> · <span class="sc-interp">45 min</span></div></div>
+            <span data-dc-tpl="63" class="chip acc"><span class="sc-interp">P2</span></span>
+          </div>
+        
+          <div data-dc-tpl="58" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line);">
+            <div data-dc-tpl="59" class="art" aria-hidden="true" style="width: 32px; background: rgb(110, 26, 26);"></div>
+            <div data-dc-tpl="60" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="61" style="font-weight: 700; font-size: 13px;"><span class="sc-interp">ALGS S2 Playoffs D4</span></div><div data-dc-tpl="62" class="mut" style="font-size: 12px;"><span class="sc-interp">APEX Pack</span> · <span class="sc-interp">15 min</span></div></div>
+            <span data-dc-tpl="63" class="chip acc"><span class="sc-interp">P3</span></span>
+          </div>
+        
+          <div data-dc-tpl="58" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line);">
+            <div data-dc-tpl="59" class="art" aria-hidden="true" style="width: 32px; background: rgb(31, 77, 43);"></div>
+            <div data-dc-tpl="60" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="61" style="font-weight: 700; font-size: 13px;"><span class="sc-interp">nopixel V</span></div><div data-dc-tpl="62" class="mut" style="font-size: 12px;"><span class="sc-interp">Pegassi Tempesta</span> · <span class="sc-interp">4 h</span></div></div>
+            <span data-dc-tpl="63" class="chip acc"><span class="sc-interp">Pinned</span></span>
+          </div>
+        
+      </div>
+    </section>
+  </main>
+
+  <nav data-dc-tpl="64" class="nav" aria-label="Views" style="display: flex; background: var(--s1); border-top: 1px solid var(--line); padding-bottom: 8px;">
+    <a data-dc-tpl="65" class="on" href="#" aria-current="page"><svg data-dc-tpl="66" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="67" d="M3 11 12 4l9 7"></path><path data-dc-tpl="68" d="M5 10v10h14V10"></path></svg>Overview</a>
+    <a data-dc-tpl="69" href="#"><svg data-dc-tpl="70" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="71" d="M8 6h13"></path><path data-dc-tpl="72" d="M8 12h13"></path><path data-dc-tpl="73" d="M8 18h13"></path><path data-dc-tpl="74" d="M3 6h.01"></path><path data-dc-tpl="75" d="M3 12h.01"></path><path data-dc-tpl="76" d="M3 18h.01"></path></svg>Priorities</a>
+    <a data-dc-tpl="77" href="#"><svg data-dc-tpl="78" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect data-dc-tpl="79" x="3" y="8" width="18" height="13" rx="1"></rect><path data-dc-tpl="80" d="M12 8v13"></path><path data-dc-tpl="81" d="M3 12h18"></path></svg>Inventory</a>
+    <a data-dc-tpl="82" href="#"><svg data-dc-tpl="83" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle data-dc-tpl="84" cx="12" cy="12" r="9"></circle><path data-dc-tpl="85" d="M12 7v5l3 2"></path></svg>History</a>
+    <a data-dc-tpl="86" href="#"><svg data-dc-tpl="87" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle data-dc-tpl="88" cx="5" cy="12" r="1.8"></circle><circle data-dc-tpl="89" cx="12" cy="12" r="1.8"></circle><circle data-dc-tpl="90" cx="19" cy="12" r="1.8"></circle></svg>More</a>
+  </nav></div></div></div>
+
+
+
+</body></html>
