@@ -32,6 +32,10 @@ jobs:
         working-directory: web
       - run: npx tsc --noEmit && npm test
         working-directory: web
+      - run: npx playwright install --with-deps chromium
+        working-directory: web
+      - run: npm run test:e2e
+        working-directory: web
 
   image:
     needs: test
