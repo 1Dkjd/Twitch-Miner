@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dropwatch · Overview</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0e0e10}
+a{color:#bf94ff}a:hover{color:#d9c2ff}
+.dw{--bg:#0e0e10;--s1:#18181b;--s2:#1f1f23;--s3:#2a2a30;--line:#2f2f35;--fg:#efeff1;--mut:#adadb8;--dim:#8a8a99;--live:#eb0400;--okt:#3ddc97;--warn:#ffb31a;--acct:#bf94ff;font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);min-height:100vh;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.top{display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;background:var(--s1);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em;color:var(--fg);text-decoration:none}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--acc);display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;gap:2px;flex:1;flex-wrap:wrap}
+.tab{display:flex;align-items:center;height:60px;padding:0 14px;color:var(--mut);font-weight:600;text-decoration:none;box-sizing:border-box;border-bottom:2px solid transparent}
+.tab:hover{color:var(--fg)}
+.tab.on{color:var(--fg);border-bottom-color:var(--acc)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border-radius:6px;border:0;background:var(--s3);color:var(--fg);font:600 13px/1 Inter,sans-serif;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{background:#38383f;color:var(--fg)}
+.btn.pri{background:var(--acc);color:#fff}
+.btn.pri:hover{filter:brightness(1.1);color:#fff}
+.icon-btn{width:40px;height:40px;padding:0;border-radius:6px;border:0;background:transparent;color:var(--mut);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-btn:hover{background:var(--s3);color:var(--fg)}
+.pill{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:999px;background:rgba(61,220,151,.12);color:var(--okt);font-weight:700;font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.live{background:var(--live);color:#fff;font-weight:800;font-size:11px;padding:2px 6px;border-radius:4px;letter-spacing:.05em}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:12px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.h2{font-size:18px;font-weight:700;margin:0}
+.art{aspect-ratio:3/4;border-radius:8px;display:flex;align-items:flex-end;padding:10px;box-sizing:border-box;font-weight:800;color:#fff;font-size:12px;line-height:1.2;flex-shrink:0;overflow:hidden}
+.reward{width:56px;height:56px;border-radius:8px;background:var(--s3);display:flex;align-items:center;justify-content:center;color:var(--acct);flex-shrink:0}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700}
+.chip.ok{background:rgba(61,220,151,.12);color:var(--okt)}
+.chip.warn{background:rgba(255,179,26,.13);color:var(--warn)}
+.chip.acc{background:rgba(145,70,255,.18);color:var(--acct)}
+.chip.mut{background:var(--s3);color:var(--mut)}
+.seg{flex:1;height:8px;border-radius:4px;background:var(--s3);overflow:hidden}
+.fill{height:100%;background:var(--acc);border-radius:4px}
+.row{display:flex;align-items:center;gap:16px;padding:14px 18px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row:hover{background:var(--s2)}
+.mut{color:var(--mut)}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div class="dw" style="--acc: {{accent}}">
+  <header class="top">
+    <a class="brand" href="Main.dc.html"><span class="logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="M6 10l6 6 6-6"></path><path d="M5 21h14"></path></svg></span>Dropwatch</a>
+    <nav class="tabs" aria-label="Views">
+      <a class="tab on" href="Main.dc.html" aria-current="page">Overview</a>
+      <a class="tab" href="Priorities.dc.html">Priorities</a>
+      <a class="tab" href="Inventory.dc.html">Inventory</a>
+      <a class="tab" href="History.dc.html">History</a>
+      <a class="tab" href="#">Activity</a>
+      <a class="tab" href="#">Settings</a>
+    </nav>
+    <button class="btn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"></path><path d="M21 3v5h-5"></path></svg>Check Twitch</button>
+    <span class="pill" role="status"><span class="dot" aria-hidden="true"></span>Mining</span>
+  </header>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 28px 24px 56px; display: flex; flex-direction: column; gap: 32px">
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch">
+      <section class="card" aria-labelledby="h-now" style="flex: 999 1 640px; min-width: 0; padding: 24px; display: flex; flex-wrap: wrap; gap: 28px">
+        <div class="art" style="width: 196px; background: #1d3a52; font-size: 15px">Battlefield REDSEC</div>
+        <div style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <div style="display: flex; align-items: center; gap: 10px"><span class="eyebrow" style="color: var(--acct)">Mining now</span><span class="chip acc">Priority 1</span></div>
+            <div class="mut" style="font-weight: 600">Battlefield REDSEC</div>
+            <h1 id="h-now" style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800; letter-spacing: -.02em">Open Series Cup #3</h1>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px">
+              <span style="width: 28px; height: 28px; border-radius: 50%; background: #3a2a5c; display: inline-block" aria-hidden="true"></span>
+              <a href="#" style="font-weight: 700">itzmaxiq</a>
+              <span class="live">LIVE</span>
+              <span class="mut num">4.2K viewers</span>
+            </div>
+          </div>
+
+          <div style="background: var(--s2); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+              <div class="reward"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="1"></rect><path d="M12 8v13"></path><path d="M3 12h18"></path><path d="M7.5 8a2.5 2.5 0 1 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 1 1 0 5"></path></svg></div>
+              <div style="flex: 1; min-width: 160px">
+                <div class="eyebrow">Next reward</div>
+                <div style="font-size: 17px; font-weight: 700">Cold Blooded</div>
+              </div>
+              <div style="text-align: right">
+                <div class="num" style="font-size: 22px; font-weight: 800">4 h 12 min <span class="mut" style="font-size: 14px; font-weight: 600">/ 6 h</span></div>
+                <div class="mut" style="font-size: 13px">1 h 48 min to go</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px" role="img" aria-label="Drop 2 of 3, 70% done">
+              <div class="seg"><div class="fill" style="width: 100%"></div></div>
+              <div class="seg"><div class="fill" style="width: 70%"></div></div>
+              <div class="seg"><div class="fill" style="width: 0%"></div></div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+              <span class="chip ok">Plenty of time</span>
+              <span class="mut" style="font-size: 13px">Drop 2 of 3 · campaign ends Sun 2 Nov, 11:59 PM</span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; flex-wrap: wrap">
+            <a class="btn pri" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>Watch on Twitch</a>
+            <button class="btn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14"></path><path d="M15 5v14"></path></svg>Pause</button>
+            <button class="btn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4l10 8-10 8z"></path><path d="M19 5v14"></path></svg>Mine something else</button>
+            <button class="icon-btn" type="button" aria-label="More actions"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg></button>
+          </div>
+        </div>
+      </section>
+
+      <aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+        <section class="card" aria-labelledby="h-needs" style="padding: 20px; display: flex; flex-direction: column; gap: 14px; border-color: rgba(255,179,26,.35)">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <h2 class="h2" id="h-needs">Needs you</h2>
+            <span class="chip warn">2</span>
+          </div>
+          <p class="mut" style="margin: 0; font-size: 13px">Link these game accounts on Twitch so Dropwatch can mine them.</p>
+          <sc-for list="{{needs}}" as="n" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--s2); border-radius: 8px">
+              <div class="art" style="width: 36px; padding: 0; background: {{n.color}}" aria-hidden="true"></div>
+              <div style="flex: 1; min-width: 0">
+                <div style="font-weight: 700; font-size: 13px">{{n.campaign}}</div>
+                <div class="mut" style="font-size: 12px">{{n.game}}</div>
+              </div>
+              <a class="btn" href="#" style="min-height: 36px; padding: 0 12px">Link</a>
+            </div>
+          </sc-for>
+        </section>
+
+        <section class="card" aria-labelledby="h-today" style="padding: 20px; display: flex; flex-direction: column; gap: 14px">
+          <h2 class="h2" id="h-today">Today</h2>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+            <div style="background: var(--s2); border-radius: 8px; padding: 14px"><div class="num" style="font-size: 26px; font-weight: 800">5</div><div class="mut" style="font-size: 12px; font-weight: 600">Rewards claimed</div></div>
+            <div style="background: var(--s2); border-radius: 8px; padding: 14px"><div class="num" style="font-size: 26px; font-weight: 800">9 h 40</div><div class="mut" style="font-size: 12px; font-weight: 600">Watched</div></div>
+            <div style="background: var(--s2); border-radius: 8px; padding: 14px"><div class="num" style="font-size: 26px; font-weight: 800">12,450</div><div class="mut" style="font-size: 12px; font-weight: 600">Channel points</div></div>
+            <div style="background: var(--s2); border-radius: 8px; padding: 14px"><div class="num" style="font-size: 26px; font-weight: 800">65</div><div class="mut" style="font-size: 12px; font-weight: 600">Minable campaigns</div></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <section aria-labelledby="h-next" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap">
+        <h2 class="h2" id="h-next">Up next</h2>
+        <span class="mut" style="font-size: 13px">In priority order · 8 campaigns</span>
+        <a href="Priorities.dc.html" style="margin-left: auto; font-weight: 600; font-size: 13px">Edit priorities</a>
+      </div>
+      <div class="card" style="overflow: hidden">
+        <sc-for list="{{next}}" as="r" hint-placeholder-count="4">
+          <div class="row">
+            <div class="art" style="width: 44px; padding: 0; background: {{r.color}}" aria-hidden="true"></div>
+            <div style="flex: 1 1 220px; min-width: 0">
+              <div style="font-weight: 700">{{r.campaign}}</div>
+              <div class="mut" style="font-size: 13px">{{r.game}}</div>
+            </div>
+            <div style="flex: 1 1 200px; min-width: 0">
+              <div style="font-weight: 600; font-size: 13px">{{r.reward}}</div>
+              <div class="mut num" style="font-size: 12px">{{r.time}} to go · ends {{r.ends}}</div>
+            </div>
+            <span class="chip {{r.tone}}">{{r.badge}}</span>
+            <span class="mut num" style="font-size: 12px; width: 64px; text-align: right">{{r.live}} live</span>
+            <button class="icon-btn" type="button" aria-label="Options for {{r.campaign}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg></button>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-soon" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: baseline; gap: 12px"><h2 class="h2" id="h-soon">Coming up</h2><span class="mut" style="font-size: 13px">Starting in the next 7 days</span></div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px">
+        <sc-for list="{{soon}}" as="s" hint-placeholder-count="4">
+          <div class="card" style="padding: 14px; display: flex; gap: 14px; align-items: center">
+            <div class="art" style="width: 60px; padding: 0; background: {{s.color}}" aria-hidden="true"></div>
+            <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px">
+              <div style="font-weight: 700; font-size: 13px">{{s.campaign}}</div>
+              <div class="mut" style="font-size: 12px">{{s.game}} · {{s.starts}}</div>
+              <span class="chip {{s.tone}}" style="align-self: flex-start">{{s.state}}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-done" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap"><h2 class="h2" id="h-done">Recently claimed</h2><a href="History.dc.html" style="margin-left: auto; font-weight: 600; font-size: 13px">All history</a></div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px">
+        <sc-for list="{{done}}" as="d" hint-placeholder-count="5">
+          <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 10px">
+            <div class="reward" style="width: 100%; height: 96px"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="1"></rect><path d="M12 8v13"></path><path d="M3 12h18"></path><path d="M7.5 8a2.5 2.5 0 1 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 1 1 0 5"></path></svg></div>
+            <div>
+              <div style="font-weight: 700; font-size: 13px">{{d.reward}}</div>
+              <div class="mut" style="font-size: 12px">{{d.game}}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; color: var(--okt); font-size: 12px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>{{d.when}}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#9146ff","options":["#9146ff","#772ce8","#00c8af","#ff6905"]},"$preview":{"width":1440,"height":1560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      accent: this.props.accent ?? '#9146ff',
+      needs: [
+        { campaign: 'ERCC S12 Semi Day 1', game: 'Eternal Return', color: '#2c2f6b' },
+        { campaign: 'Halloween 2026', game: 'The Other Side', color: '#3b2a52' }
+      ],
+      next: [
+        { campaign: 'OWCS Stage 3 Playoffs', game: 'Overwatch 2', reward: 'Esports Loot Box', time: '45 min', ends: 'Mon 3 Nov', badge: 'Priority 2', tone: 'acc', live: 18, color: '#7a3d12' },
+        { campaign: 'ALGS S2 Playoffs D4', game: 'Apex Legends', reward: 'APEX Pack', time: '15 min', ends: 'Sat 1 Nov', badge: 'Priority 3', tone: 'acc', live: 9, color: '#6e1a1a' },
+        { campaign: 'nopixel V', game: 'Grand Theft Auto V', reward: 'Pegassi Tempesta', time: '4 h', ends: 'Fri 7 Nov', badge: 'Pinned', tone: 'ok', live: 31, color: '#1f4d2b' },
+        { campaign: 'Rust Drops 42', game: 'Rust', reward: 'Hazmat Skin', time: '2 h 30 min', ends: 'Thu 6 Nov', badge: 'Any game', tone: 'mut', live: 54, color: '#5a2d14' }
+      ],
+      soon: [
+        { campaign: 'Season 4 Launch', game: 'Marvel Rivals', starts: 'Mon 3 Nov', state: 'Linked', tone: 'ok', color: '#5a1446' },
+        { campaign: 'ERCC S12 Finals', game: 'Eternal Return', starts: 'Tue 4 Nov', state: 'Link first', tone: 'warn', color: '#2c2f6b' },
+        { campaign: 'OWCS Finals', game: 'Overwatch 2', starts: 'Thu 6 Nov', state: 'Linked', tone: 'ok', color: '#7a3d12' },
+        { campaign: 'Rust Drops 43', game: 'Rust', starts: 'Thu 6 Nov', state: 'No link needed', tone: 'mut', color: '#5a2d14' }
+      ],
+      done: [
+        { reward: 'APEX Pack', game: 'Apex Legends', when: '2:25 PM' },
+        { reward: 'Esports Loot Box', game: 'Overwatch 2', when: '9:27 AM' },
+        { reward: 'Grotti Turismo Omaggio', game: 'GTA V', when: '9:07 AM' },
+        { reward: 'Cold Blooded', game: 'Battlefield REDSEC', when: '8:32 AM' },
+        { reward: 'Esports Loot Box', game: 'Overwatch 2', when: '8:08 AM' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

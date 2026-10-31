@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en"><head><style>
+    .sc-placeholder{background:color-mix(in srgb,currentColor 8%,transparent);
+      border:1px solid color-mix(in srgb,currentColor 50%,transparent);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
+    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
+    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
+      background:color-mix(in srgb,currentColor 8%,transparent)}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:color-mix(in srgb,currentColor 70%,transparent);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:color-mix(in srgb,currentColor 50%,transparent);
+      background:color-mix(in srgb,currentColor 10%,transparent);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      figure, table { break-inside: avoid; }
+      #dc-root, #dc-root > .sc-host { height: auto; }
+      *, *::before, *::after {
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  </style>
+<meta charset="utf-8">
+<title>Dropwatch · History</title>
+<style>x-dc{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" data-dc-tpl="1"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" data-dc-tpl="2"><style data-dc-tpl="3">
+body{margin:0;background:#0e0e10}
+a{color:#bf94ff}a:hover{color:#d9c2ff}
+.dw{--bg:#0e0e10;--s1:#18181b;--s2:#1f1f23;--s3:#2a2a30;--line:#2f2f35;--fg:#efeff1;--mut:#adadb8;--dim:#8a8a99;--live:#eb0400;--okt:#3ddc97;--warn:#ffb31a;--acct:#bf94ff;font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);min-height:100vh;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.top{display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;background:var(--s1);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em;color:var(--fg);text-decoration:none}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--acc);display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;gap:2px;flex:1;flex-wrap:wrap}
+.tab{display:flex;align-items:center;height:60px;padding:0 14px;color:var(--mut);font-weight:600;text-decoration:none;box-sizing:border-box;border-bottom:2px solid transparent}
+.tab:hover{color:var(--fg)}
+.tab.on{color:var(--fg);border-bottom-color:var(--acc)}
+.pill{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:999px;background:rgba(61,220,151,.12);color:var(--okt);font-weight:700;font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:12px}
+.h2{font-size:18px;font-weight:700;margin:0}
+.art{aspect-ratio:3/4;border-radius:6px;flex-shrink:0}
+.mut{color:var(--mut)}
+.num{font-variant-numeric:tabular-nums}
+.stat{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.stat .n{font-size:30px;font-weight:800;letter-spacing:-.02em}
+.stat .l{color:var(--mut);font-size:13px;font-weight:600}
+.ev{display:flex;align-items:center;gap:14px;padding:12px 18px;border-top:1px solid var(--line)}
+.ev:first-child{border-top:0}
+.ico{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.seg{display:inline-flex;background:var(--s2);border:1px solid var(--line);border-radius:8px;padding:3px;gap:2px}
+.seg button{min-height:36px;padding:0 14px;border:0;border-radius:6px;background:transparent;color:var(--mut);font:600 13px Inter,sans-serif;cursor:pointer}
+.seg button.on{background:var(--s3);color:var(--fg)}
+</style></head>
+<body>
+<div id="dc-root"><div class="sc-host" data-sc-name="History"><div data-dc-tpl="4" class="dw" style="--acc: #9146ff;">
+  <header data-dc-tpl="5" class="top">
+    <a data-dc-tpl="6" class="brand" href="overview.html"><span data-dc-tpl="7" class="logo"><svg data-dc-tpl="8" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="9" d="M12 3v12"></path><path data-dc-tpl="10" d="M6 10l6 6 6-6"></path><path data-dc-tpl="11" d="M5 21h14"></path></svg></span>Dropwatch</a>
+    <nav data-dc-tpl="12" class="tabs" aria-label="Views">
+      <a data-dc-tpl="13" class="tab" href="overview.html">Overview</a>
+      <a data-dc-tpl="14" class="tab" href="priorities.html">Priorities</a>
+      <a data-dc-tpl="15" class="tab" href="inventory.html">Inventory</a>
+      <a data-dc-tpl="16" class="tab on" href="history.html" aria-current="page">History</a>
+      <a data-dc-tpl="17" class="tab" href="#">Activity</a>
+      <a data-dc-tpl="18" class="tab" href="#">Settings</a>
+    </nav>
+    <span data-dc-tpl="19" class="pill" role="status"><span data-dc-tpl="20" class="dot" aria-hidden="true"></span>Mining</span>
+  </header>
+
+  <main data-dc-tpl="21" style="max-width: 1280px; margin: 0px auto; padding: 28px 24px 56px; display: flex; flex-direction: column; gap: 24px;">
+    <div data-dc-tpl="22" style="display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;">
+      <div data-dc-tpl="23" style="flex: 1 1 0%; min-width: 260px;">
+        <h1 data-dc-tpl="24" style="margin: 0px; font-size: 28px; font-weight: 800; letter-spacing: -0.02em;">History</h1>
+        <p data-dc-tpl="25" class="mut" style="margin: 6px 0px 0px;">What Dropwatch claimed, and what it missed and why.</p>
+      </div>
+      <div data-dc-tpl="26" class="seg" role="group" aria-label="Period">
+        <button data-dc-tpl="27" type="button" aria-pressed="false">Today</button>
+        <button data-dc-tpl="28" type="button" class="on" aria-pressed="true">7 days</button>
+        <button data-dc-tpl="29" type="button" aria-pressed="false">30 days</button>
+      </div>
+    </div>
+
+    <div data-dc-tpl="30" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+      <div data-dc-tpl="31" class="stat"><div data-dc-tpl="32" class="n num">23</div><div data-dc-tpl="33" class="l">Rewards claimed</div></div>
+      <div data-dc-tpl="34" class="stat"><div data-dc-tpl="35" class="n num">9</div><div data-dc-tpl="36" class="l">Campaigns finished</div></div>
+      <div data-dc-tpl="37" class="stat"><div data-dc-tpl="38" class="n num">41.2K</div><div data-dc-tpl="39" class="l">Channel points · 14 chests</div></div>
+      <div data-dc-tpl="40" class="stat"><div data-dc-tpl="41" class="n num" style="color: var(--warn);">2</div><div data-dc-tpl="42" class="l">Missed</div></div>
+    </div>
+
+    <section data-dc-tpl="43" class="card" aria-labelledby="h-chart" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+      <div data-dc-tpl="44" style="display: flex; align-items: baseline; gap: 12px;"><h2 data-dc-tpl="45" class="h2" id="h-chart">Rewards per day</h2><span data-dc-tpl="46" class="mut" style="font-size: 13px;">Sat 25 Oct – Fri 31 Oct</span></div>
+      <div data-dc-tpl="47" role="img" aria-label="Rewards per day: Sat 2, Sun 4, Mon 1, Tue 3, Wed 5, Thu 3, Fri 5" style="display: flex; align-items: flex-end; gap: 14px; height: 150px;">
+        
+          <div data-dc-tpl="49" style="flex: 1 1 0%; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;">
+            <span data-dc-tpl="50" class="num" style="font-size: 12px; font-weight: 700;"><span class="sc-interp">2</span></span>
+            <div data-dc-tpl="51" style="width: 100%; max-width: 56px; height: 44px; background: rgb(58, 58, 66); border-radius: 4px 4px 0px 0px;"></div>
+            <span data-dc-tpl="52" class="mut" style="font-size: 12px; font-weight: 600;"><span class="sc-interp">Sat</span></span>
+          </div>
+        
+          <div data-dc-tpl="49" style="flex: 1 1 0%; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;">
+            <span data-dc-tpl="50" class="num" style="font-size: 12px; font-weight: 700;"><span class="sc-interp">4</span></span>
+            <div data-dc-tpl="51" style="width: 100%; max-width: 56px; height: 88px; background: rgb(58, 58, 66); border-radius: 4px 4px 0px 0px;"></div>
+            <span data-dc-tpl="52" class="mut" style="font-size: 12px; font-weight: 600;"><span class="sc-interp">Sun</span></span>
+          </div>
+        
+          <div data-dc-tpl="49" style="flex: 1 1 0%; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;">
+            <span data-dc-tpl="50" class="num" style="font-size: 12px; font-weight: 700;"><span class="sc-interp">1</span></span>
+            <div data-dc-tpl="51" style="width: 100%; max-width: 56px; height: 22px; background: rgb(58, 58, 66); border-radius: 4px 4px 0px 0px;"></div>
+            <span data-dc-tpl="52" class="mut" style="font-size: 12px; font-weight: 600;"><span class="sc-interp">Mon</span></span>
+          </div>
+        
+          <div data-dc-tpl="49" style="flex: 1 1 0%; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;">
+            <span data-dc-tpl="50" class="num" style="font-size: 12px; font-weight: 700;"><span class="sc-interp">3</span></span>
+            <div data-dc-tpl="51" style="width: 100%; max-width: 56px; height: 66px; background: rgb(58, 58, 66); border-radius: 4px 4px 0px 0px;"></div>
+            <span data-dc-tpl="52" class="mut" style="font-size: 12px; font-weight: 600;"><span class="sc-interp">Tue</span></span>
+          </div>
+        
+          <div data-dc-tpl="49" style="flex: 1 1 0%; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;">
+            <span data-dc-tpl="50" class="num" style="font-size: 12px; font-weight: 700;"><span class="sc-interp">5</span></span>
+            <div data-dc-tpl="51" style="width: 100%; max-width: 56px; height: 110px; background: rgb(58, 58, 66); border-radius: 4px 4px 0px 0px;"></div>
+            <span data-dc-tpl="52" class="mut" style="font-size: 12px; font-weight: 600;"><span class="sc-interp">Wed</span></span>
+          </div>
+        
+          <div data-dc-tpl="49" style="flex: 1 1 0%; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;">
+            <span data-dc-tpl="50" class="num" style="font-size: 12px; font-weight: 700;"><span class="sc-interp">3</span></span>
+            <div data-dc-tpl="51" style="width: 100%; max-width: 56px; height: 66px; background: rgb(58, 58, 66); border-radius: 4px 4px 0px 0px;"></div>
+            <span data-dc-tpl="52" class="mut" style="font-size: 12px; font-weight: 600;"><span class="sc-interp">Thu</span></span>
+          </div>
+        
+          <div data-dc-tpl="49" style="flex: 1 1 0%; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;">
+            <span data-dc-tpl="50" class="num" style="font-size: 12px; font-weight: 700;"><span class="sc-interp">5</span></span>
+            <div data-dc-tpl="51" style="width: 100%; max-width: 56px; height: 110px; background: rgb(145, 70, 255); border-radius: 4px 4px 0px 0px;"></div>
+            <span data-dc-tpl="52" class="mut" style="font-size: 12px; font-weight: 600;"><span class="sc-interp">Fri</span></span>
+          </div>
+        
+      </div>
+    </section>
+
+    
+      <section data-dc-tpl="54" style="display: flex; flex-direction: column; gap: 10px;">
+        <h2 data-dc-tpl="55" class="h2" style="font-size: 15px; color: var(--mut);"><span class="sc-interp">Today</span></h2>
+        <div data-dc-tpl="56" class="card" style="overflow: hidden;">
+          
+            <div data-dc-tpl="58" class="ev">
+              <span data-dc-tpl="59" class="ico" style="background: rgba(61, 220, 151, 0.14); color: rgb(61, 220, 151);">
+                <svg data-dc-tpl="61" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="62" d="M20 6 9 17l-5-5"></path></svg>
+                
+              </span>
+              <div data-dc-tpl="67" class="art" aria-hidden="true" style="width: 30px; background: rgb(110, 26, 26);"></div>
+              <div data-dc-tpl="68" style="flex: 1 1 0%; min-width: 0px;">
+                <div data-dc-tpl="69" style="font-weight: 700; font-size: 14px;"><span class="sc-interp">APEX Pack</span></div>
+                <div data-dc-tpl="70" class="mut" style="font-size: 12px;"><span class="sc-interp">ALGS S2 PO D3 · Apex Legends · 15 min watched</span></div>
+              </div>
+              <span data-dc-tpl="71" class="mut num" style="font-size: 12px; white-space: nowrap;"><span class="sc-interp">2:25 PM</span></span>
+            </div>
+          
+            <div data-dc-tpl="58" class="ev">
+              <span data-dc-tpl="59" class="ico" style="background: rgba(61, 220, 151, 0.14); color: rgb(61, 220, 151);">
+                <svg data-dc-tpl="61" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="62" d="M20 6 9 17l-5-5"></path></svg>
+                
+              </span>
+              <div data-dc-tpl="67" class="art" aria-hidden="true" style="width: 30px; background: rgb(122, 61, 18);"></div>
+              <div data-dc-tpl="68" style="flex: 1 1 0%; min-width: 0px;">
+                <div data-dc-tpl="69" style="font-weight: 700; font-size: 14px;"><span class="sc-interp">Esports Loot Box</span></div>
+                <div data-dc-tpl="70" class="mut" style="font-size: 12px;"><span class="sc-interp">OWCS Stage 3 Playoffs · Overwatch 2 · on zbra</span></div>
+              </div>
+              <span data-dc-tpl="71" class="mut num" style="font-size: 12px; white-space: nowrap;"><span class="sc-interp">9:27 AM</span></span>
+            </div>
+          
+            <div data-dc-tpl="58" class="ev">
+              <span data-dc-tpl="59" class="ico" style="background: rgba(61, 220, 151, 0.14); color: rgb(61, 220, 151);">
+                <svg data-dc-tpl="61" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="62" d="M20 6 9 17l-5-5"></path></svg>
+                
+              </span>
+              <div data-dc-tpl="67" class="art" aria-hidden="true" style="width: 30px; background: rgb(31, 77, 43);"></div>
+              <div data-dc-tpl="68" style="flex: 1 1 0%; min-width: 0px;">
+                <div data-dc-tpl="69" style="font-weight: 700; font-size: 14px;"><span class="sc-interp">Grotti Turismo Omaggio</span></div>
+                <div data-dc-tpl="70" class="mut" style="font-size: 12px;"><span class="sc-interp">nopixel V · GTA V · on crystalst</span></div>
+              </div>
+              <span data-dc-tpl="71" class="mut num" style="font-size: 12px; white-space: nowrap;"><span class="sc-interp">9:07 AM</span></span>
+            </div>
+          
+            <div data-dc-tpl="58" class="ev">
+              <span data-dc-tpl="59" class="ico" style="background: rgba(61, 220, 151, 0.14); color: rgb(61, 220, 151);">
+                <svg data-dc-tpl="61" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="62" d="M20 6 9 17l-5-5"></path></svg>
+                
+              </span>
+              <div data-dc-tpl="67" class="art" aria-hidden="true" style="width: 30px; background: rgb(29, 58, 82);"></div>
+              <div data-dc-tpl="68" style="flex: 1 1 0%; min-width: 0px;">
+                <div data-dc-tpl="69" style="font-weight: 700; font-size: 14px;"><span class="sc-interp">Cold Blooded</span></div>
+                <div data-dc-tpl="70" class="mut" style="font-size: 12px;"><span class="sc-interp">Open Series Cup #2 · Battlefield REDSEC · on itzmaxiq</span></div>
+              </div>
+              <span data-dc-tpl="71" class="mut num" style="font-size: 12px; white-space: nowrap;"><span class="sc-interp">8:32 AM</span></span>
+            </div>
+          
+            <div data-dc-tpl="58" class="ev">
+              <span data-dc-tpl="59" class="ico" style="background: rgba(61, 220, 151, 0.14); color: rgb(61, 220, 151);">
+                <svg data-dc-tpl="61" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="62" d="M20 6 9 17l-5-5"></path></svg>
+                
+              </span>
+              <div data-dc-tpl="67" class="art" aria-hidden="true" style="width: 30px; background: rgb(122, 61, 18);"></div>
+              <div data-dc-tpl="68" style="flex: 1 1 0%; min-width: 0px;">
+                <div data-dc-tpl="69" style="font-weight: 700; font-size: 14px;"><span class="sc-interp">Esports Loot Box</span></div>
+                <div data-dc-tpl="70" class="mut" style="font-size: 12px;"><span class="sc-interp">OWCS Stage 3 Playoffs · Overwatch 2 · on ml7support</span></div>
+              </div>
+              <span data-dc-tpl="71" class="mut num" style="font-size: 12px; white-space: nowrap;"><span class="sc-interp">8:08 AM</span></span>
+            </div>
+          
+        </div>
+      </section>
+    
+      <section data-dc-tpl="54" style="display: flex; flex-direction: column; gap: 10px;">
+        <h2 data-dc-tpl="55" class="h2" style="font-size: 15px; color: var(--mut);"><span class="sc-interp">Thursday 30 Oct</span></h2>
+        <div data-dc-tpl="56" class="card" style="overflow: hidden;">
+          
+            <div data-dc-tpl="58" class="ev">
+              <span data-dc-tpl="59" class="ico" style="background: rgba(255, 179, 26, 0.14); color: rgb(255, 179, 26);">
+                
+                <svg data-dc-tpl="64" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="65" d="M12 7v6"></path><path data-dc-tpl="66" d="M12 17h.01"></path></svg>
+              </span>
+              <div data-dc-tpl="67" class="art" aria-hidden="true" style="width: 30px; background: rgb(59, 42, 82);"></div>
+              <div data-dc-tpl="68" style="flex: 1 1 0%; min-width: 0px;">
+                <div data-dc-tpl="69" style="font-weight: 700; font-size: 14px;"><span class="sc-interp">Missed: Halloween 2026</span></div>
+                <div data-dc-tpl="70" class="mut" style="font-size: 12px;"><span class="sc-interp">The Other Side · account not linked</span></div>
+              </div>
+              <span data-dc-tpl="71" class="mut num" style="font-size: 12px; white-space: nowrap;"><span class="sc-interp">Ended 11:59 PM</span></span>
+            </div>
+          
+            <div data-dc-tpl="58" class="ev">
+              <span data-dc-tpl="59" class="ico" style="background: rgba(61, 220, 151, 0.14); color: rgb(61, 220, 151);">
+                <svg data-dc-tpl="61" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="62" d="M20 6 9 17l-5-5"></path></svg>
+                
+              </span>
+              <div data-dc-tpl="67" class="art" aria-hidden="true" style="width: 30px; background: rgb(90, 45, 20);"></div>
+              <div data-dc-tpl="68" style="flex: 1 1 0%; min-width: 0px;">
+                <div data-dc-tpl="69" style="font-weight: 700; font-size: 14px;"><span class="sc-interp">Hazmat Skin</span></div>
+                <div data-dc-tpl="70" class="mut" style="font-size: 12px;"><span class="sc-interp">Rust Drops 41 · Rust · 2 h 30 min watched</span></div>
+              </div>
+              <span data-dc-tpl="71" class="mut num" style="font-size: 12px; white-space: nowrap;"><span class="sc-interp">6:14 PM</span></span>
+            </div>
+          
+            <div data-dc-tpl="58" class="ev">
+              <span data-dc-tpl="59" class="ico" style="background: rgba(61, 220, 151, 0.14); color: rgb(61, 220, 151);">
+                <svg data-dc-tpl="61" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="62" d="M20 6 9 17l-5-5"></path></svg>
+                
+              </span>
+              <div data-dc-tpl="67" class="art" aria-hidden="true" style="width: 30px; background: rgb(122, 61, 18);"></div>
+              <div data-dc-tpl="68" style="flex: 1 1 0%; min-width: 0px;">
+                <div data-dc-tpl="69" style="font-weight: 700; font-size: 14px;"><span class="sc-interp">Esports Loot Box</span></div>
+                <div data-dc-tpl="70" class="mut" style="font-size: 12px;"><span class="sc-interp">OWCS Stage 3 Playoffs · Overwatch 2</span></div>
+              </div>
+              <span data-dc-tpl="71" class="mut num" style="font-size: 12px; white-space: nowrap;"><span class="sc-interp">1:40 PM</span></span>
+            </div>
+          
+        </div>
+      </section>
+    
+  </main></div></div></div>
+
+
+
+</body></html>

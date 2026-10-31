@@ -170,7 +170,7 @@ export function UpNext({ state, priorityOf, onNever, onPriority }: {
   );
   return (
     <section id="sec-next" aria-labelledby="h-next">
-      <div className="sec-h"><h2 id="h-next">Up next</h2><span className="count">{state.up_next.length}</span>{header}</div>
+      <div className="sec-h"><h2 id="h-next">Up next</h2><span className="count">{state.up_next.length}</span>{header}<a className="sec-link" href="#priorities">Edit priorities</a></div>
       {body}
     </section>
   );

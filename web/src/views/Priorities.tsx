@@ -23,7 +23,7 @@ const EMPTY: Record<Zone, string> = {
 
 /** Priorities (approved mockup): Priority (ordered), Favourite channels (ordered), Never. */
 export function PrioritiesView() {
-  const { state, say } = useApp();
+  const { state, say, sayError, refreshState } = useApp();
   const { lists, save } = useLists();
   const [sugg, setSugg] = useState<Suggestions>({ games: [], channels: [], known_games: [] });
   const [focus, setFocus] = useState<[string, string] | null>(null);
@@ -101,6 +101,12 @@ export function PrioritiesView() {
     }
   }
 
+  async function setPriorityOnly(on: boolean) {
+    try { await api.put("/settings", { priority_only: on }); say(on ? "Priority only is on" : "Priority only is off"); }
+    catch (e) { sayError(e, "Couldn't change it"); }
+    void refreshState();
+  }
+
   /* Drag to reorder (dnd-kit): the row lifts and follows the pointer while the others slide apart; games can
    * also move between Priority and Never; the save happens once, on drop. */
   const shown = draft ?? lists;
@@ -170,11 +176,21 @@ export function PrioritiesView() {
       <datalist id="known-channels">{knownCh.map((c) => <option key={c.login} value={c.login} label={channelNote(c)} />)}</datalist>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragOver={onDragOver}
         onDragEnd={onDragEnd} onDragCancel={() => { setActive(null); setDraft(null); }}>
+      <div className="pri-grid">
+      <div className="pri-main">
       <Bucket title="Priority" count={shown.priority.length} help="Mined first, top to bottom.">
         {zone("priority")}
         <AddForm to="priority" list="campaign-games" placeholder="Add a game" known={sugg.games} label="Add a game to Priority"
           onAdd={(name) => commit(moved(name, "priority"), `${name} added to Priority`)} />
       </Bucket>
+      <LinkedAccounts games={campaignGames} never={lists.never} />
+      </div>
+      <div className="pri-side">
+      <section className="only" aria-labelledby="h-only">
+        <div><h2 id="h-only">Priority only</h2><p>Mine nothing outside Priority. Off: other games fill the gaps.</p></div>
+        <input type="checkbox" role="switch" className="sw" aria-labelledby="h-only" disabled={!state} checked={!!state?.priority_only}
+          onChange={(e) => void setPriorityOnly(e.target.checked)} />
+      </section>
       <Bucket title="Favourite channels" count={shown.favourites.length}
         help="When a campaign can be mined on several live channels, these get watched first, top to bottom. Your game order above still decides which campaign.">
         {zone("fav")}
@@ -187,6 +203,8 @@ export function PrioritiesView() {
           onAdd={(name) => commit(moved(name, "never"), `${name} added to Never`)} />
         <BulkNever lists={lists} games={campaignGames} onCommit={(next, msg) => commit(next, msg)} />
       </Bucket>
+      </div>
+      </div>
       <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(.2,.8,.2,1)" }}>
         {active && activeZone ? (
           <RowBody name={active} zone={activeZone} i={shown[KEY[activeZone]].indexOf(active)} n={shown[KEY[activeZone]].length}
@@ -194,7 +212,6 @@ export function PrioritiesView() {
         ) : null}
       </DragOverlay>
       </DndContext>
-      <LinkedAccounts games={campaignGames} never={lists.never} />
     </section>
   );
 }
@@ -227,7 +244,7 @@ function savedNeverOpen(): boolean {
   try { return localStorage.getItem(NEVER_OPEN_KEY) === "1"; } catch { return false; }
 }
 
-type Info = Map<string, { text: string; warn?: boolean; art?: string }>;
+type Info = Map<string, { text: string; warn?: boolean; art?: string; chip?: [string, string] }>;
 
 /** What each game is doing right now, for the row subtitles (as in the mockup). */
 function gameInfo(state: State | null, known: Suggestions["known_games"] = []): Info {
@@ -239,14 +256,14 @@ function gameInfo(state: State | null, known: Suggestions["known_games"] = []): 
       if (m.has(k.game)) continue;
       const ended = new Date(k.last_ends_at).getTime() <= now;
       m.set(k.game, { text: ended ? `No campaign right now · last one ended ${day(k.last_ends_at)}` : "No campaign right now",
-        art: k.box_art_url ? boxArt(k.box_art_url) : undefined });
+        art: k.box_art_url ? boxArt(k.box_art_url) : undefined, chip: ["No drops now", ""] });
     }
   };
   if (!state) { remembered(); return m; }
-  const put = (c: Campaign, text: string, warn = false) => { if (!m.has(c.game)) m.set(c.game, { text, warn, art: boxArt(c.box_art_url) }); };
-  if (state.current) put(state.current.campaign, `Mining now · ${dur(state.current.campaign.minutes_needed)} to go · ends ${day(state.current.campaign.ends_at)}`);
-  for (const c of state.needs_you) put(c, `${c.maybe_unlinked ? "May need account link" : "Needs account link"} · ends ${day(c.ends_at)}`, true);
-  for (const c of state.up_next) put(c, `${dur(c.minutes_needed)} to go · ends ${day(c.ends_at)}`);
+  const put = (c: Campaign, text: string, warn = false, chip?: [string, string]) => { if (!m.has(c.game)) m.set(c.game, { text, warn, art: boxArt(c.box_art_url), chip }); };
+  if (state.current) put(state.current.campaign, `Mining now · ${dur(state.current.campaign.minutes_needed)} to go · ends ${day(state.current.campaign.ends_at)}`, false, ["Mining", "green"]);
+  for (const c of state.needs_you) put(c, `${c.maybe_unlinked ? "May need account link" : "Needs account link"} · ends ${day(c.ends_at)}`, true, ["Link account", "warn"]);
+  for (const c of state.up_next) put(c, `${dur(c.minutes_needed)} to go · ends ${day(c.ends_at)}`, false, ["Ready", ""]);
   for (const c of state.done) {
     const n = c.drops.reduce((k, d) => k + d.rewards.length, 0);
     put(c, `All ${n} ${n === 1 ? "reward" : "rewards"} claimed`);
@@ -314,6 +331,7 @@ function RowBody({ name, zone, i, n, info, ch, onAct, rootRef, rootProps, placeh
         <div className={`g-s${inf?.warn ? " warn" : ""}`}>{inf?.text ?? "No campaign right now"}</div></div>
       <div className="g-act">
         {zone === "priority" ? <>
+          {inf?.chip && <span className={`chip${inf.chip[1] ? ` ${inf.chip[1]}` : ""}`}>{inf.chip[0]}</span>}
           {btn("up", `Move ${name} up`, <Icon name="up" />, "ib", i === 0)}
           {btn("down", `Move ${name} down`, <Icon name="down" />, "ib", i === n - 1)}
           {btn("never", `Never mine ${name}`, "Never mine", "btn quiet")}

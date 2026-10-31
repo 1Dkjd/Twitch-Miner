@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { api, type Campaign, type Lists, type State } from "../api/client";
 import { useLists } from "../lists";
 import { go } from "../router";
@@ -9,9 +9,11 @@ import { MenuButton } from "./Menu";
 import { LinkedButton } from "./LinkedButton";
 import { UpNext } from "./UpNext";
 import { Track, milestones } from "./Track";
+import { LastDay, RecentlyClaimed } from "./OverviewExtras";
+import { useNarrow } from "../ui/useNarrow";
 
-/** Overview (approved mockup): banner, Mining now (or the idle card), Needs you, Up next, Done.
- * On phones Needs you comes first in the DOM too, so screen readers get the same order. */
+/** Overview (docs/design/twitch-native-mockup/): banner, Mining now (or the idle card) beside Needs you and the last
+ * 24 hours, Up next, Coming up, Done, Recently claimed. On phones Needs you comes first in the DOM too, so screen readers get the same order. */
 export function OverviewView() {
   const { state, connection, lostSince } = useApp();
   const { lists, save } = useLists();
@@ -59,32 +61,22 @@ export function OverviewView() {
       never: wasNever && !now.never.includes(game) ? [...now.never, game] : now.never,
     }), `${game} is off Priority.`));
   }
-  const needs = <NeedsYou key="needs" state={state} onNever={never} />;
+  const needs = <NeedsYou key="needs" state={state} onNever={never} folded={phone} />;
   const now = <NowSlot key="now" state={state} lost={lost} lostSince={lostSince} priorityOf={priorityOf}
     priority={lists ? lists.priority : null} />;
   return (
     <section className="view" id="v-overview" aria-labelledby="h-overview">
       <h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1>
       <Banner state={state} lost={lost} lostSince={lostSince} />
-      {phone ? [needs, now] : [now, needs]}
+      {phone
+        ? <div className="ov-top">{needs}{now}<LastDay state={state} /></div>
+        : <div className="ov-top"><div className="ov-main">{now}</div><aside className="ov-side" aria-label="Needs you and the last 24 hours">{needs}<LastDay state={state} /></aside></div>}
       <UpNext state={state} priorityOf={priorityOf} onNever={never} onPriority={prioritise} />
       <ComingUp state={state} onPriority={prioritise} />
       <Done state={state} />
+      <RecentlyClaimed state={state} />
     </section>
   );
-}
-
-function useNarrow() {
-  const q = "(max-width: 720px)";
-  const [m, setM] = useState(() => typeof matchMedia === "function" && matchMedia(q).matches);
-  useEffect(() => {
-    if (typeof matchMedia !== "function") return;
-    const mq = matchMedia(q);
-    const on = () => setM(mq.matches);
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
-  return m;
 }
 
 /* ---------- banner (one at a time, most serious first) ---------- */
@@ -201,6 +193,7 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
   const cur = state.current!;
   const c = cur.campaign;
   const { ms, watched: w, max, nextIdx } = milestones(c.drops);
+  const others = state.up_next.slice(0, 8);
   const nx = ms[nextIdx];
   const mining = !lost && (state.state === "mining" || state.state === "switched");
   const status = state.state === "paused" ? <span className="chip"><Icon name="pause" />Paused · progress kept</span>
@@ -220,6 +213,11 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
     catch (e) { sayError(e, "Couldn't pause"); }
     void refreshState();
   }
+  async function mineOther(o: Campaign) {
+    try { await api.post("/mine-now", { campaign_id: o.id }); say(`Mining ${o.name} now`); }
+    catch (e) { sayError(e, "Couldn't switch to it"); }
+    void refreshState();
+  }
   async function useChannel(login: string) {
     try { await api.post("/channel", { login }); say(`Switched to ${login}`); }
     catch (e) { sayError(e, "Couldn't switch channel"); }
@@ -227,7 +225,7 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
   }
 
   return (
-    <article className={`now${mining ? "" : " dim"}`} aria-labelledby="h-now" style={{ ["--art-bg" as string]: `url(${boxArt(c.box_art_url)})` }}>
+    <article className={`now${mining ? "" : " dim"}`} aria-labelledby="h-now">
       <img className="box" src={boxArt(c.box_art_url)} alt="" />
       <div className="now-main">
         <div className="now-head">
@@ -238,6 +236,7 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
             <div className="now-facts">
               <span><span className="k">Game</span><b>{c.game}</b></span>
               <span><span className="k">{mining ? "Channel" : "Last on"}</span><b>{cur.channel.login}</b>
+                {mining && <><span className="live-tag">LIVE</span><span className="v">{viewers(cur.channel.viewers)} viewers</span></>}
                 {cur.channel.favourite && <> <span className="fav-mark"><Icon name="star" />favourite</span></>}
                 {mining && cur.channels.length > 0 && (
                   <> · <MenuButton id="ch-menu" label="Watch instead" wrapClass="ch-pick" buttonClass="link" buttonLabel="Change channel"
@@ -248,43 +247,50 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
                 )}</span>
             </div>
           </div>
-          <span className="ends">Ends {day(c.ends_at)}</span>
         </div>
         {sw && swKey !== dismissed && (
           <div className="notice" role="status"><Icon name="swap" />
             <span>Switched from <b>{sw.from}</b> to <b>{sw.to}</b> at {clock(sw.at)}. Progress carried over.</span>
             <button className="btn quiet" type="button" onClick={() => setDismissed(swKey)}>Dismiss</button></div>
         )}
-        {max > 0 && <Track ms={ms} watched={w} max={max} nextIdx={nextIdx}
-          label={`${w} of ${max} minutes watched.${nx ? ` ${dur(nx.at - w)} to the next reward.` : ""}`} />}
-        {nx && (
-          <div className="next-card">
-            <div className="arts">{nx.items.map((it, i) => <img key={i} src={it.image} alt="" />)}</div>
-            <div><div className="next-when">{mining ? `Next reward in ${dur(nx.at - w)} (~${clock(new Date(Date.now() + (nx.at - w) * 60_000))})` : `${dur(nx.at - w)} of watching to the next reward`}</div>
-              <div className="next-what">{nx.items.map((i) => i.name).join(", ")}</div></div>
+        <div className="next-card">
+          <div className="next-top">
+            {nx && <div className="next-arts">{nx.items.map((it, i) => <img key={i} src={it.image} alt="" />)}</div>}
+            {nx && <div className="next-t"><div className="next-when">{mining ? `Next reward in ${dur(nx.at - w)} (~${clock(new Date(Date.now() + (nx.at - w) * 60_000))})` : `${dur(nx.at - w)} of watching to the next reward`}</div>
+              <div className="next-what">{nx.items.map((i) => i.name).join(", ")}</div></div>}
+            <div className="watched"><b className="wnum">{dur(w)} <small>/ {dur(max)}</small></b> watched</div>
           </div>
-        )}
-        <button className="btn quiet more" type="button" aria-expanded={allOpen} aria-controls="all-ms" onClick={() => setAllOpen(!allOpen)}>
-          {allOpen ? "Hide" : "Show"} all {ms.length} rewards<Icon name="down" className="chev" /></button>
-        <div className="all-ms" id="all-ms" hidden={!allOpen}>
-          {ms.map((m, i) => (
-            <div key={m.at} className={`m ${m.at <= w ? "got" : i === nextIdx ? "next" : ""}`}>
-              <span className="when">{mark(m.at)}</span><span>{m.items.map((x) => x.name).join(", ")}</span>
-              <span className="st">{m.at <= w ? "Claimed" : i === nextIdx ? `Next, ${dur(m.at - w)} to go` : `${dur(m.at - w)} to go`}</span>
-            </div>
-          ))}
+          {max > 0 && <Track ms={ms} watched={w} max={max}
+            label={`${w} of ${max} minutes watched.${nx ? ` ${dur(nx.at - w)} to the next reward.` : ""}`} />}
+          <div className="deadline"><span className={`chip ${fit[0]}`}>{fit[1]}</span>
+            <span className="dl-lab"><b>{dur(toGo)}</b> of watching needed · <b>{span(leftMin)}</b> left · ends {day(c.ends_at)}</span>
+            <div className="dl-bar" aria-hidden="true"><span style={{ width: `${Math.max(1.5, Math.min(100, ratio * 100))}%` }} /></div></div>
         </div>
         <div className="now-foot">
-          <div className="watched"><b className="wnum">{w} / {max}{NB}min</b> watched</div>
-          <div className="deadline"><span className={`chip ${fit[0]}`}>{fit[1]}</span>
-            <div className="dl-bar" aria-hidden="true"><span style={{ width: `${Math.max(1.5, Math.min(100, ratio * 100))}%` }} /></div>
-            <span className="dl-lab"><b>{dur(toGo)}</b> of watching needed · <b>{span(leftMin)}</b> left</span></div>
+          {mining && <a className="btn strong" href={`https://www.twitch.tv/${cur.channel.login}`} target="_blank" rel="noopener noreferrer" aria-label="Watch on Twitch (opens Twitch)">
+            <Icon name="ext" /><span>Watch<span className="lg"> on Twitch</span></span></a>}
           {mining && (
             <MenuButton id="pause-menu" label="Pause for" buttonContent={<><Icon name="pause" />Pause</>}
               items={[["30 min", 30], ["1 h", 60], ["4 h", 240], ["Until I resume", null]].map(([t, m]) => ({
                 key: String(t), content: String(t).replace(" ", NB), onSelect: () => void pause(m as number | null),
               }))} />
           )}
+          {mining && others.length > 0 && (
+            <MenuButton id="other-menu" label="Mine instead" buttonLabel="Mine something else"
+              buttonContent={<><Icon name="swap" /><span className="lg">Mine something else</span><span className="sm">Skip</span></>}
+              items={others.map((o) => ({ key: o.id, content: o.name, onSelect: () => void mineOther(o) }))} />
+          )}
+        </div>
+        <button className="btn quiet more" type="button" aria-expanded={allOpen} aria-controls="all-ms" onClick={() => setAllOpen(!allOpen)}>
+          {allOpen ? "Hide" : "Show"} all {ms.length} rewards<Icon name="down" className="chev" /></button>
+        <div className="all-ms" id="all-ms" hidden={!allOpen}>
+          {ms.map((m, i) => (
+            <div key={m.at} className={`m ${m.at <= w ? "got" : i === nextIdx ? "next" : ""}`}>
+              <span className="arts">{m.items.map((x, k) => <img key={k} src={x.image} alt="" />)}</span>
+              <span className="when">{mark(m.at)}</span><span>{m.items.map((x) => x.name).join(", ")}</span>
+              <span className="st">{m.at <= w ? "Claimed" : i === nextIdx ? `Next, ${dur(m.at - w)} to go` : `${dur(m.at - w)} to go`}</span>
+            </div>
+          ))}
         </div>
       </div>
     </article>
@@ -376,9 +382,10 @@ function firstReward(c: Campaign) {
 
 /** Needs you, with Ignore (approved 2026-10-11, docs/design/ignore-mockup.html): Ignore hides one campaign until
  * it ends, and with it its alert and its weekly-summary mention (the server leaves it out of Needs you). */
-function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) => void }) {
+function NeedsYou({ state, onNever, folded }: { state: State; onNever: (game: string) => void; folded: boolean }) {
   const { refreshState, say, sayError } = useApp();
   const [showIgnored, setShowIgnored] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const ignored = state.needs_ignored ?? [];
   if (!state.needs_you.length && !ignored.length) return null;
 
@@ -430,9 +437,10 @@ function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) =>
       </section>
     );
   }
-  return (
-    <Sec id="needs" title="Needs you" count={state.needs_you.length} aside="Can't be mined until you act">
-      <div className="list needs">
+  // phones (mockup): one line, opening to the full list
+  const n = state.needs_you.length;
+  const list = (
+      <div className="list needs" id="needs-list" hidden={folded && !expanded}>
         {state.needs_you.map((c) => {
           const r = firstReward(c);
           const only = c.allowed_channels.length === 1 ? c.allowed_channels[0] : null;
@@ -472,7 +480,17 @@ function NeedsYou({ state, onNever }: { state: State; onNever: (game: string) =>
         {ignored.length > 0 && toggle(false)}
         {ignoredRows}
       </div>
-    </Sec>
+  );
+  if (!folded) return <Sec id="needs" title="Needs you" count={n} aside="Can't be mined until you act">{list}</Sec>;
+  return (
+    <section id="sec-needs" aria-labelledby="h-needs">
+      <h2 className="sr" id="h-needs">Needs you</h2>
+      <button className="needs-sum" type="button" aria-expanded={expanded} aria-controls="needs-list" onClick={() => setExpanded(!expanded)}>
+        <Icon name="link" /><span><b>{n} {n === 1 ? "campaign needs" : "campaigns need"} you</b>
+          <small>{[...new Set(state.needs_you.map((c) => c.game))].join(", ")}</small></span><Icon name="down" className="chev" />
+      </button>
+      {list}
+    </section>
   );
 }
 
@@ -561,6 +579,8 @@ function Done({ state }: { state: State }) {
   );
 }
 
+/** 4.2K, 950: a channel's audience at a glance. */
+const viewers = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K` : String(n));
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 /** 1st, 2nd, 3rd, 4th, ..., 11th, 12th, 13th, 21st */
 export const nth = (n: number) => {

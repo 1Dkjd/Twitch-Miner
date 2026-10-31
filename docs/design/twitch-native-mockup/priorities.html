@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en"><head><style>
+    .sc-placeholder{background:color-mix(in srgb,currentColor 8%,transparent);
+      border:1px solid color-mix(in srgb,currentColor 50%,transparent);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
+    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
+    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
+      background:color-mix(in srgb,currentColor 8%,transparent)}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:color-mix(in srgb,currentColor 70%,transparent);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:color-mix(in srgb,currentColor 50%,transparent);
+      background:color-mix(in srgb,currentColor 10%,transparent);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      figure, table { break-inside: avoid; }
+      #dc-root, #dc-root > .sc-host { height: auto; }
+      *, *::before, *::after {
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  </style>
+<meta charset="utf-8">
+<title>Dropwatch · Priorities</title>
+<style>x-dc{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" data-dc-tpl="1"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" data-dc-tpl="2"><style data-dc-tpl="3">
+body{margin:0;background:#0e0e10}
+a{color:#bf94ff}a:hover{color:#d9c2ff}
+.dw{--bg:#0e0e10;--s1:#18181b;--s2:#1f1f23;--s3:#2a2a30;--line:#2f2f35;--fg:#efeff1;--mut:#adadb8;--dim:#8a8a99;--live:#eb0400;--okt:#3ddc97;--warn:#ffb31a;--acct:#bf94ff;font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);min-height:100vh;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.top{display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;background:var(--s1);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em;color:var(--fg);text-decoration:none}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--acc);display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;gap:2px;flex:1;flex-wrap:wrap}
+.tab{display:flex;align-items:center;height:60px;padding:0 14px;color:var(--mut);font-weight:600;text-decoration:none;box-sizing:border-box;border-bottom:2px solid transparent}
+.tab:hover{color:var(--fg)}
+.tab.on{color:var(--fg);border-bottom-color:var(--acc)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border-radius:6px;border:0;background:var(--s3);color:var(--fg);font:600 13px/1 Inter,sans-serif;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{background:#38383f;color:var(--fg)}
+.btn.pri{background:var(--acc);color:#fff}
+.icon-btn{width:40px;height:40px;padding:0;border-radius:6px;border:0;background:transparent;color:var(--mut);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-btn:hover{background:var(--s3);color:var(--fg)}
+.pill{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:999px;background:rgba(61,220,151,.12);color:var(--okt);font-weight:700;font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:12px}
+.h2{font-size:18px;font-weight:700;margin:0}
+.art{aspect-ratio:3/4;border-radius:6px;flex-shrink:0}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.chip.ok{background:rgba(61,220,151,.12);color:var(--okt)}
+.chip.warn{background:rgba(255,179,26,.13);color:var(--warn)}
+.chip.mut{background:var(--s3);color:var(--mut)}
+.row{display:flex;align-items:center;gap:14px;padding:10px 14px 10px 8px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row:hover{background:var(--s2)}
+.mut{color:var(--mut)}
+.num{font-variant-numeric:tabular-nums}
+.rank{width:30px;height:30px;border-radius:6px;background:rgba(145,70,255,.18);color:var(--acct);font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.grip{color:var(--dim);cursor:grab}
+.tag{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 6px 0 12px;border-radius:6px;background:var(--s2);font-weight:600;font-size:13px}
+.x{width:26px;height:26px;border:0;border-radius:4px;background:transparent;color:var(--mut);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.x:hover{background:var(--s3);color:var(--fg)}
+.field{display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-radius:6px;background:var(--s2);border:1px solid var(--line);color:var(--mut)}
+.field input{background:transparent;border:0;outline:0;color:var(--fg);font:500 14px Inter,sans-serif;flex:1;min-width:0}
+.switch{width:44px;height:24px;border-radius:999px;background:var(--acc);position:relative;border:0;flex-shrink:0;cursor:pointer}
+.switch span{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff}
+</style></head>
+<body>
+<div id="dc-root"><div class="sc-host" data-sc-name="Priorities"><div data-dc-tpl="4" class="dw" style="--acc: #9146ff;">
+  <header data-dc-tpl="5" class="top">
+    <a data-dc-tpl="6" class="brand" href="overview.html"><span data-dc-tpl="7" class="logo"><svg data-dc-tpl="8" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="9" d="M12 3v12"></path><path data-dc-tpl="10" d="M6 10l6 6 6-6"></path><path data-dc-tpl="11" d="M5 21h14"></path></svg></span>Dropwatch</a>
+    <nav data-dc-tpl="12" class="tabs" aria-label="Views">
+      <a data-dc-tpl="13" class="tab" href="overview.html">Overview</a>
+      <a data-dc-tpl="14" class="tab on" href="priorities.html" aria-current="page">Priorities</a>
+      <a data-dc-tpl="15" class="tab" href="inventory.html">Inventory</a>
+      <a data-dc-tpl="16" class="tab" href="history.html">History</a>
+      <a data-dc-tpl="17" class="tab" href="#">Activity</a>
+      <a data-dc-tpl="18" class="tab" href="#">Settings</a>
+    </nav>
+    <span data-dc-tpl="19" class="pill" role="status"><span data-dc-tpl="20" class="dot" aria-hidden="true"></span>Mining</span>
+  </header>
+
+  <main data-dc-tpl="21" style="max-width: 1280px; margin: 0px auto; padding: 28px 24px 56px; display: flex; flex-direction: column; gap: 24px;">
+    <div data-dc-tpl="22" style="display: flex; flex-direction: column; gap: 6px;">
+      <h1 data-dc-tpl="23" style="margin: 0px; font-size: 28px; font-weight: 800; letter-spacing: -0.02em;">Priorities</h1>
+      <p data-dc-tpl="24" class="mut" style="margin: 0px;">Dropwatch mines these games first, top to bottom. Everything else is mined only when nothing here has a drop to earn.</p>
+    </div>
+
+    <div data-dc-tpl="25" style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <section data-dc-tpl="26" class="card" aria-labelledby="h-pri" style="flex: 999 1 600px; min-width: 0px; overflow: hidden;">
+        <div data-dc-tpl="27" style="display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap;">
+          <h2 data-dc-tpl="28" class="h2" id="h-pri">Priority games</h2>
+          <span data-dc-tpl="29" class="mut" style="font-size: 13px;">Drag to reorder</span>
+          <label data-dc-tpl="30" class="field" style="margin-left: auto; width: 260px;">
+            <svg data-dc-tpl="31" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="32" d="M12 5v14"></path><path data-dc-tpl="33" d="M5 12h14"></path></svg>
+            <span data-dc-tpl="34" class="sr" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px);">Add a game</span>
+            <input data-dc-tpl="35" type="text" placeholder="Add a game…">
+          </label>
+        </div>
+        
+          <div data-dc-tpl="37" class="row">
+            <span data-dc-tpl="38" class="grip" aria-hidden="true"><svg data-dc-tpl="39" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="40" cx="9" cy="6" r="1.6"></circle><circle data-dc-tpl="41" cx="15" cy="6" r="1.6"></circle><circle data-dc-tpl="42" cx="9" cy="12" r="1.6"></circle><circle data-dc-tpl="43" cx="15" cy="12" r="1.6"></circle><circle data-dc-tpl="44" cx="9" cy="18" r="1.6"></circle><circle data-dc-tpl="45" cx="15" cy="18" r="1.6"></circle></svg></span>
+            <span data-dc-tpl="46" class="rank num"><span class="sc-interp">1</span></span>
+            <div data-dc-tpl="47" class="art" aria-hidden="true" style="width: 36px; background: rgb(29, 58, 82);"></div>
+            <div data-dc-tpl="48" style="flex: 1 1 0%; min-width: 0px;">
+              <div data-dc-tpl="49" style="font-weight: 700;"><span class="sc-interp">Battlefield REDSEC</span></div>
+              <div data-dc-tpl="50" class="mut" style="font-size: 12px;"><span class="sc-interp">2 campaigns · mining now</span></div>
+            </div>
+            <span data-dc-tpl="51" class="chip ok"><span class="sc-interp">Mining</span></span>
+            <button data-dc-tpl="52" class="icon-btn" type="button" aria-label="Options for Battlefield REDSEC"><svg data-dc-tpl="53" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle data-dc-tpl="54" cx="5" cy="12" r="1.8"></circle><circle data-dc-tpl="55" cx="12" cy="12" r="1.8"></circle><circle data-dc-tpl="56" cx="19" cy="12" r="1.8"></circle></svg></button>
+          </div>
+        
+          <div data-dc-tpl="37" class="row">
+            <span data-dc-tpl="38" class="grip" aria-hidden="true"><svg data-dc-tpl="39" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="40" cx="9" cy="6" r="1.6"></circle><circle data-dc-tpl="41" cx="15" cy="6" r="1.6"></circle><circle data-dc-tpl="42" cx="9" cy="12" r="1.6"></circle><circle data-dc-tpl="43" cx="15" cy="12" r="1.6"></circle><circle data-dc-tpl="44" cx="9" cy="18" r="1.6"></circle><circle data-dc-tpl="45" cx="15" cy="18" r="1.6"></circle></svg></span>
+            <span data-dc-tpl="46" class="rank num"><span class="sc-interp">2</span></span>
+            <div data-dc-tpl="47" class="art" aria-hidden="true" style="width: 36px; background: rgb(122, 61, 18);"></div>
+            <div data-dc-tpl="48" style="flex: 1 1 0%; min-width: 0px;">
+              <div data-dc-tpl="49" style="font-weight: 700;"><span class="sc-interp">Overwatch 2</span></div>
+              <div data-dc-tpl="50" class="mut" style="font-size: 12px;"><span class="sc-interp">3 campaigns · 1 starts Thu</span></div>
+            </div>
+            <span data-dc-tpl="51" class="chip mut"><span class="sc-interp">Ready</span></span>
+            <button data-dc-tpl="52" class="icon-btn" type="button" aria-label="Options for Overwatch 2"><svg data-dc-tpl="53" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle data-dc-tpl="54" cx="5" cy="12" r="1.8"></circle><circle data-dc-tpl="55" cx="12" cy="12" r="1.8"></circle><circle data-dc-tpl="56" cx="19" cy="12" r="1.8"></circle></svg></button>
+          </div>
+        
+          <div data-dc-tpl="37" class="row">
+            <span data-dc-tpl="38" class="grip" aria-hidden="true"><svg data-dc-tpl="39" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="40" cx="9" cy="6" r="1.6"></circle><circle data-dc-tpl="41" cx="15" cy="6" r="1.6"></circle><circle data-dc-tpl="42" cx="9" cy="12" r="1.6"></circle><circle data-dc-tpl="43" cx="15" cy="12" r="1.6"></circle><circle data-dc-tpl="44" cx="9" cy="18" r="1.6"></circle><circle data-dc-tpl="45" cx="15" cy="18" r="1.6"></circle></svg></span>
+            <span data-dc-tpl="46" class="rank num"><span class="sc-interp">3</span></span>
+            <div data-dc-tpl="47" class="art" aria-hidden="true" style="width: 36px; background: rgb(110, 26, 26);"></div>
+            <div data-dc-tpl="48" style="flex: 1 1 0%; min-width: 0px;">
+              <div data-dc-tpl="49" style="font-weight: 700;"><span class="sc-interp">Apex Legends</span></div>
+              <div data-dc-tpl="50" class="mut" style="font-size: 12px;"><span class="sc-interp">1 campaign · ends Sat</span></div>
+            </div>
+            <span data-dc-tpl="51" class="chip mut"><span class="sc-interp">Ready</span></span>
+            <button data-dc-tpl="52" class="icon-btn" type="button" aria-label="Options for Apex Legends"><svg data-dc-tpl="53" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle data-dc-tpl="54" cx="5" cy="12" r="1.8"></circle><circle data-dc-tpl="55" cx="12" cy="12" r="1.8"></circle><circle data-dc-tpl="56" cx="19" cy="12" r="1.8"></circle></svg></button>
+          </div>
+        
+          <div data-dc-tpl="37" class="row">
+            <span data-dc-tpl="38" class="grip" aria-hidden="true"><svg data-dc-tpl="39" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="40" cx="9" cy="6" r="1.6"></circle><circle data-dc-tpl="41" cx="15" cy="6" r="1.6"></circle><circle data-dc-tpl="42" cx="9" cy="12" r="1.6"></circle><circle data-dc-tpl="43" cx="15" cy="12" r="1.6"></circle><circle data-dc-tpl="44" cx="9" cy="18" r="1.6"></circle><circle data-dc-tpl="45" cx="15" cy="18" r="1.6"></circle></svg></span>
+            <span data-dc-tpl="46" class="rank num"><span class="sc-interp">4</span></span>
+            <div data-dc-tpl="47" class="art" aria-hidden="true" style="width: 36px; background: rgb(44, 47, 107);"></div>
+            <div data-dc-tpl="48" style="flex: 1 1 0%; min-width: 0px;">
+              <div data-dc-tpl="49" style="font-weight: 700;"><span class="sc-interp">Eternal Return</span></div>
+              <div data-dc-tpl="50" class="mut" style="font-size: 12px;"><span class="sc-interp">2 campaigns</span></div>
+            </div>
+            <span data-dc-tpl="51" class="chip warn"><span class="sc-interp">Link account</span></span>
+            <button data-dc-tpl="52" class="icon-btn" type="button" aria-label="Options for Eternal Return"><svg data-dc-tpl="53" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle data-dc-tpl="54" cx="5" cy="12" r="1.8"></circle><circle data-dc-tpl="55" cx="12" cy="12" r="1.8"></circle><circle data-dc-tpl="56" cx="19" cy="12" r="1.8"></circle></svg></button>
+          </div>
+        
+          <div data-dc-tpl="37" class="row">
+            <span data-dc-tpl="38" class="grip" aria-hidden="true"><svg data-dc-tpl="39" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="40" cx="9" cy="6" r="1.6"></circle><circle data-dc-tpl="41" cx="15" cy="6" r="1.6"></circle><circle data-dc-tpl="42" cx="9" cy="12" r="1.6"></circle><circle data-dc-tpl="43" cx="15" cy="12" r="1.6"></circle><circle data-dc-tpl="44" cx="9" cy="18" r="1.6"></circle><circle data-dc-tpl="45" cx="15" cy="18" r="1.6"></circle></svg></span>
+            <span data-dc-tpl="46" class="rank num"><span class="sc-interp">5</span></span>
+            <div data-dc-tpl="47" class="art" aria-hidden="true" style="width: 36px; background: rgb(90, 20, 70);"></div>
+            <div data-dc-tpl="48" style="flex: 1 1 0%; min-width: 0px;">
+              <div data-dc-tpl="49" style="font-weight: 700;"><span class="sc-interp">Marvel Rivals</span></div>
+              <div data-dc-tpl="50" class="mut" style="font-size: 12px;"><span class="sc-interp">Next campaign Mon 3 Nov</span></div>
+            </div>
+            <span data-dc-tpl="51" class="chip mut"><span class="sc-interp">No drops now</span></span>
+            <button data-dc-tpl="52" class="icon-btn" type="button" aria-label="Options for Marvel Rivals"><svg data-dc-tpl="53" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle data-dc-tpl="54" cx="5" cy="12" r="1.8"></circle><circle data-dc-tpl="55" cx="12" cy="12" r="1.8"></circle><circle data-dc-tpl="56" cx="19" cy="12" r="1.8"></circle></svg></button>
+          </div>
+        
+          <div data-dc-tpl="37" class="row">
+            <span data-dc-tpl="38" class="grip" aria-hidden="true"><svg data-dc-tpl="39" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="40" cx="9" cy="6" r="1.6"></circle><circle data-dc-tpl="41" cx="15" cy="6" r="1.6"></circle><circle data-dc-tpl="42" cx="9" cy="12" r="1.6"></circle><circle data-dc-tpl="43" cx="15" cy="12" r="1.6"></circle><circle data-dc-tpl="44" cx="9" cy="18" r="1.6"></circle><circle data-dc-tpl="45" cx="15" cy="18" r="1.6"></circle></svg></span>
+            <span data-dc-tpl="46" class="rank num"><span class="sc-interp">6</span></span>
+            <div data-dc-tpl="47" class="art" aria-hidden="true" style="width: 36px; background: rgb(31, 77, 43);"></div>
+            <div data-dc-tpl="48" style="flex: 1 1 0%; min-width: 0px;">
+              <div data-dc-tpl="49" style="font-weight: 700;"><span class="sc-interp">Grand Theft Auto V</span></div>
+              <div data-dc-tpl="50" class="mut" style="font-size: 12px;"><span class="sc-interp">1 campaign · pinned</span></div>
+            </div>
+            <span data-dc-tpl="51" class="chip mut"><span class="sc-interp">Ready</span></span>
+            <button data-dc-tpl="52" class="icon-btn" type="button" aria-label="Options for Grand Theft Auto V"><svg data-dc-tpl="53" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle data-dc-tpl="54" cx="5" cy="12" r="1.8"></circle><circle data-dc-tpl="55" cx="12" cy="12" r="1.8"></circle><circle data-dc-tpl="56" cx="19" cy="12" r="1.8"></circle></svg></button>
+          </div>
+        
+          <div data-dc-tpl="37" class="row">
+            <span data-dc-tpl="38" class="grip" aria-hidden="true"><svg data-dc-tpl="39" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="40" cx="9" cy="6" r="1.6"></circle><circle data-dc-tpl="41" cx="15" cy="6" r="1.6"></circle><circle data-dc-tpl="42" cx="9" cy="12" r="1.6"></circle><circle data-dc-tpl="43" cx="15" cy="12" r="1.6"></circle><circle data-dc-tpl="44" cx="9" cy="18" r="1.6"></circle><circle data-dc-tpl="45" cx="15" cy="18" r="1.6"></circle></svg></span>
+            <span data-dc-tpl="46" class="rank num"><span class="sc-interp">7</span></span>
+            <div data-dc-tpl="47" class="art" aria-hidden="true" style="width: 36px; background: rgb(61, 61, 36);"></div>
+            <div data-dc-tpl="48" style="flex: 1 1 0%; min-width: 0px;">
+              <div data-dc-tpl="49" style="font-weight: 700;"><span class="sc-interp">WARDOGS</span></div>
+              <div data-dc-tpl="50" class="mut" style="font-size: 12px;"><span class="sc-interp">Season 2 ended</span></div>
+            </div>
+            <span data-dc-tpl="51" class="chip mut"><span class="sc-interp">No drops now</span></span>
+            <button data-dc-tpl="52" class="icon-btn" type="button" aria-label="Options for WARDOGS"><svg data-dc-tpl="53" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle data-dc-tpl="54" cx="5" cy="12" r="1.8"></circle><circle data-dc-tpl="55" cx="12" cy="12" r="1.8"></circle><circle data-dc-tpl="56" cx="19" cy="12" r="1.8"></circle></svg></button>
+          </div>
+        
+      </section>
+
+      <div data-dc-tpl="57" style="flex: 1 1 340px; min-width: 0px; display: flex; flex-direction: column; gap: 24px;">
+        <section data-dc-tpl="58" class="card" aria-labelledby="h-only" style="padding: 18px 20px; display: flex; gap: 16px; align-items: center;">
+          <div data-dc-tpl="59" style="flex: 1 1 0%;">
+            <h2 data-dc-tpl="60" class="h2" id="h-only" style="font-size: 16px;">Priority only</h2>
+            <p data-dc-tpl="61" class="mut" style="margin: 4px 0px 0px; font-size: 13px;">Mine nothing outside the list above. Off: other games fill the gaps.</p>
+          </div>
+          <button data-dc-tpl="62" class="switch" type="button" role="switch" aria-checked="true" aria-labelledby="h-only"><span data-dc-tpl="63"></span></button>
+        </section>
+
+        <section data-dc-tpl="64" class="card" aria-labelledby="h-never" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div data-dc-tpl="65" style="display: flex; align-items: baseline; gap: 10px;"><h2 data-dc-tpl="66" class="h2" id="h-never" style="font-size: 16px;">Never mine</h2><span data-dc-tpl="67" class="mut num" style="font-size: 13px;">4 games</span></div>
+          <div data-dc-tpl="68" style="display: flex; flex-wrap: wrap; gap: 8px;">
+            
+              <span data-dc-tpl="70" class="tag"><span class="sc-interp">Fortnite</span><button data-dc-tpl="71" class="x" type="button" aria-label="Remove Fortnite from Never"><svg data-dc-tpl="72" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="73" d="M6 6l12 12"></path><path data-dc-tpl="74" d="M18 6 6 18"></path></svg></button></span>
+            
+              <span data-dc-tpl="70" class="tag"><span class="sc-interp">Dead by Daylight</span><button data-dc-tpl="71" class="x" type="button" aria-label="Remove Dead by Daylight from Never"><svg data-dc-tpl="72" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="73" d="M6 6l12 12"></path><path data-dc-tpl="74" d="M18 6 6 18"></path></svg></button></span>
+            
+              <span data-dc-tpl="70" class="tag"><span class="sc-interp">World of Tanks</span><button data-dc-tpl="71" class="x" type="button" aria-label="Remove World of Tanks from Never"><svg data-dc-tpl="72" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="73" d="M6 6l12 12"></path><path data-dc-tpl="74" d="M18 6 6 18"></path></svg></button></span>
+            
+              <span data-dc-tpl="70" class="tag"><span class="sc-interp">Raid: Shadow Legends</span><button data-dc-tpl="71" class="x" type="button" aria-label="Remove Raid: Shadow Legends from Never"><svg data-dc-tpl="72" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="73" d="M6 6l12 12"></path><path data-dc-tpl="74" d="M18 6 6 18"></path></svg></button></span>
+            
+          </div>
+          <label data-dc-tpl="75" class="field"><span data-dc-tpl="76" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px);">Add a game to Never</span><input data-dc-tpl="77" type="text" placeholder="Add a game…"></label>
+        </section>
+
+        <section data-dc-tpl="78" class="card" aria-labelledby="h-fav" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div data-dc-tpl="79">
+            <h2 data-dc-tpl="80" class="h2" id="h-fav" style="font-size: 16px;">Favourite channels</h2>
+            <p data-dc-tpl="81" class="mut" style="margin: 4px 0px 0px; font-size: 13px;">Watched first when they stream a drop game. Also earns their channel points and watch streaks.</p>
+          </div>
+          
+            <div data-dc-tpl="83" style="display: flex; align-items: center; gap: 12px;">
+              <span data-dc-tpl="84" aria-hidden="true" style="width: 32px; height: 32px; border-radius: 50%; background: rgb(58, 42, 92); flex-shrink: 0;"></span>
+              <div data-dc-tpl="85" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="86" style="font-weight: 700; font-size: 13px;"><span class="sc-interp">itzmaxiq</span></div><div data-dc-tpl="87" class="mut num" style="font-size: 12px;"><span class="sc-interp">Battlefield REDSEC · 4.2K</span></div></div>
+              <span data-dc-tpl="89" style="background: var(--live); color: rgb(255, 255, 255); font-weight: 800; font-size: 11px; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.05em;">LIVE</span>
+              <button data-dc-tpl="90" class="x" type="button" aria-label="Remove itzmaxiq" style="width: 32px; height: 32px;"><svg data-dc-tpl="91" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="92" d="M6 6l12 12"></path><path data-dc-tpl="93" d="M18 6 6 18"></path></svg></button>
+            </div>
+          
+            <div data-dc-tpl="83" style="display: flex; align-items: center; gap: 12px;">
+              <span data-dc-tpl="84" aria-hidden="true" style="width: 32px; height: 32px; border-radius: 50%; background: rgb(42, 74, 92); flex-shrink: 0;"></span>
+              <div data-dc-tpl="85" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="86" style="font-weight: 700; font-size: 13px;"><span class="sc-interp">zbra</span></div><div data-dc-tpl="87" class="mut num" style="font-size: 12px;"><span class="sc-interp">Offline · streak 6</span></div></div>
+              
+              <button data-dc-tpl="90" class="x" type="button" aria-label="Remove zbra" style="width: 32px; height: 32px;"><svg data-dc-tpl="91" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="92" d="M6 6l12 12"></path><path data-dc-tpl="93" d="M18 6 6 18"></path></svg></button>
+            </div>
+          
+            <div data-dc-tpl="83" style="display: flex; align-items: center; gap: 12px;">
+              <span data-dc-tpl="84" aria-hidden="true" style="width: 32px; height: 32px; border-radius: 50%; background: rgb(92, 58, 42); flex-shrink: 0;"></span>
+              <div data-dc-tpl="85" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="86" style="font-weight: 700; font-size: 13px;"><span class="sc-interp">ml7support</span></div><div data-dc-tpl="87" class="mut num" style="font-size: 12px;"><span class="sc-interp">Offline · streak 2</span></div></div>
+              
+              <button data-dc-tpl="90" class="x" type="button" aria-label="Remove ml7support" style="width: 32px; height: 32px;"><svg data-dc-tpl="91" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="92" d="M6 6l12 12"></path><path data-dc-tpl="93" d="M18 6 6 18"></path></svg></button>
+            </div>
+          
+          <label data-dc-tpl="94" class="field"><span data-dc-tpl="95" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px);">Add a channel</span><input data-dc-tpl="96" type="text" placeholder="Add a channel…"></label>
+        </section>
+      </div>
+    </div>
+  </main></div></div></div>
+
+
+
+</body></html>

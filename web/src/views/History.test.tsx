@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { AppProvider } from "../store";
 import { mockApi } from "../test/fetch";
 import { state } from "../test/fixtures";
-import { HistoryView, groupByDay } from "./History";
+import { HistoryView, RewardsPerDay, groupByDay } from "./History";
 
 const r = (name: string) => ({ name, image_url: `u/${name}` });
 const claim = (at: string, campaign_id: string, name: string) =>
@@ -35,7 +35,8 @@ test("the view summarises and switches period", async () => {
   const stats = await screen.findByRole("region", { name: "Last 30 days" });
   expect(within(stats).getByText("rewards claimed").previousSibling).toHaveTextContent("2");
   expect(within(stats).getByText("campaigns").previousSibling).toHaveTextContent("2");
-  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Time period" }), "90");
+  await userEvent.click(within(screen.getByRole("group", { name: "Time period" })).getByRole("button", { name: "90 days" }));
+  expect(screen.getByRole("button", { name: "90 days" })).toHaveAttribute("aria-pressed", "true");
   expect(calls.some((c) => c.path === "/api/history?days=90")).toBe(true);
   vi.unstubAllGlobals();
 });
@@ -165,4 +166,13 @@ test("stats: watch time says so when older claims didn't record it", async () =>
   const stats = await screen.findByRole("region", { name: "Last 30 days" });
   expect(within(stats).getByText(/of watching/).previousSibling).toHaveTextContent("2 h+");
   vi.unstubAllGlobals();
+});
+
+test("rewards per day counts the viewer's days, with empty days included", () => {
+  const today = new Date().toISOString();
+  render(<RewardsPerDay days={3} claims={[{ at: today, campaign_id: "a", campaign: "A", game: "G", rewards: [r("x"), r("y")] }]} />);
+  const chart = screen.getByRole("img", { name: /^Rewards per day/ });
+  expect(chart.getAttribute("aria-label")!.endsWith(" 2")).toBe(true);
+  expect(chart.querySelectorAll("b")).toHaveLength(3);
+  expect([...chart.querySelectorAll("b")].map((b) => b.textContent)).toEqual(["0", "0", "2"]);
 });

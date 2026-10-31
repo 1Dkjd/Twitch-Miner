@@ -30,7 +30,9 @@ test("Mining now shows the campaign, channel, favourite mark, next reward and de
   expect(card).toHaveTextContent("Next reward in 38 min"); // jest-dom folds the non-breaking space
   expect(card.textContent).toContain("38 min"); // spec §11: numbers and units never split
   expect(within(card).getByText("Plenty of time")).toBeInTheDocument();
-  expect(card).toHaveTextContent("22 / 360 min watched");
+  expect(card).toHaveTextContent("22 min / 6 h watched");
+  expect(within(card).getByRole("link", { name: /Watch on Twitch/ })).toHaveAttribute("href", "https://www.twitch.tv/example_streamer");
+  expect(within(card).getByText("LIVE")).toBeInTheDocument();
 });
 
 test("Priority games say so in Up next", async () => {
@@ -218,4 +220,34 @@ test("I've linked it asks Twitch now and says what it found", async () => {
   const calls = setup(state(), { "POST /api/linked": { game: "007 First Light", status: "linked" } });
   await userEvent.setup().click(await screen.findByRole("button", { name: "I've linked 007 First Light: check with Twitch" }));
   await waitFor(() => expect(calls.find((c) => c.path === "/api/linked")?.body).toEqual({ game: "007 First Light" }));
+});
+
+test("Mine something else offers Up next and switches through Mine now", async () => {
+  setPhone(false);
+  const other = state().current!.campaign;
+  const calls = setup(state({ up_next: [{ ...other, id: "c7", name: "Other Cup" }] }), { "POST /api/mine-now": {} });
+  const u = userEvent.setup();
+  await u.click(await screen.findByRole("button", { name: "Mine something else" }));
+  await u.click(screen.getByRole("menuitem", { name: "Other Cup" }));
+  await waitFor(() => expect(calls.some((c) => c.path === "/api/mine-now" && (c.body as { campaign_id: string }).campaign_id === "c7")).toBe(true));
+});
+
+test("on phones Needs you is one line that opens to the full list", async () => {
+  setPhone(true);
+  const other = state().current!.campaign;
+  setup(state({ needs_you: [{ ...other, id: "n1", game: "Eternal Return", linked: false }] }));
+  const u = userEvent.setup();
+  const line = await screen.findByRole("button", { name: /1 campaign needs you/ });
+  expect(screen.queryByRole("link", { name: /Link your Eternal Return/ })).toBeNull();
+  await u.click(line);
+  expect(line).toHaveAttribute("aria-expanded", "true");
+  expect(screen.getByRole("link", { name: /Link your Eternal Return/ })).toBeInTheDocument();
+});
+
+test("the last 24 hours tiles come from History", async () => {
+  setPhone(false);
+  setup(state(), { "GET /api/history": { total_rewards: 3, claims: [], missed: [], points: { points: 12450, chests: 1 } } });
+  const sec = await screen.findByRole("region", { name: "Last 24 hours" });
+  expect(within(sec).getByText("12,450")).toBeInTheDocument();
+  expect(within(sec).getByText("Rewards claimed").nextSibling).toHaveTextContent("3");
 });
