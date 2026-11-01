@@ -14,6 +14,7 @@ from .models import (
     campaign_finishable,
     campaign_minutes_needed,
     campaign_ratio,
+    campaign_wanted,
     deadline_verdict,
     drop_earnable_now,
 )
@@ -123,7 +124,9 @@ def plan(
             return (0, rank, 0, 0.0, c.ends_at, c.id)
         if c.id in prefs.pins:  # "Arrange myself": pins next, in the order Nick set
             return (1, prefs.pins.index(c.id), 0, 0.0, c.ends_at, c.id)
-        return (2, 0, link_rank(c), campaign_ratio(c, now), c.ends_at, c.id)
+        if campaign_wanted(c, prefs):  # starred rewards: after the orders set by hand, soonest ending first
+            return (2, 0, 0, 0.0, c.ends_at, c.id)
+        return (3, 0, link_rank(c), campaign_ratio(c, now), c.ends_at, c.id)
 
     eligible.sort(key=order)
     outside = tuple(c.id for c in eligible if not in_scope(c))
@@ -142,6 +145,8 @@ def plan(
         reason = f"priority {prefs.priority_rank(chosen.game.name) + 1}"
     elif chosen.id in prefs.pins:
         reason = "you pinned it"
+    elif campaign_wanted(chosen, prefs):
+        reason = "you starred a reward"
     else:
         reason = "most urgent"
 
@@ -191,6 +196,8 @@ def _hold_current(
         return chosen
     if cur.id in prefs.pins or chosen.id in prefs.pins:
         return chosen  # pins are an explicit order, like Priority: no hysteresis
+    if campaign_wanted(cur, prefs) or campaign_wanted(chosen, prefs):
+        return chosen  # as are stars
     if link_rank(chosen) < link_rank(cur):
         return chosen  # a known-linked campaign always replaces a link test
     rc, rn = campaign_ratio(cur, now), campaign_ratio(chosen, now)

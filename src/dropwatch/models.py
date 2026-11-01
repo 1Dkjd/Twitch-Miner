@@ -102,6 +102,7 @@ class Prefs:
     ignored: frozenset[str] = frozenset()  # Needs you > Ignore: campaign ids not asked about until they end
     priority_only: bool = False  # Settings > Mining: mine only games in Priority (approved 2026-10-12)
     skip_too_late: bool = False  # Settings > Mining: skip campaigns no reward of can finish (2026-10-18)
+    wanted: frozenset[str] = frozenset()  # Inventory stars: drop ids; those go before the automatic order
 
     # Game names typed by hand ("Add anyway") may differ in case from Twitch's category name,
     # so list membership ignores case.
@@ -152,6 +153,11 @@ def drop_earnable_now(c: Campaign, d: Drop, now: datetime) -> bool:
 def account_eligible(c: Campaign, prefs: Prefs) -> bool:
     """Badge/emote campaigns need no account link but are opt-in (reference enable_badges_emotes)."""
     return prefs.mine_badges if c.has_badge_or_emote else c.linked is not False  # unknown counts
+
+
+def campaign_wanted(c: Campaign, prefs: Prefs) -> bool:
+    """A reward of this campaign is starred and not claimed yet."""
+    return any(d.id in prefs.wanted and not d.claimed for d in c.drops)
 
 
 def total_remaining(c: Campaign, d: Drop) -> int:

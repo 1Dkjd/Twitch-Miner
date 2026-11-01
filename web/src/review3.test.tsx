@@ -68,7 +68,7 @@ test("while Twitch is unreachable the card is not 'Mining'", async () => {
   render(<AppProvider initialMe={ME}><OverviewView /></AppProvider>);
   const card = await screen.findByRole("article");
   expect(card).not.toHaveTextContent(/^.*Mining$/);
-  await waitFor(() => expect(card.querySelector(".chip.gold")).toBeNull());
+  await waitFor(() => expect(card.querySelector(".chip.accent")).toBeNull());
   expect(card).toHaveTextContent("Retrying Twitch");
 });
 

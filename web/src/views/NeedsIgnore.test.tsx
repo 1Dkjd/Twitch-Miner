@@ -32,7 +32,8 @@ const card = () => screen.getByRole("region", { name: /Needs you/ });
 test("Ignore hides that campaign, says until when, and Undo brings it back", async () => {
   const calls = setup();
   const u = userEvent.setup();
-  await u.click(await screen.findByRole("button", { name: "Ignore DbD: October of Horror" }));
+  await u.click(await screen.findByRole("button", { name: "More actions for DbD: October of Horror" }));
+  await u.click(screen.getByRole("menuitem", { name: "Ignore" }));
   expect(calls.some((c) => c.method === "POST" && c.path === "/api/needs/ignored/dbd")).toBe(true);
   const toast = await screen.findByRole("group", { name: "Ignored" });
   expect(toast).toHaveTextContent("DbD: October of Horror won't show here or in alerts. It ends");

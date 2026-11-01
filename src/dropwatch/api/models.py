@@ -46,6 +46,7 @@ class CampaignOut(BaseModel):
     # Up next only: at the queue's order, mined back to back, it would end before its turn (an estimate)
     ends_before_turn: bool = False
     new: bool = False  # first seen in the last 24 h (and not in Dropwatch's very first look)
+    live_channels: int = 0  # live channels it could be mined on, as of the last check
 
 
 class ForecastStepOut(BaseModel):
@@ -126,6 +127,7 @@ class StateOut(BaseModel):
     signin_kind: str | None = None
     # a login-page sign-in that Twitch stopped sending its campaign list to: sign in on its page again
     full_list_lost: bool = False
+    last_progress_at: datetime | None = None  # when Twitch last counted a minute, since Dropwatch started
     # None when nothing can be forecast: signed out, no Twitch, paused for good
     forecast: ForecastOut | None = None
     # skipped: no reward left can finish before its window closes (Settings > Mining)
@@ -155,6 +157,10 @@ class ListsIn(StrictIn):
 
 class Pins(BaseModel):
     pins: list[Annotated[str, Field(max_length=100)]] = Field(default_factory=list, max_length=200)
+
+
+class Wishlist(BaseModel):
+    drops: list[Annotated[str, Field(max_length=100)]] = Field(default_factory=list, max_length=500)
 
 
 class IgnoredOut(BaseModel):
@@ -197,6 +203,7 @@ class SettingsIn(BaseModel):
     skip_too_late: StrictBool | None = None
     notify_ending_soon: StrictBool | None = None
     notify_ending_hours: StrictInt | None = Field(default=None, ge=1, le=48)
+    notify_wishlist: StrictBool | None = None
     model_config = ConfigDict(extra="forbid")  # a misspelt or retired setting is an error, not a no-op
 
 
@@ -223,6 +230,7 @@ class SettingsOut(BaseModel):
     skip_too_late: bool = True
     notify_ending_soon: bool = True
     notify_ending_hours: int = 6
+    notify_wishlist: bool = True
 
 
 class ActivityEvent(BaseModel):

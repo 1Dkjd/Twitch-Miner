@@ -71,7 +71,7 @@ export function BulkNever({ lists, games, onCommit }: {
               <input type="checkbox" checked={picked.has(g.game)} onChange={() => toggle(g.game)} />
               {g.box_art_url ? <img className="bulk-box" src={boxArt(g.box_art_url)} alt="" /> : <span className="bulk-box ph" aria-hidden="true" />}
               <span className="bulk-n">{g.game}</span>
-              {g.priority && <span className="chip gold">Priority {g.priority}</span>}
+              {g.priority && <span className="chip accent">Priority {g.priority}</span>}
               {badgeOnly(g) && <span className="chip">Badges/emotes only</span>}
             </label>
           </li>

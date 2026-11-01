@@ -7,7 +7,7 @@ from datetime import datetime
 
 from pydantic import ValidationError
 
-from .api.models import ListsIn, Pins, SettingsIn
+from .api.models import ListsIn, Pins, SettingsIn, Wishlist
 from .notify import CHANNELS
 from .store import SETTINGS
 from .version import VERSION
@@ -33,6 +33,7 @@ def make_backup(store, now: datetime, *, secrets: bool) -> dict:
         "dropwatch_backup": FORMAT, "version": VERSION, "made_at": now.isoformat(),
         "lists": {"priority": list(p.priority), "never": sorted(p.never), "favourites": list(p.favourites)},
         "pins": store.get_pins(),
+        "wishlist": store.get_wishlist(),
         "settings": store.get_settings(),
         "notify_channels": channels,
     }
@@ -51,6 +52,7 @@ def restore_backup(store, data: object) -> list[str]:
             raise BadBackup("The backup's lists aren't readable.")
         lists = ListsIn.model_validate({k: v for k, v in raw_lists.items() if k in ListsIn.model_fields})
         pins = Pins.model_validate({"pins": data.get("pins") or []})
+        wishlist = Wishlist.model_validate({"drops": data.get("wishlist") or []})
         raw = data.get("settings") or {}
         if not isinstance(raw, dict):
             raise BadBackup("The backup's settings aren't readable.")
@@ -86,6 +88,7 @@ def restore_backup(store, data: object) -> list[str]:
 
     store.set_lists(lists.priority, set(lists.never), lists.favourites)
     store.set_pins(pins.pins)
+    store.set_wishlist(wishlist.drops)
     store.put_settings(settings.model_dump(exclude_none=True))
     store.set_channels(channels)
     return skipped

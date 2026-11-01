@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { api, type Claim, type History, type State } from "../api/client";
 import type { components } from "../api/types";
 import { useApp } from "../store";
-import { NB, boxArt, clock, day, dur } from "../ui/format";
+import { NB, TIME, boxArt, clock, day, dur } from "../ui/format";
 import { Icon } from "../ui/Icons";
 
 export interface DayGroup {
@@ -33,7 +33,6 @@ export function groupByDay(claims: Claim[], timeZone?: string): DayGroup[] {
 }
 
 const PERIODS: [number, string, string][] = [[1, "24 hours", "Last 24 hours"], [7, "7 days", "Last 7 days"], [30, "30 days", "Last 30 days"], [90, "90 days", "Last 90 days"], [365, "Year", "Last year"]];
-const TIME = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
 
 export function HistoryView() {
   const { state } = useApp();
@@ -245,7 +244,7 @@ function Stats({ data, label, days }: { data: History; label: string; days: numb
           {(data.points?.chests ?? 0) > 0 && <div className="l">{data.points!.chests} {data.points!.chests === 1 ? "chest" : "chests"} opened</div>}</div>
         {notable > 0 && <div className="stat"><div className="n warn">{notable}</div><div className="l">missed</div></div>}
       </div>
-      {days > 1 && <RewardsPerDay claims={data.claims} days={Math.min(days, CHART_DAYS)} />}
+      {days > 1 && <RewardsPerDay claims={data.claims} days={days} />}
       <div className="list stats-list">
         {bars("Rewards by game", games, () => undefined, (k) => k)}
         {reasons.length > 0 && bars("Missed, by reason", reasons, (k) => TONE[REASON[k]?.tone ?? ""],
@@ -256,28 +255,61 @@ function Stats({ data, label, days }: { data: History; label: string; days: numb
 }
 
 const CHART_DAYS = 14;
+const dated = (fmt: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("en-GB", fmt);
 
-/** Rewards per viewer's day, oldest to newest (days with none included). The labels are visible and the whole
- * chart reads as one sentence to a screen reader; each bar's count is printed above it. */
+type Bar = { key: string; label: string; title: string; n: number };
+
+/** The chart's bars for a period, oldest to newest, empty ones included: up to 14 days, then weeks, then months. */
+export function rewardBars(claims: Claim[], days: number, now = new Date()): { unit: string; bars: Bar[] } {
+  const full = dated({ weekday: "short", day: "numeric", month: "short" });
+  const start = (d: Date, back: number) => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - back); return x; };
+  let unit: string;
+  let slots: { from: Date; label: string; title: string }[];
+  if (days >= 365) {
+    unit = "month";
+    const month = dated({ month: "short" }), long = dated({ month: "short", year: "numeric" });
+    slots = Array.from({ length: 12 }, (_, i) => {
+      const from = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+      return { from, label: month.format(from), title: long.format(from) };
+    });
+  } else if (days > 30) {
+    unit = "week";
+    const count = Math.ceil(days / 7), short = dated({ day: "numeric", month: "short" });
+    slots = Array.from({ length: count }, (_, i) => {
+      const from = start(now, (count - 1 - i) * 7 + 6);
+      return { from, label: short.format(from).split(" ")[0]!, title: `from ${short.format(from)}` };
+    });
+  } else {
+    unit = "day";
+    const count = Math.min(days, CHART_DAYS), weekday = dated({ weekday: "short" });
+    slots = Array.from({ length: count }, (_, i) => {
+      const from = start(now, count - 1 - i), title = full.format(from).replace(",", "");
+      return { from, label: count > 7 ? title.split(" ")[1]! : weekday.format(from), title };
+    });
+  }
+  const bars = slots.map((s) => ({ key: s.from.toISOString(), label: s.label, title: s.title, n: 0 }));
+  for (const c of claims) {
+    const at = new Date(c.at);
+    if (at < slots[0]!.from) continue;
+    let i = slots.length - 1;
+    while (i > 0 && at < slots[i]!.from) i--;
+    bars[i]!.n += c.rewards.length;
+  }
+  return { unit, bars };
+}
+
+/** The labels are visible and the whole chart reads as one sentence to a screen reader; each bar's count is
+ * printed above it. */
 export function RewardsPerDay({ claims, days }: { claims: Claim[]; days: number }) {
-  const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-  const counts = new Map<string, number>();
-  for (const c of claims) { const k = dayKey(new Date(c.at)); counts.set(k, (counts.get(k) ?? 0) + c.rewards.length); }
-  const fmt = new Intl.DateTimeFormat("en-GB", { weekday: "short" });
-  const full = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" });
-  const bars = Array.from({ length: days }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (days - 1 - i));
-    return { key: dayKey(d), label: fmt.format(d), title: full.format(d).replace(",", ""), n: counts.get(dayKey(d)) ?? 0 };
-  });
+  const { unit, bars } = rewardBars(claims, days);
   const top = Math.max(1, ...bars.map((b) => b.n));
   return (
     <section className="perday" aria-labelledby="h-perday">
-      <div className="perday-h"><h3 id="h-perday">Rewards per day</h3><span>{bars[0]!.title} – {bars.at(-1)!.title}</span></div>
-      <div className="perday-bars" role="img" aria-label={`Rewards per day: ${bars.map((b) => `${b.title} ${b.n}`).join(", ")}`}>
+      <div className="perday-h"><h3 id="h-perday">Rewards per {unit}</h3><span>{bars[0]!.title} – {bars.at(-1)!.title}</span></div>
+      <div className="perday-bars" role="img" aria-label={`Rewards per ${unit}: ${bars.map((b) => `${b.title} ${b.n}`).join(", ")}`}>
         {bars.map((b, i) => (
           <div key={b.key} className={i === bars.length - 1 ? "newest" : undefined} title={`${b.title}: ${b.n}`}>
-            <b>{b.n}</b><i style={{ height: `${(b.n / top) * 100}px` }} /><span>{days > 7 ? b.title.split(" ")[1] : b.label}</span>
+            <b>{b.n}</b><i style={{ height: `${(b.n / top) * 100}px` }} /><span>{b.label}</span>
           </div>
         ))}
       </div>

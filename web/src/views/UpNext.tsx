@@ -6,6 +6,7 @@ import { api, type Campaign, type Settings, type State } from "../api/client";
 import { useApp } from "../store";
 import { NB, boxArt, clock, day, dur } from "../ui/format";
 import { Icon } from "../ui/Icons";
+import { MenuButton } from "./Menu";
 import { milestones } from "./Track";
 
 const SHOWN = 5;
@@ -182,9 +183,13 @@ function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, outside, onMine
   onMineNow: () => void; onNever: () => void; onPriority: () => void; onPin: () => void; onUnpin: () => void;
   onMove: (by: number) => void;
 }) {
-  // offered only for games not on Priority yet (pr is their "Priority N" label)
-  const addToPriority = !pr && (
-    <button className="btn quiet" type="button" aria-label={`Add ${c.game} to Priority`} onClick={onPriority}>Add to Priority</button>
+  // the rarer actions; Add to Priority only for games not on Priority yet (pr is their "Priority N" label)
+  const more = (
+    <MenuButton id={`row-menu-${c.id}`} label={c.game} wrapClass="row-more" buttonClass="ib" buttonLabel={`More actions for ${c.name}`}
+      buttonContent={<Icon name="more" />} items={[
+        ...(pr ? [] : [{ key: "priority", content: "Add to Priority", onSelect: onPriority }]),
+        { key: "never", content: "Never mine", onSelect: onNever },
+      ]} />
   );
   const sortable = useSortable({ id: c.id, disabled: !pinned });
   const { watched, max } = milestones(c.drops);
@@ -195,7 +200,8 @@ function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, outside, onMine
       <img className="box" src={boxArt(c.box_art_url)} alt="" />
       <div>
         <div className="row-t">{c.name}{c.new && <> <span className="chip note" title="Dropwatch first saw this campaign in the last 24 hours">New</span></>}</div>
-        <div className="row-s">{c.game}{pr && <><span className="sep">·</span>{pr}</>}<span className="sep">·</span>ends {day(c.ends_at)}</div>
+        <div className="row-s">{c.game}{pr && <><span className="sep">·</span>{pr}</>}<span className="sep">·</span>ends {day(c.ends_at)}
+          {(c.live_channels ?? 0) > 0 && <><span className="sep">·</span><span className="num">{c.live_channels}</span> live</>}</div>
         {firstOpen && <div className="row-art">{firstOpen.rewards.map((x, i) => <img key={i} src={x.image_url} alt={x.name} />)}</div>}
         {c.ends_before_turn && (
           <div className="turn"><span className="chip red">Ends {day(c.ends_at)} {clock(c.ends_at)}, before its turn</span></div>
@@ -210,8 +216,7 @@ function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, outside, onMine
         )}
         {!arrange && <>
           {!outside && <button className="btn" type="button" aria-label={`Mine ${c.name} now`} onClick={onMineNow}>Mine now</button>}
-          {addToPriority}
-          <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={onNever}>Never mine</button>
+          {more}
         </>}
         {arrange && pinned && <>
           <span className="grip" {...sortable.attributes} {...sortable.listeners} aria-label={`Drag ${c.name} to reorder`}><Icon name="grip" /></span>
@@ -221,8 +226,7 @@ function UpNextRow({ c, pr, arrange, pinned, pinIndex, pinCount, outside, onMine
         </>}
         {arrange && !pinned && <>
           <button className="btn" type="button" aria-label={`Pin ${c.name} to the top`} onClick={onPin}>Pin to top</button>
-          {addToPriority}
-          <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={onNever}>Never mine</button>
+          {more}
         </>}
       </div>
     </div>

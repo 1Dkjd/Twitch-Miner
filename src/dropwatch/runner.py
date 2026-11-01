@@ -90,6 +90,7 @@ class Runner:
         self._paused = False
         self._fails = 0
         self._ticks_since_progress = 0
+        self.last_progress_at: datetime | None = None  # Overview's health line
         self._excluded: dict[str, datetime] = {}
         self._down_ids: dict[int, str] = {}
         self._override_campaign: str | None = None
@@ -231,7 +232,9 @@ class Runner:
 
     def _bookkeeping(self, now: datetime, prefs) -> None:
         """History's campaign log and pin pruning: a failure is logged, never a reason to stop planning."""
-        for step in (self._forget_ended_pins, lambda n: self._log_campaigns(n, prefs), self._record_games):
+        steps = (self._forget_ended_pins, self._forget_ended_stars,
+                 lambda n: self._log_campaigns(n, prefs), self._record_games)
+        for step in steps:
             try:
                 step(now)
             except Exception as exc:  # noqa: BLE001 - bookkeeping must never stop mining
@@ -291,6 +294,18 @@ class Runner:
             kept = [i for i in ids if not (listed[i].ends_at <= now if i in listed else i in in_log)]
             if kept != ids:
                 getattr(self._store, set_name)(kept)
+
+    def _forget_ended_stars(self, now: datetime) -> None:
+        """A star lasts as long as its campaign, as long as that campaign is listed; like pins, a short list
+        forgets nothing."""
+        get = getattr(self._store, "get_wishlist", None)
+        if get is None:
+            return
+        ended = {d.id for c in self.campaigns if c.ends_at <= now for d in c.drops}
+        ids = get()
+        kept = [i for i in ids if i not in ended]
+        if kept != ids:
+            self._store.set_wishlist(kept)
 
     async def replan(self) -> None:
         """Re-decide from what is already known (lists or an override changed): no Twitch calls."""
@@ -633,6 +648,7 @@ class Runner:
             return
         if isinstance(event, DropProgress):
             self._ticks_since_progress = 0
+            self.last_progress_at = self._clock()
             for i, c in enumerate(self.campaigns):
                 d = c.drop(event.drop_id)
                 if d is not None:

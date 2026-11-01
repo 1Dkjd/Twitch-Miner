@@ -10,11 +10,11 @@ import { LinkedButton } from "./LinkedButton";
 import { UpNext } from "./UpNext";
 import { Forecast } from "./Forecast";
 import { Track, milestones } from "./Track";
-import { LastDay, RecentlyClaimed } from "./OverviewExtras";
+import { Health, RecentlyClaimed, Today } from "./OverviewExtras";
 import { useNarrow } from "../ui/useNarrow";
 
-/** Overview (docs/design/twitch-native-mockup/): banner, Mining now (or the idle card) beside Needs you and the last
- * 24 hours, Forecast, Up next, Coming up, Done, Recently claimed. On phones Needs you comes first in the DOM too, so screen readers get the same order. */
+/** Overview (docs/design/twitch-native-mockup/): banner, Mining now (or the idle card) beside Needs you and today,
+ * Forecast, Up next, Coming up, Done, Recently claimed. On phones Needs you comes first in the DOM too, so screen readers get the same order. */
 export function OverviewView() {
   const { state, connection, lostSince } = useApp();
   const { lists, save } = useLists();
@@ -69,9 +69,10 @@ export function OverviewView() {
     <section className="view" id="v-overview" aria-labelledby="h-overview">
       <h1 className="sr" id="h-overview" tabIndex={-1}>Overview</h1>
       <Banner state={state} lost={lost} lostSince={lostSince} />
+      <Health state={state} />
       {phone
-        ? <div className="ov-top">{needs}{now}<LastDay state={state} /></div>
-        : <div className="ov-top"><div className="ov-main">{now}</div><aside className="ov-side" aria-label="Needs you and the last 24 hours">{needs}<LastDay state={state} /></aside></div>}
+        ? <div className="ov-top">{needs}{now}<Today state={state} /></div>
+        : <div className="ov-top"><div className="ov-main">{now}</div><aside className="ov-side" aria-label="Needs you and today">{needs}<Today state={state} /></aside></div>}
       <Forecast state={state} />
       <UpNext state={state} priorityOf={priorityOf} onNever={never} onPriority={prioritise} />
       <ComingUp state={state} onPriority={prioritise} />
@@ -201,7 +202,7 @@ function NowCard({ state, lost, lostSince, priorityOf }: { state: State; lost: b
   const status = state.state === "paused" ? <span className="chip"><Icon name="pause" />Paused · progress kept</span>
     : lost ? <span className="chip">Last known · {lostSince ? clock(lostSince) : ""}</span>
     : state.state === "twitch_unreachable" ? <span className="chip">Retrying Twitch · progress kept</span>
-    : <span className="chip gold"><span className="live" aria-hidden="true" />Mining</span>;
+    : <span className="chip accent"><span className="live" aria-hidden="true" />Mining</span>;
   const leftMin = minutesUntil(c.ends_at);
   const toGo = c.minutes_needed;
   const ratio = leftMin > 0 ? toGo / leftMin : 2;
@@ -483,8 +484,11 @@ function NeedsYou({ state, onNever, folded }: { state: State; onNever: (game: st
                     void refreshState();
                   }}>Mine now</button>
                 )}
-                <button className="btn quiet" type="button" aria-label={`Ignore ${c.name}`} onClick={() => void ignore(c)}>Ignore</button>
-                <button className="btn quiet" type="button" aria-label={`Never mine ${c.game}`} onClick={() => onNever(c.game)}>Never mine</button>
+                <MenuButton id={`needs-menu-${c.id}`} label={c.game} wrapClass="row-more" buttonClass="ib" buttonLabel={`More actions for ${c.name}`}
+                  buttonContent={<Icon name="more" />} items={[
+                    { key: "ignore", content: "Ignore", onSelect: () => void ignore(c) },
+                    { key: "never", content: "Never mine", onSelect: () => onNever(c.game) },
+                  ]} />
               </div>
             </div>
           );
@@ -525,7 +529,7 @@ function ComingUp({ state, onPriority }: { state: State; onPriority: (game: stri
             <div className="row" key={c.id}>
               {c.box_art_url ? <img className="box" src={boxArt(c.box_art_url)} alt="" /> : <span className="box ph" aria-hidden="true" />}
               <div>
-                <div className="row-t">{c.game}{c.priority && <> <span className="chip gold">Priority</span></>}</div>
+                <div className="row-t">{c.game}{c.priority && <> <span className="chip accent">Priority</span></>}</div>
                 <div className="row-s">
                   {c.name}
                   {c.starts_at && <><span className="sep">·</span>starts {day(c.starts_at)}</>}

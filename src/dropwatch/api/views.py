@@ -85,6 +85,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
             v = deadline_verdict(campaign_ratio(c, now))
         o = campaign_out(c, now, v, maybe_unlinked=cid in getattr(runner, "maybe_unlinked", {}))
         o.new = is_new(cid)
+        o.live_channels = sum(qualifies(c, ch) for ch in runner.live)
         return o
 
     current = None
@@ -133,6 +134,7 @@ def state_view(runner, store, now: datetime) -> StateOut:
         full_list_lost=bool(getattr(runner, "full_list_lost", False)),
         too_late=keep(getattr(plan, "too_late", ()) if plan else ()),
         forecast=_forecast(runner, by_id, prefs, now),
+        last_progress_at=getattr(runner, "last_progress_at", None),
         streak_visit=(StreakVisitOut(channel=v[0], until=v[1])
                       if (v := getattr(runner, "streak_visit", None)) else None),
     )

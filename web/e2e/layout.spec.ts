@@ -7,12 +7,11 @@ const VIEWS = ["overview", "priorities", "inventory", "history", "activity", "se
 
 const isPhone = (page: Page) => page.viewportSize()!.width <= 720;
 
-/** Open a view with the web font stubbed (no network in tests), collecting anything the page logs as an error. */
+/** Open a view, collecting anything the page logs as an error. */
 async function open(page: Page, view: string, theme?: string) {
   const errors: string[] = [];
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.fulfill({ contentType: "text/css", body: "" }));
   if (theme) await page.addInitScript((t) => localStorage.setItem("dw-theme", t), theme);
   await page.goto(`/#${view}`);
   await expect(page.locator("h1").first()).toBeAttached();
@@ -41,6 +40,14 @@ for (const view of VIEWS) {
     expect(errors).toEqual([]);
   });
 }
+
+test("the page contacts nothing but its own server, and Inter is the bundled copy", async ({ page }) => {
+  const elsewhere: string[] = [];
+  page.on("request", (r) => { if (!r.url().startsWith("http://127.0.0.1:4177") && !r.url().startsWith("data:")) elsewhere.push(r.url()); });
+  await open(page, "overview");
+  expect(elsewhere).toEqual([]);
+  expect(await page.evaluate(() => document.fonts.ready.then((f) => f.check('600 14px "Inter Variable"')))).toBe(true);
+});
 
 test("the approved tokens and font are in force", async ({ page }) => {
   await open(page, "overview");
@@ -169,6 +176,19 @@ test("the forecast says what will be missed, in view and inside its card", async
   }
 });
 
+test("a row's actions menu isn't clipped by its list", async ({ page }) => {
+  await open(page, "overview");
+  await page.getByRole("button", { name: "More actions for nopixel V" }).click();
+  const item = page.getByRole("menuitem", { name: "Never mine" });
+  const onTop = await item.evaluate((e) => {
+    const r = e.getBoundingClientRect();
+    return e.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2));
+  });
+  expect(onTop).toBe(true);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "More actions for nopixel V" })).toBeFocused();
+});
+
 test("History's chart keeps its bars plain, the newest in the accent", async ({ page }) => {
   await open(page, "history");
   const chart = page.getByRole("img", { name: /^Rewards per day/ });
@@ -184,7 +204,7 @@ test("History's chart keeps its bars plain, the newest in the accent", async ({ 
 
 test("a reward's details open inside the window and close with Escape", async ({ page }) => {
   await open(page, "inventory");
-  await page.getByRole("button", { name: "Cold Blooded: details" }).click();
+  await page.getByRole("button", { name: /^Cold Blooded.*details$/ }).click();
   const dlg = page.getByRole("dialog");
   const r = (await dlg.boundingBox())!;
   const vp = page.viewportSize()!;

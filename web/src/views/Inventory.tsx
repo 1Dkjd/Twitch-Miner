@@ -15,10 +15,10 @@ type InvReward = InvDrop["rewards"][number];
 type Detail = { c: InvCampaign; d: InvDrop; r: InvReward };
 
 const STATUS: Record<string, [string, string]> = {
-  mining: ["Mining now", "gold"], needs_link: ["Needs account link", "red"], active: ["Running", ""],
+  mining: ["Mining now", "accent"], needs_link: ["Needs account link", "red"], active: ["Running", ""],
   upcoming: ["Coming up", ""], done: ["All claimed", "green"], never: ["Never mined", ""], ended: ["Ended", ""],
 };
-const VERDICT: Record<string, [string, string]> = { wont_finish: ["Won't finish in time", "red"], tight: ["Tight on time", "gold"] };
+const VERDICT: Record<string, [string, string]> = { wont_finish: ["Won't finish in time", "red"], tight: ["Tight on time", "accent"] };
 
 // tile size slider (2026-10-18): this browser's choice, kept in localStorage; a blocked storage just forgets
 const SIZE_KEY = "dropwatch.inventory.tile", SIZE_MIN = 72, SIZE_MAX = 200, SIZE_DEFAULT = 112;
@@ -67,6 +67,17 @@ export function InventoryView() {
   const [size, setSize] = useState(savedSize);
   const resize = (n: number) => { setSize(n); try { localStorage.setItem(SIZE_KEY, String(n)); } catch { /* storage blocked */ } };
   const reload = () => api.get<Inventory>("/inventory").then(setData).catch(() => undefined);
+  const [stars, setStars] = useState<string[]>([]);
+  useEffect(() => { api.get<{ drops: string[] }>("/wishlist").then((w) => setStars(w.drops)).catch(() => undefined); }, []);
+  async function toggleStar(d: InvDrop, name: string) {
+    const on = !stars.includes(d.id);
+    try {
+      const w = await api.put<{ drops: string[] }>("/wishlist", { drops: on ? [...stars, d.id] : stars.filter((s) => s !== d.id) });
+      setStars(w.drops);
+      say(on ? { title: `${name} starred`, detail: "Its campaign now goes before the automatic order." } : `${name} unstarred`);
+    } catch (e) { sayError(e, "Couldn't save the star"); }
+    void refreshState();
+  }
   useEffect(() => {
     let live = true;
     api.get<Inventory>("/inventory").then((d) => { if (live) setData(d); }).catch(() => undefined);
@@ -81,6 +92,7 @@ export function InventoryView() {
     void reload();
   }
   const acts: GameActs = {
+    starred: (id) => stars.includes(id),
     prioritise: (g) => change((l) => ({ ...l, never: l.never.filter((x) => x !== g), priority: [...l.priority.filter((x) => x !== g), g] }), `${g} added to Priority`),
     unprioritise: (g) => change((l) => ({ ...l, priority: l.priority.filter((x) => x !== g) }), `${g} removed from Priority`),
     never: (g) => change((l) => ({ ...l, priority: l.priority.filter((x) => x !== g), never: [...l.never.filter((x) => x !== g), g] }), `${g} won't be mined`),
@@ -163,12 +175,13 @@ export function InventoryView() {
           {showNever ? "Hide Never games" : `Show Never games (${neverCount})`}
         </button>
       )}
-      {detail && <RewardDetail {...detail} onClose={() => setDetail(null)} />}
+      {detail && <RewardDetail {...detail} onClose={() => setDetail(null)} starred={stars.includes(detail.d.id)} onStar={() => void toggleStar(detail.d, detail.r.name)} />}
     </section>
   );
 }
 
 type GameActs = {
+  starred: (dropId: string) => boolean;
   prioritise: (g: string) => void; unprioritise: (g: string) => void; never: (g: string) => void; allow: (g: string) => void;
   mineNow: (c: InvCampaign) => void;
 };
@@ -206,7 +219,7 @@ function GameCard({ g, acts, onDetail }: { g: InvGame; acts: GameActs; onDetail:
         <div className="inv-head-t">
           <h2 id={`inv-${slug(g.game)}`}>{g.game}</h2>
           <div className="row-s">
-            {g.priority && <><span className="chip gold">Priority {g.priority}</span> </>}
+            {g.priority && <><span className="chip accent">Priority {g.priority}</span> </>}
             {g.never && <><span className="chip">Never</span> </>}
             {total > 0 && <>{claimed} of {total} claimed</>}
           </div>
@@ -302,8 +315,9 @@ function CampaignBlock({ c, game, acts, onDetail }: { c: InvCampaign; game?: Inv
           const pct = Math.min(100, Math.round((d.current_minutes / Math.max(1, d.required_minutes)) * 100));
           return (
             <button type="button" className={`inv-item ${st}`} key={`${d.id}-${i}`} title={r.name}
-              aria-label={`${r.name}: details`} onClick={() => onDetail({ c, d, r })}>
-              <span className="inv-img">{r.image_url ? <img src={r.image_url} alt="" /> : null}</span>
+              aria-label={`${r.name}${acts.starred(d.id) ? ", starred" : ""}: details`} onClick={() => onDetail({ c, d, r })}>
+              <span className="inv-img">{r.image_url ? <img src={r.image_url} alt="" /> : null}
+                {acts.starred(d.id) && <span className="inv-star"><Icon name="star" /></span>}</span>
               <span className="inv-cap">
                 <span className="inv-n">{r.name}</span>
                 <span className="inv-m">{rewardLine(d, st)}</span>
@@ -333,7 +347,7 @@ function rewardLine(d: InvDrop, st: ReturnType<typeof dropState>): string {
 const when = (d: string) => `${day(d)} ${clock(d)}`;
 
 /** A reward's details: its window, what it takes, which channels count and what has to come first. */
-function RewardDetail({ c, d, r, onClose }: Detail & { onClose: () => void }) {
+function RewardDetail({ c, d, r, onClose, starred, onStar }: Detail & { onClose: () => void; starred: boolean; onStar: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
@@ -356,6 +370,12 @@ function RewardDetail({ c, d, r, onClose }: Detail & { onClose: () => void }) {
           </div>
           <button className="btn quiet inv-dlg-x" type="button" aria-label="Close" onClick={onClose}>✕</button>
         </div>
+        {!d.claimed && st !== "missed" && (
+          <div className="inv-dlg-star">
+            <button className={`btn${starred ? " strong" : ""}`} type="button" aria-pressed={starred} onClick={onStar}><Icon name="star" />{starred ? "Starred" : "Star this reward"}</button>
+            <span className="row-s">Mined after Priority and pins, ahead of everything else. You're told if the forecast says it won't make it.</span>
+          </div>
+        )}
         <dl className="inv-dl">
           <dt>Window</dt><dd>{when(d.starts_at)} – {when(d.ends_at)}</dd>
           <dt>Takes</dt>

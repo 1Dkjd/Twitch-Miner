@@ -137,7 +137,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get History */
+        /**
+         * Get History
+         * @description `since` (the page's own midnight, say) replaces `days`: only the browser knows the viewer's day.
+         */
         get: operations["get_history_api_history_get"];
         put?: never;
         post?: never;
@@ -686,6 +689,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/wishlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Wishlist */
+        get: operations["get_wishlist_api_wishlist_get"];
+        /**
+         * Put Wishlist
+         * @description Inventory stars: rewards (by drop id) whose campaigns go before the automatic order.
+         */
+        put: operations["put_wishlist_api_wishlist_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -765,6 +789,11 @@ export interface components {
             link_url: string;
             /** Linked */
             linked: boolean | null;
+            /**
+             * Live Channels
+             * @default 0
+             */
+            live_channels: number;
             /**
              * Maybe Unlinked
              * @default false
@@ -1012,6 +1041,11 @@ export interface components {
             link_url: string;
             /** Linked */
             linked: boolean | null;
+            /**
+             * Live Channels
+             * @default 0
+             */
+            live_channels: number;
             /**
              * Maybe Unlinked
              * @default false
@@ -1347,6 +1381,8 @@ export interface components {
             notify_weekly_hour?: number | null;
             /** Notify Weekly Tz */
             notify_weekly_tz?: string | null;
+            /** Notify Wishlist */
+            notify_wishlist?: boolean | null;
             /** Points Watch Streak */
             points_watch_streak?: boolean | null;
             /** Priority Only */
@@ -1400,6 +1436,11 @@ export interface components {
             notify_weekly_hour: number;
             /** Notify Weekly Tz */
             notify_weekly_tz: string;
+            /**
+             * Notify Wishlist
+             * @default true
+             */
+            notify_wishlist: boolean;
             /** Points Watch Streak */
             points_watch_streak: boolean;
             /** Priority Only */
@@ -1448,6 +1489,8 @@ export interface components {
              * @default false
              */
             full_list_lost: boolean;
+            /** Last Progress At */
+            last_progress_at?: string | null;
             /** Last Refresh */
             last_refresh: string | null;
             last_switch?: components["schemas"]["SwitchOut"] | null;
@@ -1580,6 +1623,11 @@ export interface components {
             progress: number | null;
             /** Status */
             status: string;
+        };
+        /** Wishlist */
+        Wishlist: {
+            /** Drops */
+            drops?: string[];
         };
     };
     responses: never;
@@ -1760,6 +1808,7 @@ export interface operations {
         parameters: {
             query?: {
                 days?: number;
+                since?: string | null;
             };
             header?: never;
             path?: never;
@@ -2730,6 +2779,59 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    get_wishlist_api_wishlist_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Wishlist"];
+                };
+            };
+        };
+    };
+    put_wishlist_api_wishlist_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Wishlist"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Wishlist"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };

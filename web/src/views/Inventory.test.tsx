@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AppProvider } from "../store";
 import { mockApi } from "../test/fetch";
@@ -10,11 +10,12 @@ const drop = (id: string, req: number, cur: number, claimed: boolean, name: stri
   ({ id, name: id, required_minutes: req, current_minutes: cur, claimed, required_subs: subs, requires: [] as string[], starts_at: inDays(start), ends_at: inDays(3),
      rewards: [{ name, image_url: "" }] });
 
-function setup() {
+function setup(extra: Record<string, unknown> = {}) {
   const palia = { ...campaign({ id: "c1", drops: [drop("a", 60, 60, true, "Glasses"), drop("b", 120, 30, false, "Hat")] }), status: "mining", will_mine: true };
   const wardogs = { ...campaign({ id: "w", game: "WARDOGS", name: "Season 02", starts_at: inDays(5), linked: null,
     link_url: "https://wardogs.example/link", drops: [drop("x", 240, 0, false, "Dog tag", 5)] }), status: "upcoming", will_mine: true };
-  mockApi({
+  const calls = mockApi({
+    ...extra,
     "GET /api/state": state(),
     "GET /api/inventory": { total_rewards: 3, claimed_rewards: 1, games: [
       { game: "WARDOGS", box_art_url: "", priority: 1, never: false, campaigns: [wardogs],
@@ -24,6 +25,7 @@ function setup() {
     ] },
   });
   render(<AppProvider initialMe={ME}><InventoryView /></AppProvider>);
+  return calls;
 }
 
 test("rewards show claimed, progress and locked states per game", async () => {
@@ -166,4 +168,14 @@ test("Ending soonest lists campaigns by end time across games", async () => {
   const names = [...document.querySelectorAll(".inv-camp .row-t")].map((n) => n.textContent);
   expect(names[0]).toContain("Sooner");
   expect(names[1]).toContain("Later");
+});
+
+test("a reward can be starred from its details, and the tile shows it", async () => {
+  const calls = setup({ "GET /api/wishlist": { drops: [] }, "PUT /api/wishlist": (b: unknown) => b });
+  const u = userEvent.setup();
+  await u.click(await screen.findByRole("button", { name: "Hat: details" }));
+  await u.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Star this reward" }));
+  await waitFor(() => expect(calls.find((c) => c.method === "PUT" && c.path === "/api/wishlist")?.body).toEqual({ drops: ["b"] }));
+  expect(await screen.findByRole("button", { name: "Hat, starred: details" })).toBeInTheDocument();
+  expect(within(screen.getByRole("dialog")).getByRole("button", { name: "Starred" })).toHaveAttribute("aria-pressed", "true");
 });

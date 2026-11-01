@@ -6,6 +6,7 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "./auth.css";
+@import "./features.css";
 
 body { margin: 0; }
 
@@ -20,7 +21,7 @@ body { margin: 0; }
   --alert: #eb0400; --alert-text: #ff6b66; --alert-soft: rgba(235,4,0,.13);
   --art: #26262c; --art-ring: rgba(255,255,255,.06);
   --note: #5c9dff; --note-soft: rgba(92,157,255,.1);
-  --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --display: var(--font);
   --display-stretch: 100%; --display-weight: 800;
   --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
@@ -110,7 +111,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
 .btn.quiet:hover { color: var(--fg); background: var(--surface-3); }
 .btn:disabled { opacity: .5; cursor: default; }
 .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; min-height: 26px; padding: 2px 10px; border-radius: 999px; background: var(--surface-3); color: var(--muted); white-space: nowrap; }
-.chip.gold { background: var(--accent-soft); color: var(--accent-text); }
+.chip.accent { background: var(--accent-soft); color: var(--accent-text); }
 .chip.green { background: var(--ok-soft); color: var(--ok-text); }
 .chip.red { background: var(--alert-soft); color: var(--alert-text); }
 .chip .live { width: 7px; height: 7px; border-radius: 50%; background: var(--live); position: relative; }
@@ -387,7 +388,7 @@ svg.i { width: 16px; height: 16px; flex: none; }
   .now-foot { gap: 8px; }
   .now-foot .btn svg { display: none; } /* text only, as in the mockup: three buttons have to fit a small phone */
   /* pinned above the tab bar, so no item ends up behind a bar or off the screen, whatever the screen's size */
-  .now-foot .menu { position: fixed; left: 16px; right: 16px; top: auto; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); z-index: 7; max-height: calc(100dvh - 136px); overflow-y: auto; }
+  .now-foot .menu, .row-more .menu { position: fixed; left: 16px; right: 16px; top: auto; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); z-index: 7; max-height: calc(100dvh - 136px); overflow-y: auto; }
   /* fourteen days of bars have to fit a small phone */
   .perday { padding: 16px; }
   .perday-bars { gap: 2px; }

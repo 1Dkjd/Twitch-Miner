@@ -20,6 +20,7 @@ export const TOGGLES: Toggle[] = [
   { key: "notify_ending_soon", label: "A reward is ending soon", d: "",
     minutes: { key: "notify_ending_hours", min: 1, max: 48, unit: "hours", before: "A reward you've started ends within",
       after: "hours and can still be finished. Once per reward, with its picture." } },
+  { key: "notify_wishlist", label: "A starred reward is at risk", d: "The forecast says a reward you starred in Inventory won't be earned in time. Once per reward." },
 ];
 
 /** The weekly summary's day (0 = Monday, as the server counts) and hour, in the chosen zone ("" = the server's). */

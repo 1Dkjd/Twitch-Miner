@@ -74,7 +74,7 @@ SETTINGS: dict[str, type] = {
     "priority_only": bool,  # mine only games in Priority; everything else waits (2026-10-12)
     "skip_too_late": bool,  # skip campaigns where no reward left can finish in time (2026-10-18)
     # a reward already started that ends within this many hours, while it can still finish (2026-10-18)
-    "notify_ending_soon": bool, "notify_ending_hours": int,
+    "notify_ending_soon": bool, "notify_ending_hours": int, "notify_wishlist": bool,
 }
 SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "notify_signin": True, "notify_unreachable": True, "notify_not_earning": True,
@@ -83,7 +83,8 @@ SETTING_DEFAULTS = {"mine_badges": False, "claim_points": True,
                     "arrange_up_next": False, "notify_claimed": False, "notify_weekly": False,
                     "notify_weekly_day": 6, "notify_weekly_hour": 18, "notify_weekly_tz": "",
                     "campaigns_every_minutes": 60, "points_watch_streak": True, "priority_only": False,
-                    "skip_too_late": True, "notify_ending_soon": True, "notify_ending_hours": 6}
+                    "skip_too_late": True, "notify_ending_soon": True, "notify_ending_hours": 6,
+                    "notify_wishlist": True}
 _ph = PasswordHasher()
 
 
@@ -142,7 +143,15 @@ class Store:
         )
         s = self.get_settings()
         return Prefs(pr, nv, fv, s["mine_badges"], tuple(self.get_pins()) if s["arrange_up_next"] else (),
-                     frozenset(self.get_ignored()), s["priority_only"], s["skip_too_late"])
+                     frozenset(self.get_ignored()), s["priority_only"], s["skip_too_late"],
+                     frozenset(self.get_wishlist()))
+
+    # --- Inventory stars (drop ids)
+    def get_wishlist(self) -> list[str]:
+        return json.loads(self.get_setting("wishlist") or "[]")
+
+    def set_wishlist(self, ids: Sequence[str]) -> None:
+        self.set_setting("wishlist", json.dumps(list(dict.fromkeys(ids))))
 
     # --- Up next pins (campaign ids, in order); kept while "Arrange myself" is off
     def get_pins(self) -> list[str]:

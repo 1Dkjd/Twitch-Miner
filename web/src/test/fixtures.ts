@@ -8,7 +8,7 @@ export function campaign(over: Partial<Campaign> & { id: string }): Campaign {
     name: "Frights & Delights", game: "Palia", box_art_url: "https://static-cdn.jtvnw.net/ttv-boxart/1.jpg",
     ends_at: inDays(3), linked: true, maybe_unlinked: false, link_url: "https://link.example", allowed_channels: [],
     minutes_needed: 338, verdict: "plenty", pinned: false, ends_before_turn: false, new: false,
-    starts_at: inDays(-1), priority: false,
+    starts_at: inDays(-1), priority: false, live_channels: 0,
     drops: [
       { id: "d1", name: "a", required_minutes: 60, current_minutes: 22, claimed: false, required_subs: 0, requires: [], starts_at: inDays(-1), ends_at: inDays(3), rewards: [reward("10× Ectoplasm")] },
       { id: "d2", name: "b", required_minutes: 180, current_minutes: 22, claimed: false, required_subs: 0, requires: [], starts_at: inDays(-1), ends_at: inDays(3), rewards: [reward("Fancypod Prize Bag")] },

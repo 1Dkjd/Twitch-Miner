@@ -22,10 +22,11 @@ test("Undo reverses only its own change, on the lists as they are now", async ()
     "PUT /api/lists": (b: unknown) => { server = b as typeof server; return b; } });
   vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
   render(<AppProvider initialMe={ME}><OverviewView /><Toasts /></AppProvider>);
-  const btn = await screen.findAllByRole("button", { name: /^Never mine / });
-  const game = btn[0]!.getAttribute("aria-label")!.replace("Never mine ", "");
-  await userEvent.click(btn[0]!);
-  await waitFor(() => expect(server.never).toContain(game));
+  const row = (await screen.findAllByRole("button", { name: /^More actions for / }))[0]!.closest(".row") as HTMLElement;
+  await userEvent.click(within(row).getByRole("button", { name: /^More actions for / }));
+  await userEvent.click(within(row).getByRole("menuitem", { name: "Never mine" }));
+  await waitFor(() => expect(server.never).toHaveLength(1));
+  const game = server.never[0]!;
   server = { ...server, favourites: ["newfav"] };  // changed elsewhere meanwhile
   const toast = await screen.findByRole("group", { name: "Moved to Never" });
   expect(toast).toHaveTextContent(`${game} won't be mined.`);
@@ -70,7 +71,7 @@ test("the next reward says when, not just how long", async () => {
   vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
   mockApi({ "GET /api/state": state(), "GET /api/lists": { priority: [], never: [], favourites: [] } });
   render(<AppProvider initialMe={ME}><OverviewView /></AppProvider>);
-  expect(await screen.findByText(/Next reward in .* \(~\d\d:\d\d\)/)).toBeInTheDocument();
+  expect(await screen.findByText(/Next reward in .* \(~\d{1,2}:\d\d(\s?[AP]M)?\)/)).toBeInTheDocument();
 });
 
 test("Settings lists the signed-in browsers and signs the others out", async () => {

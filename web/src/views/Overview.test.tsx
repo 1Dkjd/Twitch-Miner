@@ -46,7 +46,8 @@ test("Never mine on an Up next row moves its game from Priority to Never", async
   const calls = setup(state(), { "PUT /api/lists": (b: unknown) => b });
   const u = userEvent.setup();
   const row = (await screen.findByText("Crimson Eye 2026")).closest(".row") as HTMLElement;
-  await u.click(within(row).getByRole("button", { name: "Never mine Phasmophobia" }));
+  await u.click(within(row).getByRole("button", { name: /^More actions for/ }));
+  await u.click(within(row).getByRole("menuitem", { name: "Never mine" }));
   expect(calls.find((c) => c.path === "/api/lists" && c.method === "PUT")?.body)
     .toEqual({ priority: [], never: ["Phasmophobia"], favourites: ["example_streamer"] });
 });
@@ -244,10 +245,10 @@ test("on phones Needs you is one line that opens to the full list", async () => 
   expect(screen.getByRole("link", { name: /Link your Eternal Return/ })).toBeInTheDocument();
 });
 
-test("the last 24 hours tiles come from History", async () => {
+test("today's tiles come from History", async () => {
   setPhone(false);
   setup(state(), { "GET /api/history": { total_rewards: 3, claims: [], missed: [], points: { points: 12450, chests: 1 } } });
-  const sec = await screen.findByRole("region", { name: "Last 24 hours" });
+  const sec = await screen.findByRole("region", { name: "Today" });
   expect(within(sec).getByText("12,450")).toBeInTheDocument();
   expect(within(sec).getByText("Rewards claimed").nextSibling).toHaveTextContent("3");
 });

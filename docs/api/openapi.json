@@ -197,6 +197,11 @@
       ],
       "title": "Linked"
      },
+     "live_channels": {
+      "default": 0,
+      "title": "Live Channels",
+      "type": "integer"
+     },
      "maybe_unlinked": {
       "default": false,
       "title": "Maybe Unlinked",
@@ -803,6 +808,11 @@
        }
       ],
       "title": "Linked"
+     },
+     "live_channels": {
+      "default": 0,
+      "title": "Live Channels",
+      "type": "integer"
      },
      "maybe_unlinked": {
       "default": false,
@@ -1808,6 +1818,17 @@
       ],
       "title": "Notify Weekly Tz"
      },
+     "notify_wishlist": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notify Wishlist"
+     },
      "points_watch_streak": {
       "anyOf": [
        {
@@ -1924,6 +1945,11 @@
      "notify_weekly_tz": {
       "title": "Notify Weekly Tz",
       "type": "string"
+     },
+     "notify_wishlist": {
+      "default": true,
+      "title": "Notify Wishlist",
+      "type": "boolean"
      },
      "points_watch_streak": {
       "title": "Points Watch Streak",
@@ -2071,6 +2097,18 @@
       "default": false,
       "title": "Full List Lost",
       "type": "boolean"
+     },
+     "last_progress_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Progress At"
      },
      "last_refresh": {
       "anyOf": [
@@ -2476,6 +2514,21 @@
     ],
     "title": "WidgetOut",
     "type": "object"
+   },
+   "Wishlist": {
+    "properties": {
+     "drops": {
+      "items": {
+       "maxLength": 100,
+       "type": "string"
+      },
+      "maxItems": 500,
+      "title": "Drops",
+      "type": "array"
+     }
+    },
+    "title": "Wishlist",
+    "type": "object"
    }
   }
  },
@@ -2650,6 +2703,7 @@
   },
   "/api/history": {
    "get": {
+    "description": "`since` (the page's own midnight, say) replaces `days`: only the browser knows the viewer's day.",
     "operationId": "get_history_api_history_get",
     "parameters": [
      {
@@ -2662,6 +2716,23 @@
        "minimum": 1,
        "title": "Days",
        "type": "integer"
+      }
+     },
+     {
+      "in": "query",
+      "name": "since",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Since"
       }
      }
     ],
@@ -3599,6 +3670,61 @@
      }
     },
     "summary": "Widget Key New"
+   }
+  },
+  "/api/wishlist": {
+   "get": {
+    "operationId": "get_wishlist_api_wishlist_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Wishlist"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Wishlist"
+   },
+   "put": {
+    "description": "Inventory stars: rewards (by drop id) whose campaigns go before the automatic order.",
+    "operationId": "put_wishlist_api_wishlist_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Wishlist"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Wishlist"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Put Wishlist"
    }
   }
  }

@@ -61,6 +61,8 @@ class Snapshot:
     upcoming: list[tuple[str, str, datetime, bool | None]] = field(default_factory=list)
     # started rewards that can still finish: (drop id, reward, game, minutes left, ends, image)
     started: list[tuple[str, str, str, int, datetime, str]] = field(default_factory=list)
+    # starred rewards the forecast says won't make it: (drop id, reward, game, ends, image)
+    at_risk: list[tuple[str, str, str, datetime, str]] = field(default_factory=list)
 
 
 class Notifier:
@@ -187,6 +189,7 @@ class Notifier:
                                "Account links are known again.")
         out += self._needs_you(snap.needs_you, s)
         out += self._ending(now, snap, s)
+        out += self._wishlist(snap, s)
         if self._claims and now - self._claims_since >= CLAIM_BATCH:
             out += self._claimed_alert()
         if s.get("notify_weekly"):
@@ -302,6 +305,21 @@ class Notifier:
         more = f" And {len(new) - 8} more." if len(new) > 8 else ""
         return [Alert("notify_ending_soon", f"{PREFIX}Ending soon: {len(new)} rewards",
                       " ".join(line(x) for x in new[:8]) + more, image=image)]
+
+    def _wishlist(self, snap: Snapshot, s: dict) -> list[Alert]:
+        """Once per starred reward. The forecast is an estimate, so this says what could still change it."""
+        if not s.get("notify_wishlist", True) or not snap.at_risk:
+            return []
+        told = json.loads(self._store.get_setting("notify_wishlist_sent") or "[]")
+        new = [x for x in snap.at_risk if x[0] not in told]
+        if not new:
+            return []
+        self._store.set_setting("notify_wishlist_sent", json.dumps((told + [x[0] for x in new])[-300:]))
+        names = _and([f"{x[1]} ({x[2]})" for x in new[:8]])
+        title = new[0][1] if len(new) == 1 else f"{len(new)} rewards"
+        return [Alert("notify_wishlist", f"{PREFIX}Starred reward at risk: {title}",
+                      f"At the current order {names} won't be earned in time. Moving the game up in Priority "
+                      "can change that.", image=_picture(*(x[4] for x in new)))]
 
     def _needs_you(self, campaigns: list[tuple[str, str, str]], s: dict) -> list[Alert]:
         if not s.get("notify_needs_you"):
@@ -428,7 +446,29 @@ def snapshot_of(runner) -> Snapshot:
                     list_lost=bool(getattr(runner, "full_list_lost", False)),
                     upcoming=[(c.game.name, c.name, c.starts_at, None if c.has_badge_or_emote else c.linked)
                               for c in runner.campaigns if c.starts_at > now],
-                    started=_started(runner, now))
+                    started=_started(runner, now), at_risk=_at_risk(runner, by_id, now))
+
+
+def _at_risk(runner, by_id: dict, now: datetime) -> list[tuple[str, str, str, datetime, str]]:
+    """Starred rewards in what is scheduled that the forecast says won't make it."""
+    from .forecast import forecast
+    store = getattr(runner, "_store", None)
+    plan = runner.plan
+    prefs = store.get_prefs() if store is not None and hasattr(store, "get_prefs") else None
+    stopped = ("paused", "signed_out", "twitch_unreachable")
+    if prefs is None or not prefs.wanted or str(runner.state) in stopped:
+        return []
+    current = plan.current.campaign_id if plan.current else None
+    out = []
+    steps = forecast(current, plan.queue, plan.also_credited, by_id, now, now,
+                     skip_too_late=prefs.skip_too_late)
+    for s in steps:
+        c = s.campaign
+        for d in c.drops:
+            if d.id in s.missed_drops and d.id in prefs.wanted:
+                image = next((r.image_url for r in d.rewards if r.image_url), c.game.box_art_url)
+                out.append((d.id, d.rewards[0].name, c.game.name, min(d.ends_at, c.ends_at), image))
+    return out
 
 
 def _started(runner, now: datetime) -> list[tuple[str, str, str, int, datetime, str]]:

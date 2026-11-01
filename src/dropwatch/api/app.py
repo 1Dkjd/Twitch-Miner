@@ -18,6 +18,7 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request, 
 from fastapi import Path as PathParam
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import AwareDatetime
 
 from ..backup import BadBackup, make_backup, restore_backup
 from ..notify import CHANNELS, configured, send_all, summary
@@ -61,6 +62,7 @@ from .models import (
     SuggestionsOut,
     WidgetKeyOut,
     WidgetOut,
+    Wishlist,
 )
 from .sse import sse_stream
 from .views import history_view, inventory_view, state_view, widget_view
@@ -363,6 +365,21 @@ async def put_pins(body: Pins, request: Request) -> Pins:
     return Pins(pins=ctx.store.get_pins())
 
 
+@api.get("/wishlist", response_model=Wishlist)
+async def get_wishlist(request: Request) -> Wishlist:
+    return Wishlist(drops=_c(request).store.get_wishlist())
+
+
+@api.put("/wishlist", response_model=Wishlist)
+async def put_wishlist(body: Wishlist, request: Request) -> Wishlist:
+    """Inventory stars: rewards (by drop id) whose campaigns go before the automatic order."""
+    ctx = _c(request)
+    ctx.store.set_wishlist(body.drops)
+    if ctx.service.runner is not None:
+        await ctx.service.runner.replan()
+    return Wishlist(drops=ctx.store.get_wishlist())
+
+
 @api.get("/img/{name}", include_in_schema=False)
 async def kept_image(name: str, request: Request):
     """A kept copy of a Twitch image (images.py); named by a hash of its URL, so it never changes."""
@@ -385,10 +402,13 @@ async def get_inventory(request: Request) -> InventoryOut:
 
 
 @api.get("/history", response_model=HistoryOut)
-async def get_history(request: Request, days: int = Query(30, ge=1, le=365)) -> HistoryOut:
+async def get_history(request: Request, days: int = Query(30, ge=1, le=365),
+                      since: AwareDatetime | None = None) -> HistoryOut:
+    """`since` (the page's own midnight, say) replaces `days`: only the browser knows the viewer's day."""
     ctx = _c(request)
     now = ctx.clock()
-    since = now - timedelta(days=days)
+    oldest = now - timedelta(days=365)
+    since = now - timedelta(days=days) if since is None else min(now, max(oldest, since))
     out = history_view(ctx.store.claims_since(since), ctx.store.missed_between(since, now), ctx.images)
     out.points = PointsOut(**ctx.store.points_since(since))
     return out

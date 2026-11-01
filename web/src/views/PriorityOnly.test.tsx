@@ -58,8 +58,9 @@ test("games outside Priority are folded away; Show lists them without Mine now",
   expect(show).toHaveAttribute("aria-expanded", "false");
   await u.click(show);
   expect(within(sec).getByText("AOCP Flamescale 5")).toBeInTheDocument();
-  expect(within(sec).getByRole("button", { name: "Add Albion Online to Priority" })).toBeInTheDocument();
-  expect(within(sec).getByRole("button", { name: "Never mine Albion Online" })).toBeInTheDocument();
+  await u.click(within(sec).getByRole("button", { name: "More actions for AOCP Flamescale 5" }));
+  expect(within(sec).getByRole("menuitem", { name: "Add to Priority" })).toBeInTheDocument();
+  expect(within(sec).getByRole("menuitem", { name: "Never mine" })).toBeInTheDocument();
   expect(within(sec).queryByRole("button", { name: /^Mine .* now$/ })).not.toBeInTheDocument();
 });
 

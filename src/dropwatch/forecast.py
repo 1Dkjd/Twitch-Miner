@@ -21,11 +21,13 @@ class Step:
     earned: int  # rewards still to come that make it
     missed: tuple[str, ...]  # names of the rewards that don't
     alongside: bool = False  # earned on the current stream, at the same time
+    missed_drops: tuple[str, ...] = ()  # ids of the drops those rewards belong to
 
 
 def _step(c: Campaign, start: datetime, now: datetime, skip_too_late: bool, alongside: bool) -> Step:
     earned = 0
     missed: list[str] = []
+    missed_drops: list[str] = []
     last = start
     for d in c.drops:
         if not d.rewards or not drop_open(c, d, now):
@@ -36,12 +38,13 @@ def _step(c: Campaign, start: datetime, now: datetime, skip_too_late: bool, alon
             last = max(last, due)
         else:
             missed.extend(r.name for r in d.rewards)
+            missed_drops.append(d.id)
     # with "skip what can't finish" the miner moves on after the last reward in reach; otherwise it stays
     # until the campaign is done or over
     needed = start + timedelta(minutes=campaign_minutes_needed(c, now))
     end = last if skip_too_late else max(start, min(needed, c.ends_at))
     status = "ok" if not missed else "partial" if earned else "miss"
-    return Step(c, start, end, status, earned, tuple(missed), alongside)
+    return Step(c, start, end, status, earned, tuple(missed), alongside, tuple(missed_drops))
 
 
 def forecast(

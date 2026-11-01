@@ -25,7 +25,7 @@ function saveShown(shown: Set<Group>) {
   try { localStorage.setItem(SHOWN_KEY, JSON.stringify([...shown])); } catch { /* storage blocked: not remembered */ }
 }
 
-export interface Line { text: ReactNode; d?: string; tone: "ok" | "gold" | "bad" | "note" | ""; group: Group }
+export interface Line { text: ReactNode; d?: string; tone: "ok" | "accent" | "bad" | "note" | ""; group: Group }
 
 const s = (v: unknown) => (typeof v === "string" ? v : "");
 const QUIET = new Set(["mining", "switched"]);
@@ -35,6 +35,7 @@ function why(d: ActivityEvent["data"]): string {
   const r = s(d.reason);
   if (r === "you picked it") return "You picked it";
   if (r === "you pinned it") return "Pinned in Up next";
+  if (r === "you starred a reward") return "You starred a reward";
   if (r === "watch streak") return "Watch-streak visit to a favourite";
   if (r.startsWith("priority ")) return `Priority ${r.slice(9)}`;
   if (r === "most urgent") return d.channel_reason === "favourite" ? "A favourite channel came online" : "Most urgent campaign";
@@ -78,14 +79,14 @@ export function describe(e: ActivityEvent, older: ActivityEvent | undefined): Li
       return { text: <>Stopped watching <b>{s(d.channel)}</b>: its stream wouldn't play</>, tone: "bad", group: "problems" };
     case "points_claimed":
       return { text: d.channel ? <>Opened a channel points chest on <b>{s(d.channel)}</b></> : "Opened a channel points chest",
-        tone: "gold", group: "rewards" };
+        tone: "accent", group: "rewards" };
     case "points_claim_failed":
       return { text: d.channel ? <>Couldn't open a channel points chest on <b>{s(d.channel)}</b></> : "Couldn't open a channel points chest",
         tone: "bad", group: "problems" };
     case "points_earned": {
       const reason = s(d.reason) === "WATCH_STREAK" ? "watch-streak " : s(d.reason) === "RAID" ? "raid " : "";
       return { text: `Earned ${typeof d.points === "number" ? d.points : ""} ${reason}points${d.channel ? ` on ${s(d.channel)}` : ""}`,
-        tone: "gold", group: "rewards" };
+        tone: "accent", group: "rewards" };
     }
     case "checked": {
       const linked = Array.isArray(d.linked) ? d.linked : [];

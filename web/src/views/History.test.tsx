@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { AppProvider } from "../store";
 import { mockApi } from "../test/fetch";
 import { state } from "../test/fixtures";
-import { HistoryView, RewardsPerDay, groupByDay } from "./History";
+import { HistoryView, RewardsPerDay, groupByDay, rewardBars } from "./History";
 
 const r = (name: string) => ({ name, image_url: `u/${name}` });
 const claim = (at: string, campaign_id: string, name: string) =>
@@ -67,7 +67,7 @@ test("tapping a campaign opens each reward with its watch time and channel", asy
   expect(body).toHaveTextContent("2 of 10 rewards in this campaign");
   expect(body).toHaveTextContent(/campaign ends \w{3} \d{1,2} \w{3}, /);
   const lines = [...body.querySelectorAll("li")].map((li) => li.textContent);
-  expect(lines[0]).toMatch(/^Common 1after 1\sh watched·on honeyxxo\d\d:\d\d$/); // oldest first
+  expect(lines[0]).toMatch(/^Common 1after 1\sh watched·on honeyxxo\d{1,2}:\d\d(\s?[AP]M)?$/); // oldest first
   expect(lines[1]).toMatch(/^Rare 1after 2\sh watched·on honeyxxo/);
   expect(body).not.toHaveTextContent("before Dropwatch saved");
   await u.click(btn);
@@ -79,7 +79,7 @@ test("a claim from before the details were saved shows its time and says why the
   const u = userEvent.setup();
   await u.click(await screen.findByRole("button", { name: /EXFIL Brothers Day 2/ }));
   const li = document.querySelector(".hx-body li")!;
-  expect(li.textContent).toMatch(/^Common 3\d\d:\d\d$/);
+  expect(li.textContent).toMatch(/^Common 3\d{1,2}:\d\d(\s?[AP]M)?$/);
   expect(screen.getByText("Claimed before Dropwatch saved watch time and channel.")).toBeVisible();
   expect(document.querySelector(".hx-sum")).toBeNull(); // nothing known about the campaign either
 });
@@ -175,4 +175,19 @@ test("rewards per day counts the viewer's days, with empty days included", () =>
   expect(chart.getAttribute("aria-label")!.endsWith(" 2")).toBe(true);
   expect(chart.querySelectorAll("b")).toHaveLength(3);
   expect([...chart.querySelectorAll("b")].map((b) => b.textContent)).toEqual(["0", "0", "2"]);
+});
+
+test("long periods group the chart into weeks and months", () => {
+  const now = new Date(2026, 9, 31, 12);
+  const at = (d: Date) => ({ at: d.toISOString(), campaign_id: "a", campaign: "A", game: "G", rewards: [r("x")] });
+  const claims = [at(new Date(2026, 9, 30)), at(new Date(2026, 9, 1)), at(new Date(2026, 0, 15))];
+  expect(rewardBars(claims, 30, now).unit).toBe("day");
+  expect(rewardBars(claims, 30, now).bars).toHaveLength(14);
+  const weeks = rewardBars(claims, 90, now);
+  expect(weeks.unit).toBe("week");
+  expect(weeks.bars).toHaveLength(13);
+  expect(weeks.bars.at(-1)!.n).toBe(1);
+  const months = rewardBars(claims, 365, now);
+  expect(months.unit).toBe("month");
+  expect(months.bars.map((b) => b.n)).toEqual([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]); // Nov 2025 to Oct 2026
 });

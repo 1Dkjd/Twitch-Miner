@@ -1,5 +1,5 @@
 /* Formatting rules carried over from the approved mockup: non-breaking spaces between numbers and
- * units (spec §11), "1 h 51 min", "Fri 16 Oct", 24-hour clock times. */
+ * units (spec §11), "1 h 51 min", "Fri 16 Oct". Clock times follow the browser's own 12- or 24-hour setting. */
 export const NB = " ";
 
 export function dur(min: number): string {
@@ -18,11 +18,11 @@ export function mark(min: number): string {
 }
 
 const DAY = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" });
-const TIME = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+export const TIME = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
 
 /** "Fri 16 Oct" in the viewer's own time zone. */
 export const day = (d: Date | string) => DAY.format(new Date(d)).replace(",", "");
-/** "23:15" in the viewer's own time zone. */
+/** "23:15" or "11:15 PM", in the viewer's own time zone and format. */
 export const clock = (d: Date | string) => TIME.format(new Date(d));
 
 /** Whole minutes from now until d (never negative). */

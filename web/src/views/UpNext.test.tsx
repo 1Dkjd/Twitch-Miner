@@ -112,8 +112,13 @@ test("Add to Priority puts the game at the end of Priority, and isn't offered fo
   render(<AppProvider initialMe={ME}><OverviewView /></AppProvider>);
   const u = userEvent.setup();
   const sec = await upNext();
-  await waitFor(() => expect(within(sec).queryByRole("button", { name: "Add REMATCH to Priority" })).toBeNull());
-  await u.click(within(sec).getByRole("button", { name: "Add CONTROL Resonant to Priority" }));
+  const row = (name: string) => within(sec).getByText(name).closest(".row") as HTMLElement;
+  await waitFor(() => expect(within(row("Rematch x Blue Lock")).getByRole("button", { name: /^More actions/ })).toBeInTheDocument());
+  await u.click(within(row("Rematch x Blue Lock")).getByRole("button", { name: /^More actions/ }));
+  await waitFor(() => expect(within(row("Rematch x Blue Lock")).queryByRole("menuitem", { name: "Add to Priority" })).toBeNull());
+  await u.keyboard("{Escape}");
+  await u.click(within(row("CONTROL Resonant launch")).getByRole("button", { name: /^More actions/ }));
+  await u.click(within(row("CONTROL Resonant launch")).getByRole("menuitem", { name: "Add to Priority" }));
   await waitFor(() => expect(calls.find((c) => c.path === "/api/lists" && c.method === "PUT")?.body)
     .toEqual({ priority: ["Palia", "REMATCH", "CONTROL Resonant"], never: ["Albion Online"], favourites: [] }));
 });

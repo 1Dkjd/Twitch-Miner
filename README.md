@@ -10,7 +10,7 @@ next, and anything that needs you.
 
 It runs as a single Docker container, made for Unraid but fine on any Docker host.
 
-![Overview: the campaign being mined, its reward track, and what's up next](docs/screenshots/overview.png)
+![Overview: the campaign being mined, its progress, the forecast and what's up next](docs/screenshots/overview.png)
 
 ## What it does
 
