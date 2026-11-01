@@ -386,9 +386,12 @@ svg.i { width: 16px; height: 16px; flex: none; }
   .watched { text-align: left; flex-basis: 100%; }
   .now-foot { gap: 8px; }
   .now-foot .btn svg { display: none; } /* text only, as in the mockup: three buttons have to fit a small phone */
-  /* upwards, or the last items end up behind the tab bar; the menu stays inside the window whatever its button */
-  .now-foot .menu { top: auto; bottom: calc(100% + 6px); max-width: calc(100vw - 64px); }
-  .now-foot #pause-menu { right: auto; left: 0; }
+  /* pinned above the tab bar, so no item ends up behind a bar or off the screen, whatever the screen's size */
+  .now-foot .menu { position: fixed; left: 16px; right: 16px; top: auto; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); z-index: 7; max-height: calc(100dvh - 136px); overflow-y: auto; }
+  /* fourteen days of bars have to fit a small phone */
+  .perday { padding: 16px; }
+  .perday-bars { gap: 2px; }
+  .perday-bars b, .perday-bars span { font-size: 10px; }
   .now-foot > *, .now-foot .now-acts .btn { flex: 1; }
   .lg { display: none; }
   .sm { display: inline; }
@@ -415,7 +418,10 @@ svg.i { width: 16px; height: 16px; flex: none; }
   .g-act { grid-column: 2 / -1; flex-wrap: wrap; gap: 2px; margin-left: -8px; }
   .g-act .btn { padding-inline: 8px; }
   .opt { grid-template-columns: minmax(0, 1fr); }
-  .split { grid-template-columns: 1fr; gap: 14px; }
+  .split { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .spane { grid-template-columns: minmax(0, 1fr); }
+  .ch-head { flex-wrap: wrap; }
+  .nt-test, .nt-how { min-width: 0; }
   .snav { position: static; display: flex; gap: 6px; overflow-x: auto; margin-inline: -16px; padding: 0 16px 4px; scrollbar-width: none; }
   .snav a { flex: none; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; color: var(--muted); background: var(--surface); }
   .snav a small { display: none; }
