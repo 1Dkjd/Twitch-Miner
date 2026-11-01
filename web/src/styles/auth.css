@@ -279,6 +279,11 @@ label.btn:has(input:focus-visible) { outline: 2px solid var(--accent); outline-o
 .sessions li { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; }
 .sessions .chip { margin-left: 8px; }
 
+/* Overview: the forecast's timeline */
+.fc-list { list-style: none; margin: 0; padding: 0; }
+.fc-wait { margin: 10px 0 0; }
+@media (max-width: 720px) { .fc-list .row > .chip { grid-column: 2; justify-self: start; } }
+.sec-h .chip svg.i { width: 14px; height: 14px; }
 /* Inventory: games as cards, side by side when there's room; Coming up as cards */
 .inv-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr)); gap: 18px; align-items: start; }
 .inv-game { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 0 4px; }

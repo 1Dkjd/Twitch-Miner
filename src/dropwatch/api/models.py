@@ -48,6 +48,27 @@ class CampaignOut(BaseModel):
     new: bool = False  # first seen in the last 24 h (and not in Dropwatch's very first look)
 
 
+class ForecastStepOut(BaseModel):
+    campaign_id: str
+    name: str
+    game: str
+    box_art_url: str
+    starts_at: datetime
+    finishes_at: datetime
+    status: str  # "ok": every reward left makes it | "partial": some do | "miss": none do
+    rewards_earned: int
+    missed: list[str]  # names of the rewards that won't make it
+    alongside: bool = False  # earned on the current stream, at the same time
+
+
+class ForecastOut(BaseModel):
+    """An estimate: the queue mined back to back, as if a qualifying stream stays live throughout."""
+    steps: list[ForecastStepOut]
+    missed: int  # rewards that won't make it, across the steps
+    finishes_at: datetime | None  # when the last step ends
+    waiting: list[str] = []  # campaigns not scheduled because nobody qualifying is live
+
+
 class ChannelOut(BaseModel):
     login: str
     viewers: int
@@ -105,6 +126,8 @@ class StateOut(BaseModel):
     signin_kind: str | None = None
     # a login-page sign-in that Twitch stopped sending its campaign list to: sign in on its page again
     full_list_lost: bool = False
+    # None when nothing can be forecast: signed out, no Twitch, paused for good
+    forecast: ForecastOut | None = None
     # skipped: no reward left can finish before its window closes (Settings > Mining)
     too_late: list[CampaignOut] = []  # "android" (full campaign list) | "tv" (code sign-in) | None
 

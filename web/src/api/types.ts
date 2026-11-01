@@ -903,6 +903,55 @@ export interface components {
              */
             starts_at: string;
         };
+        /**
+         * ForecastOut
+         * @description An estimate: the queue mined back to back, as if a qualifying stream stays live throughout.
+         */
+        ForecastOut: {
+            /** Finishes At */
+            finishes_at: string | null;
+            /** Missed */
+            missed: number;
+            /** Steps */
+            steps: components["schemas"]["ForecastStepOut"][];
+            /**
+             * Waiting
+             * @default []
+             */
+            waiting: string[];
+        };
+        /** ForecastStepOut */
+        ForecastStepOut: {
+            /**
+             * Alongside
+             * @default false
+             */
+            alongside: boolean;
+            /** Box Art Url */
+            box_art_url: string;
+            /** Campaign Id */
+            campaign_id: string;
+            /**
+             * Finishes At
+             * Format: date-time
+             */
+            finishes_at: string;
+            /** Game */
+            game: string;
+            /** Missed */
+            missed: string[];
+            /** Name */
+            name: string;
+            /** Rewards Earned */
+            rewards_earned: number;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /** Status */
+            status: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1393,6 +1442,7 @@ export interface components {
              * @default []
              */
             first_in_line: string[];
+            forecast?: components["schemas"]["ForecastOut"] | null;
             /**
              * Full List Lost
              * @default false

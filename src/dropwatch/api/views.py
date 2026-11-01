@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
+from ..forecast import forecast
 from ..models import Campaign, campaign_active, campaign_minutes_needed, campaign_ratio, deadline_verdict
 from ..planner import qualifies
 from .models import (
@@ -12,6 +13,8 @@ from .models import (
     ClaimOut,
     CurrentOut,
     DropOut,
+    ForecastOut,
+    ForecastStepOut,
     HistoryOut,
     InventoryCampaign,
     InventoryGame,
@@ -129,8 +132,33 @@ def state_view(runner, store, now: datetime) -> StateOut:
         signin_kind=signin_kind(session),
         full_list_lost=bool(getattr(runner, "full_list_lost", False)),
         too_late=keep(getattr(plan, "too_late", ()) if plan else ()),
+        forecast=_forecast(runner, by_id, prefs, now),
         streak_visit=(StreakVisitOut(channel=v[0], until=v[1])
                       if (v := getattr(runner, "streak_visit", None)) else None),
+    )
+
+
+def _forecast(runner, by_id: dict[str, Campaign], prefs, now: datetime) -> ForecastOut | None:
+    plan = runner.plan
+    state = str(runner.state)
+    if not plan or state in ("signed_out", "twitch_unreachable"):
+        return None
+    if state == "paused" and not runner.paused_until:
+        return None
+    visit = getattr(runner, "streak_visit", None)  # drops wait for a streak visit, and for a timed pause
+    start = max(now, runner.paused_until if state == "paused" else visit[1] if visit else now)
+    current = plan.current.campaign_id if plan.current else None
+    steps = forecast(current, plan.queue, plan.also_credited, by_id, start, now,
+                     skip_too_late=prefs.skip_too_late)
+    return ForecastOut(
+        steps=[ForecastStepOut(campaign_id=s.campaign.id, name=s.campaign.name, game=s.campaign.game.name,
+                               box_art_url=s.campaign.game.box_art_url, starts_at=s.starts_at,
+                               finishes_at=s.finishes_at, status=s.status, rewards_earned=s.earned,
+                               missed=list(s.missed), alongside=s.alongside)
+               for s in steps],
+        missed=sum(len(s.missed) for s in steps),
+        finishes_at=max((s.finishes_at for s in steps), default=None),
+        waiting=[by_id[i].name for i in plan.waiting if i in by_id],
     )
 
 

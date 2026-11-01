@@ -155,6 +155,20 @@ test("open menus aren't clipped or covered", async ({ page }) => {
   }
 });
 
+test("the forecast says what will be missed, in view and inside its card", async ({ page }) => {
+  await open(page, "overview");
+  const sec = page.getByRole("region", { name: "Forecast" });
+  await expect(sec.getByText("2 rewards won't make it")).toBeVisible();
+  await expect(sec.getByText(/^Won't make it: A reward with a long name/)).toBeVisible();
+  const chip = (await sec.getByText("Won't make it", { exact: true }).boundingBox())!;
+  expect(chip.height).toBeLessThan(40); // one line, not squeezed into the art's column
+  const card = (await sec.locator(".fc-list").boundingBox())!;
+  for (const row of await sec.getByRole("listitem").all()) {
+    const r = (await row.boundingBox())!;
+    expect(r.x + r.width).toBeLessThanOrEqual(card.x + card.width + 1);
+  }
+});
+
 test("History's chart keeps its bars plain, the newest in the accent", async ({ page }) => {
   await open(page, "history");
   const chart = page.getByRole("img", { name: /^Rewards per day/ });

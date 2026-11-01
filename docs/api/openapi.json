@@ -575,6 +575,112 @@
     "title": "DropOut",
     "type": "object"
    },
+   "ForecastOut": {
+    "description": "An estimate: the queue mined back to back, as if a qualifying stream stays live throughout.",
+    "properties": {
+     "finishes_at": {
+      "anyOf": [
+       {
+        "format": "date-time",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Finishes At"
+     },
+     "missed": {
+      "title": "Missed",
+      "type": "integer"
+     },
+     "steps": {
+      "items": {
+       "$ref": "#/components/schemas/ForecastStepOut"
+      },
+      "title": "Steps",
+      "type": "array"
+     },
+     "waiting": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "Waiting",
+      "type": "array"
+     }
+    },
+    "required": [
+     "steps",
+     "missed",
+     "finishes_at"
+    ],
+    "title": "ForecastOut",
+    "type": "object"
+   },
+   "ForecastStepOut": {
+    "properties": {
+     "alongside": {
+      "default": false,
+      "title": "Alongside",
+      "type": "boolean"
+     },
+     "box_art_url": {
+      "title": "Box Art Url",
+      "type": "string"
+     },
+     "campaign_id": {
+      "title": "Campaign Id",
+      "type": "string"
+     },
+     "finishes_at": {
+      "format": "date-time",
+      "title": "Finishes At",
+      "type": "string"
+     },
+     "game": {
+      "title": "Game",
+      "type": "string"
+     },
+     "missed": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Missed",
+      "type": "array"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "rewards_earned": {
+      "title": "Rewards Earned",
+      "type": "integer"
+     },
+     "starts_at": {
+      "format": "date-time",
+      "title": "Starts At",
+      "type": "string"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "campaign_id",
+     "name",
+     "game",
+     "box_art_url",
+     "starts_at",
+     "finishes_at",
+     "status",
+     "rewards_earned",
+     "missed"
+    ],
+    "title": "ForecastStepOut",
+    "type": "object"
+   },
    "HTTPValidationError": {
     "properties": {
      "detail": {
@@ -1950,6 +2056,16 @@
       },
       "title": "First In Line",
       "type": "array"
+     },
+     "forecast": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ForecastOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
      },
      "full_list_lost": {
       "default": false,

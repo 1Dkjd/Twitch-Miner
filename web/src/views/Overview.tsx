@@ -8,12 +8,13 @@ import { Icon } from "../ui/Icons";
 import { MenuButton } from "./Menu";
 import { LinkedButton } from "./LinkedButton";
 import { UpNext } from "./UpNext";
+import { Forecast } from "./Forecast";
 import { Track, milestones } from "./Track";
 import { LastDay, RecentlyClaimed } from "./OverviewExtras";
 import { useNarrow } from "../ui/useNarrow";
 
 /** Overview (docs/design/twitch-native-mockup/): banner, Mining now (or the idle card) beside Needs you and the last
- * 24 hours, Up next, Coming up, Done, Recently claimed. On phones Needs you comes first in the DOM too, so screen readers get the same order. */
+ * 24 hours, Forecast, Up next, Coming up, Done, Recently claimed. On phones Needs you comes first in the DOM too, so screen readers get the same order. */
 export function OverviewView() {
   const { state, connection, lostSince } = useApp();
   const { lists, save } = useLists();
@@ -71,6 +72,7 @@ export function OverviewView() {
       {phone
         ? <div className="ov-top">{needs}{now}<LastDay state={state} /></div>
         : <div className="ov-top"><div className="ov-main">{now}</div><aside className="ov-side" aria-label="Needs you and the last 24 hours">{needs}<LastDay state={state} /></aside></div>}
+      <Forecast state={state} />
       <UpNext state={state} priorityOf={priorityOf} onNever={never} onPriority={prioritise} />
       <ComingUp state={state} onPriority={prioritise} />
       <Done state={state} />
