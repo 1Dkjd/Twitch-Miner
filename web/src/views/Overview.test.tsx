@@ -251,3 +251,33 @@ test("the last 24 hours tiles come from History", async () => {
   expect(within(sec).getByText("12,450")).toBeInTheDocument();
   expect(within(sec).getByText("Rewards claimed").nextSibling).toHaveTextContent("3");
 });
+
+describe("the idle card says why nothing is being mined", () => {
+  const idle = (over: Partial<State>) => { setPhone(false); setup(state({ state: "idle", current: null, up_next: [], needs_you: [], too_late: [], upcoming: [], first_in_line: [], ...over })); };
+  const other = () => state().current!.campaign;
+
+  test("waiting for a stream", async () => {
+    idle({ first_in_line: ["Palia Cup"] });
+    expect(await screen.findByRole("heading", { name: "Nothing to mine right now" })).toBeInTheDocument();
+    expect(screen.getByText(/has a live channel with drops turned on\. Palia Cup is first in line/)).toBeInTheDocument();
+  });
+
+  test("everything earned, not a stream problem", async () => {
+    idle({ upcoming: [{ ...other(), id: "u1", game: "Rust", starts_at: new Date(Date.now() + 86_400_000).toISOString() }] });
+    expect(await screen.findByRole("heading", { name: "Nothing left to earn right now" })).toBeInTheDocument();
+    expect(screen.queryByText(/live channel/)).toBeNull();
+    expect(screen.getByText(/Next up: Rust, starting/)).toBeInTheDocument();
+  });
+
+  test("what's left is blocked", async () => {
+    idle({ needs_you: [{ ...other(), id: "n1" }], too_late: [{ ...other(), id: "l1" }] });
+    expect(await screen.findByRole("heading", { name: "Nothing to mine right now" })).toBeInTheDocument();
+    expect(screen.getByText(/can't be mined at the moment\. 1 needs an account link first\. 1 can't finish in time\./)).toBeInTheDocument();
+  });
+
+  test("before the first look at Twitch it doesn't claim anything is finished", async () => {
+    idle({ last_refresh: null });
+    expect(await screen.findByRole("heading", { name: "Nothing to mine right now" })).toBeInTheDocument();
+    expect(screen.getByText(/hasn't finished checking Twitch yet/)).toBeInTheDocument();
+  });
+});

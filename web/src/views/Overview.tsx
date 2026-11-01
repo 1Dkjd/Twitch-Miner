@@ -304,11 +304,21 @@ function Idle({ state }: { state: State }) {
   const [busy, setBusy] = useState(false);
   const line = state.first_in_line;
   const next = state.next_check_at ? minutesUntil(state.next_check_at) : null;
+  // first_in_line is what's waiting for a stream: with none, streams aren't the reason nothing is being mined
+  const blocked = state.needs_you.length + (state.too_late ?? []).length;
+  const finished = !line.length && !blocked && !!state.last_refresh;
+  const soonest = (state.upcoming ?? []).filter((c) => c.starts_at).sort((a, b) => +new Date(a.starts_at!) - +new Date(b.starts_at!))[0];
   return (
     <section className="idle" aria-labelledby="h-idle">
-      <h2 id="h-idle">Nothing to mine right now</h2>
-      <p>None of your campaigns has a live channel with drops turned on.
+      <h2 id="h-idle">{finished ? "Nothing left to earn right now" : "Nothing to mine right now"}</h2>
+      <p>{finished ? "You've earned everything Dropwatch can mine at the moment."
+        : line.length ? "None of your campaigns has a live channel with drops turned on."
+        : !state.last_refresh ? "Dropwatch hasn't finished checking Twitch yet."
+        : "The campaigns left can't be mined at the moment."}
         {line.length ? ` ${line[0]} is first in line${line[1] ? `, then ${line[1]}` : ""}.` : ""}
+        {!line.length && state.needs_you.length > 0 ? ` ${state.needs_you.length} ${state.needs_you.length === 1 ? "needs" : "need"} an account link first.` : ""}
+        {!line.length && (state.too_late ?? []).length > 0 ? ` ${state.too_late!.length} can't finish in time.` : ""}
+        {finished && soonest?.starts_at ? ` Next up: ${soonest.game}, starting ${day(soonest.starts_at)}.` : ""}
         {next !== null ? ` Checking again in ${dur(Math.max(1, next))}.` : ""}</p>
       <div className="acts"><button className="btn" type="button" aria-disabled={busy} onClick={async () => {
         if (busy) return;
