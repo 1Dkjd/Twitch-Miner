@@ -18,7 +18,7 @@ from pathlib import Path
 from .parse import ts
 
 log = logging.getLogger("dropwatch.catalog")
-CATALOG_URL = "https://twitch-drops-api.sunkwi.com/v2/drops"
+CATALOG_URL = "https://drops.sunkwi.com/api/twitch/drops"
 MAX_BODY = 25 * 1024 * 1024  # the real catalogue is well under 1 MB; anything this big isn't it
 # a fetch that suddenly lists far fewer campaigns than the last good one is more likely a broken or
 # tampered catalogue than Twitch ending most campaigns at once: keep the last good copy instead
@@ -62,7 +62,7 @@ def _sanitize(raw: dict) -> dict:
 def flatten(body: dict) -> tuple[dict[str, dict], datetime | None]:
     """Campaign id -> Twitch-shaped raw record. Malformed records are skipped one by one."""
     out: dict[str, dict] = {}
-    for game in body["data"]:
+    for game in body["games"]:
         for r in game.get("rewards") or []:
             try:
                 raw = dict(r)
@@ -76,7 +76,7 @@ def flatten(body: dict) -> tuple[dict[str, dict], datetime | None]:
                 out[raw["id"]] = _sanitize(raw)
             except (KeyError, TypeError, ValueError, AttributeError):  # e.g. endAt null
                 continue
-    updated = body.get("lastUpdatedAt")
+    updated = body.get("refreshedAt")
     return out, (ts(updated) if updated else None)
 
 
