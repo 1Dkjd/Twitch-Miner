@@ -17,8 +17,8 @@ def reward(cid, end="2026-10-20T00:00:00Z", status="ACTIVE"):
 def body(*rewards, updated=NOW):
     game = {"gameId": "1", "gameDisplayName": "Palia", "gameBoxArtURL": "https://static-cdn.jtvnw.net/ttv-boxart/1-120x160.jpg",
             "rewards": list(rewards)}
-    return json.dumps({"lastUpdatedAt": updated.isoformat().replace("+00:00", "Z"),
-                       "refreshIntervalSeconds": 60, "data": [game]})
+    return json.dumps({"refreshedAt": updated.isoformat().replace("+00:00", "Z"),
+                       "games": [game]})
 
 
 class Net:
@@ -91,7 +91,7 @@ async def test_recovers_to_ok(tmp_path):
 
 async def test_corrupt_cache_and_bad_body_are_empty_not_a_crash(tmp_path):
     (tmp_path / "catalog.json").write_bytes(b"{not json")
-    cat, _ = make(tmp_path, HttpResponse(200, '{"data": "nope"}'))
+    cat, _ = make(tmp_path, HttpResponse(200, '{"games": "nope"}'))
     assert await cat.campaigns() == {}
     assert cat.status[0] == "unreachable"
 
@@ -120,7 +120,7 @@ async def test_cache_written_lf_only(tmp_path):
     cat, _ = make(tmp_path, HttpResponse(200, body(reward("a"))))
     await cat.campaigns()
     raw = (tmp_path / "catalog.json").read_bytes()
-    assert b"\r" not in raw and json.loads(raw)["data"]
+    assert b"\r" not in raw and json.loads(raw)["games"]
 
 
 def test_catalog_url_from_env(monkeypatch):
@@ -147,7 +147,7 @@ async def test_third_party_images_links_and_account_state_are_dropped(tmp_path):
     r["timeBasedDrops"] = [{"benefitEdges": [{"benefit": {"imageAssetURL": "https://tracker.example/x.png"}}]},
                            {"benefitEdges": [{"benefit": {"imageAssetURL": "https://static-cdn.jtvnw.net/x.png"}}]}]
     b = json.loads(body(r))
-    b["data"][0]["gameBoxArtURL"] = "https://tracker.example/art.jpg"
+    b["games"][0]["gameBoxArtURL"] = "https://tracker.example/art.jpg"
     cat, _ = make(tmp_path, HttpResponse(200, json.dumps(b)))
     got = (await cat.campaigns())["a"]
     assert got["game"]["boxArtURL"] == ""
